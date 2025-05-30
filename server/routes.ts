@@ -271,12 +271,46 @@ export async function registerRoutes(app: Express): Promise<Server> {
       
       updateProgress(req.body.userId, operationId, 1, 6, 'generating', 'Analyzing requirements...');
       
-      // Generate plan using OpenAI
-      console.log("🤖 Calling OpenAI to generate workout plan...");
-      updateProgress(req.body.userId, operationId, 2, 6, 'generating', 'Generating workout plan with AI...');
+      // Generate framework using OpenAI (Batch 1)
+      console.log("🤖 Generating workout framework...");
+      updateProgress(req.body.userId, operationId, 2, 6, 'generating', 'Creating workout framework...');
       
-      const generatedPlan = await generateWorkoutPlan(planRequest);
-      console.log("✅ OpenAI plan generated:", {
+      const { generateWorkoutFramework, generateWeeklyWorkouts } = await import("./openai.js");
+      const framework = await generateWorkoutFramework(planRequest);
+      console.log("✅ Framework generated:", {
+        title: framework.title,
+        weeks: framework.weeklyStructure.length,
+        workoutsPerWeek: framework.weeklyStructure[0]?.workoutDays.length || 0
+      });
+
+      updateProgress(req.body.userId, operationId, 3, 6, 'generating', 'Generating detailed workouts...');
+
+      // Generate weekly workouts using framework (Batch 2)
+      const allWorkouts: any[] = [];
+      const weeklyResults: any[] = [];
+      
+      for (let week = 1; week <= framework.duration; week++) {
+        console.log(`🏋️ Generating Week ${week} workouts...`);
+        updateProgress(req.body.userId, operationId, 3 + (week - 1) / framework.duration, 6, 'generating', `Generating Week ${week} workouts...`);
+        
+        const weekWorkouts = await generateWeeklyWorkouts(framework, week, weeklyResults);
+        allWorkouts.push(...weekWorkouts);
+        weeklyResults.push({ week, workouts: weekWorkouts });
+        
+        console.log(`✅ Week ${week} generated: ${weekWorkouts.length} workouts`);
+      }
+
+      const generatedPlan = {
+        title: framework.title,
+        description: framework.description,
+        duration: framework.duration,
+        totalWorkouts: framework.totalWorkouts,
+        difficulty: framework.difficulty,
+        equipment: framework.equipment,
+        workouts: allWorkouts
+      };
+
+      console.log("✅ Complete plan generated:", {
         title: generatedPlan.title,
         totalWorkouts: generatedPlan.totalWorkouts,
         exerciseCount: generatedPlan.workouts.reduce((acc, w) => acc + w.exercises.length, 0)

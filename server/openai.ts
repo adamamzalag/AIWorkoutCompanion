@@ -40,6 +40,147 @@ export interface GeneratedWorkoutPlan {
   workouts: GeneratedWorkout[];
 }
 
+// Generate workout framework first
+export async function generateWorkoutFramework(request: WorkoutPlanRequest): Promise<{
+  title: string;
+  description: string;
+  duration: number;
+  totalWorkouts: number;
+  difficulty: string;
+  equipment: string[];
+  weeklyStructure: Array<{
+    week: number;
+    focus: string;
+    intensityLevel: string;
+    workoutDays: Array<{
+      dayNumber: number;
+      goal: string;
+      targetMuscles: string[];
+      workoutType: string;
+      estimatedDuration: number;
+    }>;
+  }>;
+  progressionRules: {
+    weightProgression: string;
+    volumeProgression: string;
+    intensityProgression: string;
+  };
+}> {
+  const prompt = `Create a strategic ${request.duration}-week workout framework for ${request.fitnessLevel} level.
+
+Requirements:
+- ${request.workoutsPerWeek} workouts per week
+- ${request.timePerWorkout} minutes per workout  
+- Available equipment: ${request.equipment.join(', ')}
+- Goals: ${request.goals.join(', ')}
+
+Create a framework with:
+1. Weekly progression structure (focus and intensity for each week)
+2. Individual workout day goals and target muscles
+3. Progression rules for advancing between weeks
+
+Each workout should follow: Warm-up → Main Exercises → Cool-down
+
+Respond with JSON: {
+  "title": "Plan name",
+  "description": "Plan overview",
+  "duration": ${request.duration},
+  "totalWorkouts": ${request.workoutsPerWeek * request.duration},
+  "difficulty": "${request.fitnessLevel}",
+  "equipment": ${JSON.stringify(request.equipment)},
+  "weeklyStructure": [
+    {
+      "week": 1,
+      "focus": "Foundation Building",
+      "intensityLevel": "moderate",
+      "workoutDays": [
+        {
+          "dayNumber": 1,
+          "goal": "Upper Body Strength",
+          "targetMuscles": ["chest", "shoulders", "triceps"],
+          "workoutType": "strength",
+          "estimatedDuration": ${request.timePerWorkout}
+        }
+      ]
+    }
+  ],
+  "progressionRules": {
+    "weightProgression": "Increase by 5-10% when completing all sets",
+    "volumeProgression": "Add 1 set after 2 weeks of same weight",
+    "intensityProgression": "Week 1: 60-70%, Week 2: 70-75%, Week 3: 75-80%, Week 4: 70-75%"
+  }
+}`;
+
+  const response = await openai.chat.completions.create({
+    model: "gpt-4.1",
+    messages: [
+      { role: "system", content: "You are a workout program architect. Create strategic fitness frameworks in JSON format." },
+      { role: "user", content: prompt }
+    ],
+    response_format: { type: "json_object" },
+  });
+
+  return JSON.parse(response.choices[0].message.content || "{}");
+}
+
+// Generate detailed workouts for a specific week
+export async function generateWeeklyWorkouts(
+  framework: any,
+  weekNumber: number,
+  previousWeeks?: any[]
+): Promise<GeneratedWorkout[]> {
+  const currentWeek = framework.weeklyStructure.find((w: any) => w.week === weekNumber);
+  if (!currentWeek) throw new Error(`Week ${weekNumber} not found in framework`);
+
+  const progressionContext = previousWeeks ? 
+    `Previous weeks completed: ${JSON.stringify(previousWeeks)}. Apply progression rules: ${JSON.stringify(framework.progressionRules)}` : 
+    'This is the first week, start with foundation movements.';
+
+  const prompt = `Generate detailed workouts for Week ${weekNumber} of this fitness plan.
+
+Framework: ${JSON.stringify(currentWeek)}
+Equipment: ${framework.equipment.join(', ')}
+${progressionContext}
+
+Create ${currentWeek.workoutDays.length} detailed workouts following this structure:
+- Warm-up: 5-10 minutes of dynamic movements
+- Main exercises: Specific to the day's goal and target muscles
+- Cool-down: 5-10 minutes of static stretching
+
+Respond with JSON array of workouts: [
+  {
+    "title": "Workout day title",
+    "description": "Workout focus",
+    "estimatedDuration": ${framework.totalWorkouts ? Math.floor(framework.totalWorkouts / framework.duration * 60 / currentWeek.workoutDays.length) : 45},
+    "exercises": [
+      {
+        "section": "warm-up",
+        "name": "Dynamic exercise name",
+        "sets": 1,
+        "reps": "10 each direction",
+        "weight": null,
+        "restTime": "30 seconds",
+        "instructions": ["Clear instruction"],
+        "muscleGroups": ["target muscles"],
+        "equipment": ["required equipment"]
+      }
+    ]
+  }
+]`;
+
+  const response = await openai.chat.completions.create({
+    model: "gpt-4.1",
+    messages: [
+      { role: "system", content: "You are a fitness trainer creating detailed workout sessions in JSON format." },
+      { role: "user", content: prompt }
+    ],
+    response_format: { type: "json_object" },
+  });
+
+  const result = JSON.parse(response.choices[0].message.content || "{}");
+  return result.workouts || [];
+}
+
 export async function generateWorkoutPlan(request: WorkoutPlanRequest): Promise<GeneratedWorkoutPlan> {
   const prompt = `Generate a comprehensive ${request.duration}-week workout plan with the following specifications:
 
