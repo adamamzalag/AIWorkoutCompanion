@@ -66,12 +66,7 @@ export default function AIChatPage() {
     });
   };
 
-  const quickSuggestions = [
-    "How can I improve my form?",
-    "What should I eat post-workout?",
-    "I'm feeling unmotivated today",
-    "Show me my progress"
-  ];
+
 
   return (
     <div className="flex flex-col h-screen bg-background">
@@ -145,32 +140,7 @@ export default function AIChatPage() {
               </p>
             </div>
 
-            {/* Quick Start Options */}
-            <div className="w-full space-y-4 max-w-sm">
-              {[
-                { icon: TrendingUp, title: "Analyze My Progress", subtitle: "See how you're improving", message: "Can you analyze my workout progress and give me insights?" },
-                { icon: Dumbbell, title: "Form & Technique", subtitle: "Get exercise tips", message: "I need help with my exercise form and technique" },
-                { icon: Target, title: "Set New Goals", subtitle: "Plan your next milestone", message: "Help me set realistic fitness goals for this month" }
-              ].map((option, index) => (
-                <Card key={index} className="glass-effect hover:bg-card/60 transition-colors cursor-pointer" onClick={() => setMessage(option.message)}>
-                  <CardContent className="p-4">
-                    <div className="flex items-center space-x-4">
-                      <div className={`w-12 h-12 bg-gradient-to-r ${
-                        index === 0 ? 'from-primary to-secondary' : 
-                        index === 1 ? 'from-secondary to-accent' : 
-                        'from-accent to-primary'
-                      } rounded-xl flex items-center justify-center`}>
-                        <option.icon className="text-white" size={18} />
-                      </div>
-                      <div className="flex-1 text-left">
-                        <div className="font-medium text-foreground">{option.title}</div>
-                        <div className="text-sm text-muted-foreground">{option.subtitle}</div>
-                      </div>
-                    </div>
-                  </CardContent>
-                </Card>
-              ))}
-            </div>
+
           </div>
         )}
 
@@ -193,26 +163,7 @@ export default function AIChatPage() {
         <div ref={messagesEndRef} />
       </div>
 
-      {/* Quick Suggestions - Show in main content area when no messages */}
-      {(!messages || messages.length === 0) && (
-        <div className="px-4 pb-6">
-          <div className="text-center mb-4">
-            <p className="text-muted-foreground text-sm">Try asking about:</p>
-          </div>
-          <div className="grid grid-cols-1 gap-3 max-w-sm mx-auto">
-            {quickSuggestions.map((suggestion, index) => (
-              <Button
-                key={index}
-                variant="outline"
-                className="glass-effect border-border/30 text-left justify-start h-auto py-3 px-4 hover:bg-primary/10 hover:border-primary/30"
-                onClick={() => setMessage(suggestion)}
-              >
-                <span className="text-sm text-foreground">{suggestion}</span>
-              </Button>
-            ))}
-          </div>
-        </div>
-      )}
+
 
       {/* Chat Input - Fixed at bottom */}
       <div className="fixed bottom-20 left-1/2 transform -translate-x-1/2 w-full max-w-sm px-4 z-40">
