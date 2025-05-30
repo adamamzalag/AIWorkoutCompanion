@@ -241,15 +241,47 @@ export async function registerRoutes(app: Express): Promise<Server> {
     }
   });
 
+  // Progress tracking endpoint
+  app.get("/api/generation-progress/:operationId", async (req, res) => {
+    const { getProgress } = await import("./progress-tracker.js");
+    const progress = getProgress(req.params.operationId);
+    res.json(progress || { progress: 0, status: 'not_found' });
+  });
+
   // AI-powered routes
   app.post("/api/generate-plan", async (req, res) => {
+    const operationId = `plan_${req.body.userId}_${Date.now()}`;
+    
     try {
+      const { updateProgress } = await import("./progress-tracker.js");
+      
+      console.log("🚀 Starting workout plan generation:", {
+        userId: req.body.userId,
+        fitnessLevel: req.body.fitnessLevel,
+        equipment: req.body.equipment,
+        goals: req.body.goals,
+        operationId
+      });
+
+      // Return operation ID immediately for progress tracking
+      res.json({ operationId, status: 'started' });
+
+      // Continue processing in background
       const planRequest: WorkoutPlanRequest = req.body;
       
+      updateProgress(req.body.userId, operationId, 1, 6, 'generating', 'Analyzing requirements...');
+      
       // Generate plan using OpenAI
+      console.log("🤖 Calling OpenAI to generate workout plan...");
       const generatedPlan = await generateWorkoutPlan(planRequest);
+      console.log("✅ OpenAI plan generated:", {
+        title: generatedPlan.title,
+        totalWorkouts: generatedPlan.totalWorkouts,
+        exerciseCount: generatedPlan.workouts.reduce((acc, w) => acc + w.exercises.length, 0)
+      });
       
       // Save the plan to storage
+      console.log("💾 Saving workout plan to storage...");
       const workoutPlan = await storage.createWorkoutPlan({
         userId: req.body.userId,
         title: generatedPlan.title,
@@ -260,16 +292,23 @@ export async function registerRoutes(app: Express): Promise<Server> {
         equipment: generatedPlan.equipment,
         isActive: true
       });
+      console.log("✅ Workout plan saved with ID:", workoutPlan.id);
 
       // Process and save individual workouts with normalized exercises
+      console.log("🔄 Processing exercises and creating workout records...");
       for (let i = 0; i < generatedPlan.workouts.length; i++) {
         const workout = generatedPlan.workouts[i];
+        console.log(`📝 Processing workout ${i + 1}/${generatedPlan.workouts.length}: ${workout.title}`);
         
         // Process each exercise to normalize and create exercise records
         const processedExercises = [];
-        for (const aiExercise of workout.exercises) {
+        for (let j = 0; j < workout.exercises.length; j++) {
+          const aiExercise = workout.exercises[j];
+          console.log(`🏋️ Processing exercise ${j + 1}/${workout.exercises.length}: ${aiExercise.name}`);
+          
           // Get existing exercises for similarity matching
           const existingExercises = await storage.getExercises();
+          console.log(`📊 Checking against ${existingExercises.length} existing exercises for duplicates`);
           
           // Map database fields to expected format
           const mappedExercises = existingExercises.map(ex => ({
@@ -279,29 +318,32 @@ export async function registerRoutes(app: Express): Promise<Server> {
             equipment: ex.equipment
           }));
           
-          // Check if this exercise already exists (with AI normalization)
-          const { findSimilarExercise } = await import("./openai.js");
-          const similarExercise = await findSimilarExercise(aiExercise.name, mappedExercises);
-          
           let exerciseId: number;
           let exerciseName: string;
           
-          if (similarExercise) {
-            // Use existing exercise
-            exerciseId = similarExercise.id;
-            exerciseName = similarExercise.name;
+          // Simple name-based matching for now (will enhance with AI later)
+          const existingExercise = mappedExercises.find(ex => 
+            ex.name.toLowerCase() === aiExercise.name.toLowerCase()
+          );
+          
+          if (existingExercise) {
+            console.log(`✅ Found existing exercise: "${existingExercise.name}" (ID: ${existingExercise.id})`);
+            exerciseId = existingExercise.id;
+            exerciseName = existingExercise.name;
           } else {
+            console.log(`➕ Creating new exercise: "${aiExercise.name}"`);
             // Create new exercise record
             const newExercise = await storage.createExercise({
               name: aiExercise.name,
               muscle_groups: aiExercise.muscleGroups,
               equipment: aiExercise.equipment,
               instructions: aiExercise.instructions,
-              youtubeId: null, // Will be populated later when user requests tutorial
-              difficulty: "intermediate" // Default difficulty, could be enhanced with AI analysis
+              youtubeId: null,
+              difficulty: "intermediate"
             });
             exerciseId = newExercise.id;
             exerciseName = newExercise.name;
+            console.log(`✅ New exercise created with ID: ${exerciseId}`);
           }
           
           // Store processed exercise with reference to actual exercise record
@@ -318,7 +360,7 @@ export async function registerRoutes(app: Express): Promise<Server> {
           });
         }
         
-        await storage.createWorkout({
+        const createdWorkout = await storage.createWorkout({
           planId: workoutPlan.id,
           userId: req.body.userId,
           title: workout.title,
@@ -327,11 +369,13 @@ export async function registerRoutes(app: Express): Promise<Server> {
           exercises: processedExercises,
           orderIndex: i
         });
+        console.log(`✅ Workout created with ID: ${createdWorkout.id}`);
       }
 
+      console.log("🎉 Workout plan generation completed successfully!");
       res.json(workoutPlan);
     } catch (error) {
-      console.error("Error generating workout plan:", error);
+      console.error("❌ Error generating workout plan:", error);
       res.status(500).json({ error: "Failed to generate workout plan" });
     }
   });
