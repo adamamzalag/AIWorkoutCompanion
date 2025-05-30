@@ -115,7 +115,7 @@ export default function OnboardingPage() {
 
   return (
     <div className="min-h-screen bg-gradient-to-br from-background via-background to-muted/30 flex items-center justify-center p-4">
-      <Card className="w-full max-w-md h-[85vh] flex flex-col glass-effect border-border/50">
+      <Card className="w-full max-w-md max-h-[85vh] glass-effect border-border/50">
         <CardHeader className="text-center space-y-4">
           <div className="mx-auto w-12 h-12 bg-gradient-to-r from-primary to-secondary rounded-full flex items-center justify-center">
             <Sparkles className="w-6 h-6 text-white" />
@@ -137,10 +137,11 @@ export default function OnboardingPage() {
           </div>
         </CardHeader>
 
-        <CardContent className="flex-1 overflow-hidden flex flex-col">
+        <CardContent className="overflow-y-auto max-h-[calc(85vh-200px)]">
           <Form {...form}>
-            <form onSubmit={form.handleSubmit(onSubmit)} className="flex-1 flex flex-col">
-              {currentStep === 0 && (
+            <form onSubmit={form.handleSubmit(onSubmit)}>
+              <div className="space-y-6">
+                {currentStep === 0 && (
                 <div className="space-y-4">
                   <div className="text-center">
                     <h3 className="font-poppins font-semibold text-lg text-foreground">
@@ -174,8 +175,8 @@ export default function OnboardingPage() {
               )}
 
               {currentStep === 1 && (
-                <div className="flex-1 flex flex-col space-y-4 min-h-0">
-                  <div className="text-center flex-shrink-0">
+                <div className="space-y-4">
+                  <div className="text-center">
                     <h3 className="font-poppins font-semibold text-lg text-foreground">
                       {steps[1].title}
                     </h3>
@@ -185,47 +186,45 @@ export default function OnboardingPage() {
                     control={form.control}
                     name="equipment"
                     render={() => (
-                      <FormItem className="flex-1 flex flex-col min-h-0">
-                        <FormLabel className="text-foreground flex-shrink-0">Available Equipment</FormLabel>
-                        <div className="flex-1 flex flex-col space-y-3 min-h-0">
-                          <div className="flex-1 overflow-y-auto min-h-[200px]">
-                            <div className="grid grid-cols-1 gap-2 pr-2">
-                              {equipmentOptions.map((item) => (
-                                <FormField
-                                  key={item}
-                                  control={form.control}
-                                  name="equipment"
-                                  render={({ field }) => {
-                                    return (
-                                      <FormItem>
-                                        <FormControl>
-                                          <label className="flex items-center space-x-3 glass-effect rounded-lg p-2.5 cursor-pointer hover:bg-card/60 focus-within:bg-card/60 transition-colors touch-target">
-                                            <Checkbox
-                                              checked={field.value?.includes(item)}
-                                              className="data-[state=checked]:bg-primary data-[state=checked]:border-primary"
-                                              onCheckedChange={(checked) => {
-                                                return checked
-                                                  ? field.onChange([...field.value, item])
-                                                  : field.onChange(
-                                                      field.value?.filter((value) => value !== item)
-                                                    )
-                                              }}
-                                            />
-                                            <span className="text-sm text-foreground font-medium capitalize flex-1">
-                                              {item.replace('_', ' ')}
-                                            </span>
-                                          </label>
-                                        </FormControl>
-                                      </FormItem>
-                                    )
-                                  }}
-                                />
-                              ))}
-                            </div>
+                      <FormItem>
+                        <FormLabel className="text-foreground">Available Equipment</FormLabel>
+                        <div className="space-y-3">
+                          <div className="grid grid-cols-1 gap-2">
+                            {equipmentOptions.map((item) => (
+                              <FormField
+                                key={item}
+                                control={form.control}
+                                name="equipment"
+                                render={({ field }) => {
+                                  return (
+                                    <FormItem>
+                                      <FormControl>
+                                        <label className="flex items-center space-x-3 glass-effect rounded-lg p-2.5 cursor-pointer hover:bg-card/60 focus-within:bg-card/60 transition-colors touch-target">
+                                          <Checkbox
+                                            checked={field.value?.includes(item)}
+                                            className="data-[state=checked]:bg-primary data-[state=checked]:border-primary"
+                                            onCheckedChange={(checked) => {
+                                              return checked
+                                                ? field.onChange([...field.value, item])
+                                                : field.onChange(
+                                                    field.value?.filter((value) => value !== item)
+                                                  )
+                                            }}
+                                          />
+                                          <span className="text-sm text-foreground font-medium capitalize flex-1">
+                                            {item.replace('_', ' ')}
+                                          </span>
+                                        </label>
+                                      </FormControl>
+                                    </FormItem>
+                                  )
+                                }}
+                              />
+                            ))}
                           </div>
                           
                           {/* Custom Equipment Input */}
-                          <div className="space-y-2 flex-shrink-0">
+                          <div className="space-y-2">
                             <div className="flex gap-2">
                               <Input
                                 placeholder="Add custom equipment..."
@@ -282,8 +281,8 @@ export default function OnboardingPage() {
               )}
 
               {currentStep === 2 && (
-                <div className="flex-1 flex flex-col space-y-4 min-h-0">
-                  <div className="text-center flex-shrink-0">
+                <div className="space-y-4">
+                  <div className="text-center">
                     <h3 className="font-poppins font-semibold text-lg text-foreground">
                       {steps[2].title}
                     </h3>
@@ -293,42 +292,40 @@ export default function OnboardingPage() {
                     control={form.control}
                     name="goals"
                     render={() => (
-                      <FormItem className="flex-1 flex flex-col min-h-0">
-                        <FormLabel className="text-foreground flex-shrink-0">Fitness Goals</FormLabel>
-                        <div className="flex-1 overflow-y-auto min-h-[200px]">
-                          <div className="grid grid-cols-1 gap-2 pr-2">
-                            {goalOptions.map((item) => (
-                              <FormField
-                                key={item}
-                                control={form.control}
-                                name="goals"
-                                render={({ field }) => {
-                                  return (
-                                    <FormItem>
-                                      <FormControl>
-                                        <label className="flex items-center space-x-3 glass-effect rounded-lg p-2.5 cursor-pointer hover:bg-card/60 focus-within:bg-card/60 transition-colors touch-target">
-                                          <Checkbox
-                                            checked={field.value?.includes(item)}
-                                            className="data-[state=checked]:bg-primary data-[state=checked]:border-primary"
-                                            onCheckedChange={(checked) => {
-                                              return checked
-                                                ? field.onChange([...field.value, item])
-                                                : field.onChange(
-                                                    field.value?.filter((value) => value !== item)
-                                                  )
-                                            }}
-                                          />
-                                          <span className="text-sm text-foreground font-medium capitalize flex-1">
-                                            {item.replace('_', ' ')}
-                                          </span>
-                                        </label>
-                                      </FormControl>
-                                    </FormItem>
-                                  )
-                                }}
-                              />
-                            ))}
-                          </div>
+                      <FormItem>
+                        <FormLabel className="text-foreground">Fitness Goals</FormLabel>
+                        <div className="grid grid-cols-1 gap-2">
+                          {goalOptions.map((item) => (
+                            <FormField
+                              key={item}
+                              control={form.control}
+                              name="goals"
+                              render={({ field }) => {
+                                return (
+                                  <FormItem>
+                                    <FormControl>
+                                      <label className="flex items-center space-x-3 glass-effect rounded-lg p-2.5 cursor-pointer hover:bg-card/60 focus-within:bg-card/60 transition-colors touch-target">
+                                        <Checkbox
+                                          checked={field.value?.includes(item)}
+                                          className="data-[state=checked]:bg-primary data-[state=checked]:border-primary"
+                                          onCheckedChange={(checked) => {
+                                            return checked
+                                              ? field.onChange([...field.value, item])
+                                              : field.onChange(
+                                                  field.value?.filter((value) => value !== item)
+                                                )
+                                          }}
+                                        />
+                                        <span className="text-sm text-foreground font-medium capitalize flex-1">
+                                          {item.replace('_', ' ')}
+                                        </span>
+                                      </label>
+                                    </FormControl>
+                                  </FormItem>
+                                )
+                              }}
+                            />
+                          ))}
                         </div>
                         <FormMessage />
                       </FormItem>
@@ -364,48 +361,51 @@ export default function OnboardingPage() {
                   />
                 </div>
               )}
-
-              <div className="flex justify-between pt-4 flex-shrink-0">
-                <Button
-                  type="button"
-                  variant="outline"
-                  onClick={prevStep}
-                  disabled={currentStep === 0}
-                  className="flex items-center space-x-2 glass-effect border-border/50 hover:bg-card/60 text-foreground"
-                >
-                  <ChevronLeft size={16} />
-                  <span>Back</span>
-                </Button>
-
-                {currentStep < steps.length - 1 ? (
-                  <Button
-                    type="button"
-                    onClick={nextStep}
-                    className="flex items-center space-x-2 bg-primary hover:bg-primary/90"
-                  >
-                    <span>Next</span>
-                    <ChevronRight size={16} />
-                  </Button>
-                ) : (
-                  <Button
-                    type="submit"
-                    disabled={updateProfileMutation.isPending}
-                    className="flex items-center space-x-2 bg-gradient-to-r from-primary to-secondary hover:from-primary/90 hover:to-secondary/90"
-                  >
-                    {updateProfileMutation.isPending ? (
-                      <span>Setting up...</span>
-                    ) : (
-                      <>
-                        <span>Complete Setup</span>
-                        <Sparkles size={16} />
-                      </>
-                    )}
-                  </Button>
-                )}
               </div>
             </form>
           </Form>
         </CardContent>
+        
+        <div className="p-6 pt-0 border-t border-border/50">
+          <div className="flex justify-between">
+            <Button
+              type="button"
+              variant="outline"
+              onClick={prevStep}
+              disabled={currentStep === 0}
+              className="flex items-center space-x-2 glass-effect border-border/50 hover:bg-card/60 text-foreground"
+            >
+              <ChevronLeft size={16} />
+              <span>Back</span>
+            </Button>
+
+            {currentStep < steps.length - 1 ? (
+              <Button
+                type="button"
+                onClick={nextStep}
+                className="flex items-center space-x-2 bg-primary hover:bg-primary/90"
+              >
+                <span>Next</span>
+                <ChevronRight size={16} />
+              </Button>
+            ) : (
+              <Button
+                onClick={() => form.handleSubmit(onSubmit)()}
+                disabled={updateProfileMutation.isPending}
+                className="flex items-center space-x-2 bg-gradient-to-r from-primary to-secondary hover:from-primary/90 hover:to-secondary/90"
+              >
+                {updateProfileMutation.isPending ? (
+                  <span>Setting up...</span>
+                ) : (
+                  <>
+                    <span>Complete Setup</span>
+                    <Sparkles size={16} />
+                  </>
+                )}
+              </Button>
+            )}
+          </div>
+        </div>
       </Card>
     </div>
   );
