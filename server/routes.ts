@@ -13,7 +13,7 @@ import {
   generateChatResponse, 
   analyzeWorkoutProgress,
   type WorkoutPlanRequest 
-} from "./openai";
+} from "./openai-improved";
 
 export async function registerRoutes(app: Express): Promise<Server> {
   // Auth/User routes
