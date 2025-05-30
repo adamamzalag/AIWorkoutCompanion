@@ -193,51 +193,50 @@ export default function AIChatPage() {
         <div ref={messagesEndRef} />
       </div>
 
+      {/* Quick Suggestions - Show in main content area when no messages */}
+      {(!messages || messages.length === 0) && (
+        <div className="px-4 pb-6">
+          <div className="text-center mb-4">
+            <p className="text-muted-foreground text-sm">Try asking about:</p>
+          </div>
+          <div className="grid grid-cols-1 gap-3 max-w-sm mx-auto">
+            {quickSuggestions.map((suggestion, index) => (
+              <Button
+                key={index}
+                variant="outline"
+                className="glass-effect border-border/30 text-left justify-start h-auto py-3 px-4 hover:bg-primary/10 hover:border-primary/30"
+                onClick={() => setMessage(suggestion)}
+              >
+                <span className="text-sm text-foreground">{suggestion}</span>
+              </Button>
+            ))}
+          </div>
+        </div>
+      )}
+
       {/* Chat Input - Fixed at bottom */}
       <div className="fixed bottom-20 left-1/2 transform -translate-x-1/2 w-full max-w-sm px-4 z-40">
-        <div className="bg-background/80 backdrop-blur-xl rounded-t-3xl p-4 border-t border-border/20">
-          {/* Quick Suggestions - Only show when no messages */}
-          {(!messages || messages.length === 0) && (
-            <div className="mb-4">
-              <div className="flex flex-wrap gap-2 justify-center">
-                {quickSuggestions.map((suggestion, index) => (
-                  <Button
-                    key={index}
-                    variant="outline"
-                    size="sm"
-                    className="glass-effect border-border/30 text-xs hover:bg-primary/10 hover:border-primary/30"
-                    onClick={() => setMessage(suggestion)}
-                  >
-                    {suggestion}
-                  </Button>
-                ))}
-              </div>
-            </div>
-          )}
-          
-          {/* Input Form */}
-          <form onSubmit={handleSendMessage} className="glass-effect rounded-2xl p-3 flex items-center space-x-3 bg-card/60">
-            <Input
-              value={message}
-              onChange={(e) => setMessage(e.target.value)}
-              placeholder="Ask your AI coach anything..."
-              className="flex-1 bg-transparent border-none text-foreground placeholder-muted-foreground focus-visible:ring-0 focus-visible:ring-offset-0 text-base"
-              disabled={sendMessageMutation.isPending}
-            />
-            <Button
-              type="submit"
-              size="sm"
-              className="w-10 h-10 bg-primary hover:bg-primary/90 rounded-full p-0 touch-target flex items-center justify-center"
-              disabled={!message.trim() || sendMessageMutation.isPending}
-            >
-              {sendMessageMutation.isPending ? (
-                <div className="w-4 h-4 border-2 border-white/30 border-t-white rounded-full animate-spin"></div>
-              ) : (
-                <Send size={16} />
-              )}
-            </Button>
-          </form>
-        </div>
+        <form onSubmit={handleSendMessage} className="glass-effect rounded-2xl p-3 flex items-center space-x-3 bg-card/80 backdrop-blur-xl border border-border/20">
+          <Input
+            value={message}
+            onChange={(e) => setMessage(e.target.value)}
+            placeholder="Ask your AI coach anything..."
+            className="flex-1 bg-transparent border-none text-foreground placeholder-muted-foreground focus-visible:ring-0 focus-visible:ring-offset-0 text-base"
+            disabled={sendMessageMutation.isPending}
+          />
+          <Button
+            type="submit"
+            size="sm"
+            className="w-10 h-10 bg-primary hover:bg-primary/90 rounded-full p-0 touch-target flex items-center justify-center"
+            disabled={!message.trim() || sendMessageMutation.isPending}
+          >
+            {sendMessageMutation.isPending ? (
+              <div className="w-4 h-4 border-2 border-white/30 border-t-white rounded-full animate-spin"></div>
+            ) : (
+              <Send size={16} />
+            )}
+          </Button>
+        </form>
       </div>
     </div>
   );
