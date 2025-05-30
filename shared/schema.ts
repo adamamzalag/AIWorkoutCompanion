@@ -6,9 +6,11 @@ export const users = pgTable("users", {
   id: serial("id").primaryKey(),
   username: text("username").notNull().unique(),
   name: text("name").notNull(),
-  fitnessLevel: text("fitness_level").notNull(), // beginner, intermediate, advanced
+  fitnessLevel: text("fitness_level"), // beginner, intermediate, advanced
   equipment: text("equipment").array().notNull().default([]), // available equipment
   goals: text("goals").array().notNull().default([]), // fitness goals
+  notes: text("notes"), // additional notes for workout generation
+  onboardingCompleted: boolean("onboarding_completed").notNull().default(false),
   createdAt: timestamp("created_at").notNull().defaultNow(),
 });
 

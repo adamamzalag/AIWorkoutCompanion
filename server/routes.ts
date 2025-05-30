@@ -40,6 +40,32 @@ export async function registerRoutes(app: Express): Promise<Server> {
     }
   });
 
+  // Profile routes for current user (assuming user ID 1 for now)
+  app.get("/api/profile", async (req, res) => {
+    try {
+      const user = await storage.getUser(1); // Default user
+      if (!user) {
+        return res.status(404).json({ error: "User not found" });
+      }
+      res.json(user);
+    } catch (error) {
+      res.status(500).json({ error: "Failed to get profile" });
+    }
+  });
+
+  app.put("/api/profile", async (req, res) => {
+    try {
+      const updates = insertUserSchema.partial().parse(req.body);
+      const user = await storage.updateUser(1, updates); // Default user
+      if (!user) {
+        return res.status(404).json({ error: "User not found" });
+      }
+      res.json(user);
+    } catch (error) {
+      res.status(400).json({ error: "Invalid profile data" });
+    }
+  });
+
   app.put("/api/user/:id", async (req, res) => {
     try {
       const userId = parseInt(req.params.id);

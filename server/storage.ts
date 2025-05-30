@@ -85,8 +85,9 @@ export class MemStorage implements IStorage {
     this.currentChatMessageId = 1;
     this.currentUserProgressId = 1;
 
-    // Initialize with sample exercises
+    // Initialize with sample exercises and default user
     this.initializeExercises();
+    this.initializeDefaultUser();
   }
 
   private initializeExercises() {
