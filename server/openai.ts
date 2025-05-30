@@ -57,34 +57,40 @@ Create a progressive plan that includes:
 5. Progressive overload throughout the weeks
 6. Variety in muscle groups and exercise types
 
-Return the response as a JSON object with this structure:
+Return the response as a JSON object with this exact structure:
 {
   "title": "Plan name",
-  "description": "Plan overview",
+  "description": "Plan overview", 
   "duration": ${request.duration},
   "totalWorkouts": ${request.workoutsPerWeek * request.duration},
-  "difficulty": "beginner/intermediate/advanced",
-  "equipment": ["equipment", "used"],
+  "difficulty": "${request.fitnessLevel}",
+  "equipment": ${JSON.stringify(request.equipment)},
   "workouts": [
     {
-      "title": "Workout name",
-      "description": "Workout focus",
+      "title": "Workout name (e.g., 'Upper Body Strength')",
+      "description": "Workout focus and goals",
       "estimatedDuration": ${request.timePerWorkout},
       "exercises": [
         {
-          "name": "Exercise name",
+          "name": "Standard exercise name (e.g., 'Push-ups', 'Squats')",
           "sets": 3,
-          "reps": "8-12",
-          "weight": "bodyweight or weight suggestion",
+          "reps": "8-12 or time-based like '30 seconds'",
+          "weight": null for bodyweight or "15 lbs" for weighted,
           "restTime": "60 seconds",
-          "instructions": ["step 1", "step 2"],
-          "muscleGroups": ["chest", "shoulders"],
-          "equipment": ["dumbbells"]
+          "instructions": ["Clear step 1", "Clear step 2", "Clear step 3"],
+          "muscleGroups": ["primary", "secondary"],
+          "equipment": ["none"] or ["dumbbells"]
         }
       ]
     }
   ]
-}`;
+}
+
+IMPORTANT: 
+- Use exactly ${request.workoutsPerWeek * request.duration} workouts total
+- Match difficulty to user's fitness level: "${request.fitnessLevel}"
+- Only use equipment from this list: ${JSON.stringify(request.equipment)}
+- Ensure progressive difficulty across workouts`;
 
   try {
     const response = await openai.chat.completions.create({
@@ -92,7 +98,18 @@ Return the response as a JSON object with this structure:
       messages: [
         {
           role: "system",
-          content: "You are an expert fitness trainer and workout program designer. Create detailed, safe, and effective workout plans based on the user's specifications."
+          content: `You are an expert fitness trainer and workout program designer. Create detailed, safe, and effective workout plans based on the user's specifications.
+
+CRITICAL: Follow this exact JSON structure for exercises:
+- Each exercise must have: name, sets (number), reps (string like "8-12" or "30 seconds"), weight (string or null), restTime (string like "60 seconds"), instructions (array of strings), muscleGroups (array), equipment (array)
+- Use standard exercise names (Push-ups, Squats, Plank, etc.)
+- For bodyweight exercises, set weight to null
+- Rest times should be realistic (30-120 seconds)
+- Instructions should be 3-5 clear, actionable steps
+- Muscle groups: use lowercase (chest, shoulders, triceps, quadriceps, glutes, etc.)
+- Equipment: use lowercase, match available options (none, dumbbells, barbell, etc.)
+
+Ensure exercises progress logically throughout the plan with appropriate volume and intensity increases.`
         },
         {
           role: "user",
