@@ -14,12 +14,10 @@ const progressMap = new Map<string, ProgressUpdate>();
 export function updateProgress(
   userId: number,
   operationId: string,
-  currentStepIndex: number,
-  totalSteps: number,
+  progress: number,
   status: string,
   currentStep: string
 ) {
-  const progress = Math.round((currentStepIndex / totalSteps) * 100);
   
   progressMap.set(operationId, {
     userId,
@@ -27,8 +25,8 @@ export function updateProgress(
     progress,
     status,
     currentStep,
-    totalSteps,
-    currentStepIndex
+    totalSteps: 100,
+    currentStepIndex: progress
   });
 
   console.log(`📊 Progress Update [${operationId}]: ${progress}% - ${currentStep}`);

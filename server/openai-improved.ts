@@ -154,12 +154,10 @@ export async function generateWorkoutPlan(request: WorkoutPlanRequest): Promise<
   // Generate framework
   const framework = await generateWorkoutFramework(request);
   
-  // Create lightweight summary for all weeks
+  // Create lightweight summary for efficient parallel generation
   const planSummary = `${framework.title}: ${request.duration} weeks, ${request.workoutsPerWeek}x/week, ${request.timePerWorkout}min. Goals: ${request.goals.join(', ')}. Equipment: ${request.equipment.join(', ')}.`;
   
-  console.log(`📦 Generating all ${request.duration} weeks simultaneously...`);
-  
-  // Generate all weeks in parallel with lightweight context
+  // Generate all weeks simultaneously - no sequential dependencies
   const weekPromises = Array.from({ length: request.duration }, (_, i) => 
     generateWeeklyWorkouts(request, framework, i + 1, planSummary)
   );
@@ -167,7 +165,9 @@ export async function generateWorkoutPlan(request: WorkoutPlanRequest): Promise<
   const weeklyResults = await Promise.all(weekPromises);
   const allWorkouts = weeklyResults.flat();
 
-  const plan: GeneratedWorkoutPlan = {
+  console.log(`✅ Generated ${allWorkouts.length} workouts across ${request.duration} weeks`);
+
+  return {
     title: framework.title,
     description: framework.description,
     duration: request.duration,
@@ -176,9 +176,6 @@ export async function generateWorkoutPlan(request: WorkoutPlanRequest): Promise<
     equipment: request.equipment,
     workouts: allWorkouts
   };
-
-  console.log(`✅ Complete: ${plan.totalWorkouts} workouts generated`);
-  return plan;
 }
 
 // Keep other functions for compatibility

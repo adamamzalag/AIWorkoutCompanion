@@ -255,13 +255,7 @@ export async function registerRoutes(app: Express): Promise<Server> {
     try {
       const { updateProgress } = await import("./progress-tracker.js");
       
-      console.log("🚀 Starting workout plan generation:", {
-        userId: req.body.userId,
-        fitnessLevel: req.body.fitnessLevel,
-        equipment: req.body.equipment,
-        goals: req.body.goals,
-        operationId
-      });
+      console.log(`🎯 Generating ${req.body.duration}-week plan for user ${req.body.userId}`);
 
       // Return operation ID immediately for progress tracking
       res.json({ operationId, status: 'started' });
