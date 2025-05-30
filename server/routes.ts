@@ -261,16 +261,70 @@ export async function registerRoutes(app: Express): Promise<Server> {
         isActive: true
       });
 
-      // Save individual workouts
+      // Process and save individual workouts with normalized exercises
       for (let i = 0; i < generatedPlan.workouts.length; i++) {
         const workout = generatedPlan.workouts[i];
+        
+        // Process each exercise to normalize and create exercise records
+        const processedExercises = [];
+        for (const aiExercise of workout.exercises) {
+          // Get existing exercises for similarity matching
+          const existingExercises = await storage.getExercises();
+          
+          // Map database fields to expected format
+          const mappedExercises = existingExercises.map(ex => ({
+            id: ex.id,
+            name: ex.name,
+            muscleGroups: ex.muscle_groups,
+            equipment: ex.equipment
+          }));
+          
+          // Check if this exercise already exists (with AI normalization)
+          const { findSimilarExercise } = await import("./openai.js");
+          const similarExercise = await findSimilarExercise(aiExercise.name, mappedExercises);
+          
+          let exerciseId: number;
+          let exerciseName: string;
+          
+          if (similarExercise) {
+            // Use existing exercise
+            exerciseId = similarExercise.id;
+            exerciseName = similarExercise.name;
+          } else {
+            // Create new exercise record
+            const newExercise = await storage.createExercise({
+              name: aiExercise.name,
+              muscle_groups: aiExercise.muscleGroups,
+              equipment: aiExercise.equipment,
+              instructions: aiExercise.instructions,
+              youtubeId: null, // Will be populated later when user requests tutorial
+              difficulty: "intermediate" // Default difficulty, could be enhanced with AI analysis
+            });
+            exerciseId = newExercise.id;
+            exerciseName = newExercise.name;
+          }
+          
+          // Store processed exercise with reference to actual exercise record
+          processedExercises.push({
+            exerciseId,
+            name: exerciseName,
+            sets: aiExercise.sets,
+            reps: aiExercise.reps,
+            weight: aiExercise.weight,
+            restTime: aiExercise.restTime,
+            instructions: aiExercise.instructions,
+            muscleGroups: aiExercise.muscleGroups,
+            equipment: aiExercise.equipment
+          });
+        }
+        
         await storage.createWorkout({
           planId: workoutPlan.id,
           userId: req.body.userId,
           title: workout.title,
           description: workout.description,
           estimatedDuration: workout.estimatedDuration,
-          exercises: workout.exercises,
+          exercises: processedExercises,
           orderIndex: i
         });
       }

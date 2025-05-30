@@ -9,7 +9,7 @@ export interface WorkoutPlanRequest {
 }
 
 export interface ExerciseLog {
-  exerciseId?: number;
+  exerciseId: number; // Now required since all exercises are normalized
   name: string;
   sets: Array<{
     reps: number;

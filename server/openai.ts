@@ -200,6 +200,58 @@ Respond as a knowledgeable, supportive AI fitness coach. Provide helpful advice,
   }
 }
 
+export async function findSimilarExercise(
+  exerciseName: string,
+  existingExercises: Array<{ id: number; name: string; muscleGroups: string[]; equipment: string[] }>
+): Promise<{ id: number; name: string } | null> {
+  if (existingExercises.length === 0) {
+    return null;
+  }
+
+  const prompt = `You are an exercise database expert. Determine if "${exerciseName}" is the same exercise as any in this list:
+
+${existingExercises.map((ex, i) => `${i + 1}. "${ex.name}" (targets: ${ex.muscleGroups.join(', ')}, equipment: ${ex.equipment.join(', ')})`).join('\n')}
+
+Consider these factors:
+- Same primary muscle groups
+- Same movement pattern
+- Equipment variations are acceptable (barbell vs dumbbell bench press = same exercise)
+- Form variations are acceptable (regular vs wide grip = same exercise)
+- Different exercises targeting same muscles are NOT the same (bench press vs push-ups = different)
+
+If "${exerciseName}" matches an existing exercise, respond with: {"match": true, "exerciseId": [ID], "canonicalName": "[existing name]"}
+If no match, respond with: {"match": false}`;
+
+  try {
+    const response = await openai.chat.completions.create({
+      model: "gpt-4.1", // the newest OpenAI model is "gpt-4o" which was released May 13, 2024. do not change this unless explicitly requested by the user
+      messages: [
+        {
+          role: "system",
+          content: "You are an exercise matching expert. Compare exercises based on movement patterns and muscle targeting, not just names."
+        },
+        {
+          role: "user",
+          content: prompt
+        }
+      ],
+      response_format: { type: "json_object" },
+    });
+
+    const result = JSON.parse(response.choices[0].message.content || "{}");
+    
+    if (result.match && result.exerciseId) {
+      const matchedExercise = existingExercises.find(ex => ex.id === result.exerciseId);
+      return matchedExercise ? { id: matchedExercise.id, name: matchedExercise.name } : null;
+    }
+    
+    return null;
+  } catch (error) {
+    console.error("Error finding similar exercise:", error);
+    return null;
+  }
+}
+
 export async function analyzeWorkoutProgress(
   workoutSessions: any[],
   userGoals: string[]
