@@ -15,12 +15,17 @@ export function GenerationProgress({ operationId, onComplete }: GenerationProgre
   const [error, setError] = useState<string | null>(null);
 
   useEffect(() => {
-    let interval: NodeJS.Timeout;
+    let interval: NodeJS.Timeout | null = null;
+    let isActive = true;
     
     const checkProgress = async () => {
+      if (!isActive) return;
+      
       try {
         const response = await fetch(`/api/generation-progress/${operationId}`);
         const data = await response.json();
+        
+        if (!isActive) return; // Component unmounted during fetch
         
         if (data.progress !== undefined) {
           setProgress(data.progress);
@@ -28,26 +33,34 @@ export function GenerationProgress({ operationId, onComplete }: GenerationProgre
           setStatus(data.status);
           
           if (data.status === 'completed') {
-            clearInterval(interval);
+            if (interval) clearInterval(interval);
+            isActive = false;
             onComplete(true, data.result);
-          } else if (data.status === 'failed') {
-            clearInterval(interval);
+            return;
+          } else if (data.status === 'failed' || data.status === 'error') {
+            if (interval) clearInterval(interval);
+            isActive = false;
             setError(data.error || 'Generation failed');
             onComplete(false);
+            return;
           }
         }
       } catch (err) {
+        if (!isActive) return;
         console.error('Progress check failed:', err);
+        if (interval) clearInterval(interval);
+        isActive = false;
         setError('Failed to check progress');
         onComplete(false);
       }
     };
 
-    // Check immediately and then every 1 second
+    // Check immediately and then every 2 seconds (reduced frequency)
     checkProgress();
-    interval = setInterval(checkProgress, 1000);
+    interval = setInterval(checkProgress, 2000);
 
     return () => {
+      isActive = false;
       if (interval) clearInterval(interval);
     };
   }, [operationId, onComplete]);
