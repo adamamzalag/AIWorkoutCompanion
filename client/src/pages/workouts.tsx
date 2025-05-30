@@ -176,7 +176,7 @@ export default function WorkoutsPage() {
               Generate
             </Button>
           </DialogTrigger>
-          <DialogContent className="glass-effect border-border/50 max-w-sm mx-auto">
+          <DialogContent className="glass-effect border-border/50 max-w-md mx-auto max-h-[90vh] overflow-y-auto">
             <DialogHeader>
               <DialogTitle className="font-poppins text-foreground">Generate AI Workout Plan</DialogTitle>
             </DialogHeader>
@@ -280,7 +280,7 @@ export default function WorkoutsPage() {
                   render={() => (
                     <FormItem>
                       <FormLabel className="text-foreground">Available Equipment</FormLabel>
-                      <div className="grid grid-cols-2 gap-2 max-h-32 overflow-y-auto">
+                      <div className="space-y-2">
                         {equipmentOptions.map((item) => (
                           <FormField
                             key={item}
@@ -288,22 +288,24 @@ export default function WorkoutsPage() {
                             name="equipment"
                             render={({ field }) => {
                               return (
-                                <FormItem className="flex flex-row items-start space-x-2 space-y-0">
+                                <FormItem>
                                   <FormControl>
-                                    <Checkbox
-                                      checked={field.value?.includes(item)}
-                                      onCheckedChange={(checked) => {
-                                        return checked
-                                          ? field.onChange([...field.value, item])
-                                          : field.onChange(
-                                              field.value?.filter((value) => value !== item)
-                                            )
-                                      }}
-                                    />
+                                    <label className="flex items-center space-x-3 glass-effect rounded-lg p-3 cursor-pointer hover:bg-card/60 transition-colors touch-target">
+                                      <Checkbox
+                                        checked={field.value?.includes(item)}
+                                        onCheckedChange={(checked) => {
+                                          return checked
+                                            ? field.onChange([...field.value, item])
+                                            : field.onChange(
+                                                field.value?.filter((value) => value !== item)
+                                              )
+                                        }}
+                                      />
+                                      <span className="text-sm text-foreground font-medium capitalize flex-1">
+                                        {item.replace('_', ' ')}
+                                      </span>
+                                    </label>
                                   </FormControl>
-                                  <FormLabel className="text-xs text-foreground font-normal capitalize">
-                                    {item.replace('_', ' ')}
-                                  </FormLabel>
                                 </FormItem>
                               )
                             }}
@@ -322,7 +324,7 @@ export default function WorkoutsPage() {
                   render={() => (
                     <FormItem>
                       <FormLabel className="text-foreground">Fitness Goals</FormLabel>
-                      <div className="grid grid-cols-2 gap-2 max-h-32 overflow-y-auto">
+                      <div className="space-y-2">
                         {goalOptions.map((item) => (
                           <FormField
                             key={item}
@@ -330,22 +332,24 @@ export default function WorkoutsPage() {
                             name="goals"
                             render={({ field }) => {
                               return (
-                                <FormItem className="flex flex-row items-start space-x-2 space-y-0">
+                                <FormItem>
                                   <FormControl>
-                                    <Checkbox
-                                      checked={field.value?.includes(item)}
-                                      onCheckedChange={(checked) => {
-                                        return checked
-                                          ? field.onChange([...field.value, item])
-                                          : field.onChange(
-                                              field.value?.filter((value) => value !== item)
-                                            )
-                                      }}
-                                    />
+                                    <label className="flex items-center space-x-3 glass-effect rounded-lg p-3 cursor-pointer hover:bg-card/60 transition-colors touch-target">
+                                      <Checkbox
+                                        checked={field.value?.includes(item)}
+                                        onCheckedChange={(checked) => {
+                                          return checked
+                                            ? field.onChange([...field.value, item])
+                                            : field.onChange(
+                                                field.value?.filter((value) => value !== item)
+                                              )
+                                        }}
+                                      />
+                                      <span className="text-sm text-foreground font-medium capitalize flex-1">
+                                        {item.replace('_', ' ')}
+                                      </span>
+                                    </label>
                                   </FormControl>
-                                  <FormLabel className="text-xs text-foreground font-normal capitalize">
-                                    {item.replace('_', ' ')}
-                                  </FormLabel>
                                 </FormItem>
                               )
                             }}
