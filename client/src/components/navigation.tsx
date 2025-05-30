@@ -68,8 +68,8 @@ export function TopNavigation() {
           <span className="font-poppins font-semibold text-lg text-foreground">AI Fitness</span>
         </div>
         <Link href="/profile">
-          <button className="w-10 h-10 glass-effect rounded-full flex items-center justify-center touch-target">
-            <div className="w-6 h-6 bg-gradient-to-r from-accent to-primary rounded-full"></div>
+          <button className="w-10 h-10 glass-effect rounded-full flex items-center justify-center touch-target hover:bg-card/60 transition-colors">
+            <Settings className="w-5 h-5 text-foreground" />
           </button>
         </Link>
       </div>

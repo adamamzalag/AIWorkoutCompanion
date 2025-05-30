@@ -28,7 +28,7 @@ import {
   Filter,
   Search
 } from 'lucide-react';
-import type { WorkoutPlan, Workout } from '@shared/schema';
+import type { WorkoutPlan, Workout, User } from '@shared/schema';
 import type { WorkoutPlanRequest } from '@/lib/types';
 import { WorkoutCard } from '@/components/workout-card';
 import { GenerationProgress } from '@/components/generation-progress';

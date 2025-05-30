@@ -286,8 +286,20 @@ export async function registerRoutes(app: Express): Promise<Server> {
       // Return operation ID immediately for progress tracking
       res.json({ operationId, status: 'started' });
 
-      // Continue processing in background
-      const planRequest: WorkoutPlanRequest = req.body;
+      // Get user profile data to combine with form inputs
+      const user = await storage.getUser(req.body.userId);
+      if (!user || !user.fitnessLevel || !user.equipment || !user.goals) {
+        updateProgress(req.body.userId, operationId, 0, 6, 'failed', 'User profile incomplete - please complete onboarding');
+        return;
+      }
+
+      // Combine user profile data with form inputs
+      const planRequest: WorkoutPlanRequest = {
+        ...req.body,
+        fitnessLevel: user.fitnessLevel,
+        equipment: user.equipment,
+        goals: user.goals,
+      };
       
       updateProgress(req.body.userId, operationId, 1, 6, 'generating', 'Analyzing requirements...');
       
