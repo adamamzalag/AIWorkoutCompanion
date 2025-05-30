@@ -74,22 +74,19 @@ export default function AIChatPage() {
   ];
 
   return (
-    <div className="flex flex-col h-screen bg-background pb-24 pt-20">
-      {/* Chat Header */}
-      <div className="glass-effect px-4 py-3 flex items-center justify-between sticky top-16 z-40">
-        <div className="flex items-center space-x-3">
-          <div className="w-10 h-10 bg-gradient-to-r from-accent to-primary rounded-full flex items-center justify-center">
-            <MessageCircle className="text-white" size={20} />
-          </div>
-          <div>
-            <div className="font-medium text-foreground">AI Coach</div>
-            <div className="text-xs text-accent">Online</div>
+    <div className="flex flex-col h-screen bg-background">
+      {/* Minimal chat indicator - only when there are messages */}
+      {messages && messages.length > 0 && (
+        <div className="flex items-center justify-center py-2 px-4 border-b border-border/20">
+          <div className="flex items-center space-x-2">
+            <div className="w-2 h-2 bg-accent rounded-full animate-pulse"></div>
+            <span className="text-xs text-muted-foreground">AI Coach is online</span>
           </div>
         </div>
-      </div>
+      )}
 
       {/* Chat Messages */}
-      <div className="flex-1 px-4 py-4 overflow-y-auto space-y-4">
+      <div className="flex-1 px-4 py-6 pb-32 overflow-y-auto space-y-6">
         {isLoading ? (
           <div className="space-y-4">
             {Array.from({ length: 3 }).map((_, i) => (
@@ -104,95 +101,86 @@ export default function AIChatPage() {
           </div>
         ) : messages && messages.length > 0 ? (
           messages.map((msg) => (
-            <div key={msg.id} className={`flex items-start space-x-3 ${
-              msg.role === 'user' ? 'justify-end' : ''
+            <div key={msg.id} className={`flex items-start ${
+              msg.role === 'user' ? 'justify-end' : 'justify-start'
             }`}>
               {msg.role === 'assistant' && (
-                <div className="w-8 h-8 bg-gradient-to-r from-accent to-primary rounded-full flex items-center justify-center flex-shrink-0">
-                  <MessageCircle className="text-white" size={14} />
+                <div className="w-10 h-10 bg-gradient-to-r from-accent to-primary rounded-full flex items-center justify-center flex-shrink-0 mr-3">
+                  <MessageCircle className="text-white" size={16} />
                 </div>
               )}
               
-              <div className={`max-w-xs ${
+              <div className={`max-w-[280px] ${
                 msg.role === 'user' 
-                  ? 'chat-bubble-user' 
-                  : 'chat-bubble-ai'
+                  ? 'bg-primary text-primary-foreground rounded-2xl rounded-tr-lg px-4 py-3' 
+                  : 'glass-effect rounded-2xl rounded-tl-lg px-4 py-3'
               }`}>
-                <p className="text-sm whitespace-pre-wrap">{msg.content}</p>
-                <div className={`text-xs mt-2 ${
-                  msg.role === 'user' ? 'text-primary-foreground/70' : 'text-muted-foreground'
+                <p className="text-sm leading-relaxed whitespace-pre-wrap">{msg.content}</p>
+                <div className={`text-xs mt-2 opacity-70 ${
+                  msg.role === 'user' ? 'text-primary-foreground' : 'text-muted-foreground'
                 }`}>
                   {formatTime(msg.timestamp)}
                 </div>
               </div>
+              
+              {msg.role === 'user' && (
+                <div className="w-10 h-10 bg-gradient-to-r from-primary to-secondary rounded-full flex items-center justify-center flex-shrink-0 ml-3">
+                  <div className="w-5 h-5 bg-white/20 rounded-full"></div>
+                </div>
+              )}
             </div>
           ))
         ) : (
-          <div className="text-center py-8">
-            <div className="w-16 h-16 bg-gradient-to-r from-accent to-primary rounded-full flex items-center justify-center mx-auto mb-4">
-              <MessageCircle className="text-white" size={24} />
+          <div className="flex flex-col items-center justify-center h-full px-6">
+            {/* Welcome Message */}
+            <div className="text-center mb-8">
+              <div className="w-20 h-20 bg-gradient-to-r from-accent to-primary rounded-full flex items-center justify-center mx-auto mb-6">
+                <MessageCircle className="text-white" size={32} />
+              </div>
+              <h2 className="font-poppins font-bold text-2xl text-foreground mb-3">
+                Your AI Fitness Coach
+              </h2>
+              <p className="text-muted-foreground text-lg leading-relaxed">
+                Ready to help you reach your fitness goals with personalized advice and motivation
+              </p>
             </div>
-            <h3 className="font-poppins font-semibold text-lg text-foreground mb-2">
-              Chat with AI Coach
-            </h3>
-            <p className="text-muted-foreground mb-6">
-              Get personalized fitness advice, motivation, and answers to your questions.
-            </p>
-            
-            {/* Quick Action Cards */}
-            <div className="space-y-3 max-w-sm mx-auto">
-              <Card className="glass-effect">
-                <CardContent className="p-4">
-                  <div className="flex items-center space-x-3">
-                    <div className="w-10 h-10 bg-gradient-to-r from-primary to-secondary rounded-xl flex items-center justify-center">
-                      <TrendingUp className="text-white" size={16} />
+
+            {/* Quick Start Options */}
+            <div className="w-full space-y-4 max-w-sm">
+              {[
+                { icon: TrendingUp, title: "Analyze My Progress", subtitle: "See how you're improving", message: "Can you analyze my workout progress and give me insights?" },
+                { icon: Dumbbell, title: "Form & Technique", subtitle: "Get exercise tips", message: "I need help with my exercise form and technique" },
+                { icon: Target, title: "Set New Goals", subtitle: "Plan your next milestone", message: "Help me set realistic fitness goals for this month" }
+              ].map((option, index) => (
+                <Card key={index} className="glass-effect hover:bg-card/60 transition-colors cursor-pointer" onClick={() => setMessage(option.message)}>
+                  <CardContent className="p-4">
+                    <div className="flex items-center space-x-4">
+                      <div className={`w-12 h-12 bg-gradient-to-r ${
+                        index === 0 ? 'from-primary to-secondary' : 
+                        index === 1 ? 'from-secondary to-accent' : 
+                        'from-accent to-primary'
+                      } rounded-xl flex items-center justify-center`}>
+                        <option.icon className="text-white" size={18} />
+                      </div>
+                      <div className="flex-1 text-left">
+                        <div className="font-medium text-foreground">{option.title}</div>
+                        <div className="text-sm text-muted-foreground">{option.subtitle}</div>
+                      </div>
                     </div>
-                    <div className="flex-1 text-left">
-                      <div className="font-medium text-foreground">Progress Analysis</div>
-                      <div className="text-sm text-muted-foreground">View your fitness improvements</div>
-                    </div>
-                  </div>
-                </CardContent>
-              </Card>
-              
-              <Card className="glass-effect">
-                <CardContent className="p-4">
-                  <div className="flex items-center space-x-3">
-                    <div className="w-10 h-10 bg-gradient-to-r from-secondary to-accent rounded-xl flex items-center justify-center">
-                      <Dumbbell className="text-white" size={16} />
-                    </div>
-                    <div className="flex-1 text-left">
-                      <div className="font-medium text-foreground">Form Check</div>
-                      <div className="text-sm text-muted-foreground">Get exercise technique tips</div>
-                    </div>
-                  </div>
-                </CardContent>
-              </Card>
-              
-              <Card className="glass-effect">
-                <CardContent className="p-4">
-                  <div className="flex items-center space-x-3">
-                    <div className="w-10 h-10 bg-gradient-to-r from-accent to-primary rounded-xl flex items-center justify-center">
-                      <Target className="text-white" size={16} />
-                    </div>
-                    <div className="flex-1 text-left">
-                      <div className="font-medium text-foreground">Goal Setting</div>
-                      <div className="text-sm text-muted-foreground">Set and track fitness goals</div>
-                    </div>
-                  </div>
-                </CardContent>
-              </Card>
+                  </CardContent>
+                </Card>
+              ))}
             </div>
           </div>
         )}
 
         {/* Typing Indicator */}
         {isTyping && (
-          <div className="flex items-start space-x-3">
-            <div className="w-8 h-8 bg-gradient-to-r from-accent to-primary rounded-full flex items-center justify-center flex-shrink-0">
-              <MessageCircle className="text-white" size={14} />
+          <div className="flex items-start justify-start">
+            <div className="w-10 h-10 bg-gradient-to-r from-accent to-primary rounded-full flex items-center justify-center flex-shrink-0 mr-3">
+              <MessageCircle className="text-white" size={16} />
             </div>
-            <div className="chat-bubble-ai">
+            <div className="glass-effect rounded-2xl rounded-tl-lg px-4 py-3 max-w-[280px]">
               <div className="flex space-x-1">
                 <div className="w-2 h-2 bg-muted-foreground rounded-full animate-bounce"></div>
                 <div className="w-2 h-2 bg-muted-foreground rounded-full animate-bounce" style={{ animationDelay: '0.1s' }}></div>
@@ -205,44 +193,51 @@ export default function AIChatPage() {
         <div ref={messagesEndRef} />
       </div>
 
-      {/* Quick Suggestions */}
-      {(!messages || messages.length === 0) && (
-        <div className="px-4 pb-2">
-          <div className="flex flex-wrap gap-2">
-            {quickSuggestions.map((suggestion, index) => (
-              <Button
-                key={index}
-                variant="outline"
-                size="sm"
-                className="glass-effect border-border/50 text-xs"
-                onClick={() => setMessage(suggestion)}
-              >
-                {suggestion}
-              </Button>
-            ))}
-          </div>
+      {/* Chat Input - Fixed at bottom */}
+      <div className="fixed bottom-20 left-1/2 transform -translate-x-1/2 w-full max-w-sm px-4 z-40">
+        <div className="bg-background/80 backdrop-blur-xl rounded-t-3xl p-4 border-t border-border/20">
+          {/* Quick Suggestions - Only show when no messages */}
+          {(!messages || messages.length === 0) && (
+            <div className="mb-4">
+              <div className="flex flex-wrap gap-2 justify-center">
+                {quickSuggestions.map((suggestion, index) => (
+                  <Button
+                    key={index}
+                    variant="outline"
+                    size="sm"
+                    className="glass-effect border-border/30 text-xs hover:bg-primary/10 hover:border-primary/30"
+                    onClick={() => setMessage(suggestion)}
+                  >
+                    {suggestion}
+                  </Button>
+                ))}
+              </div>
+            </div>
+          )}
+          
+          {/* Input Form */}
+          <form onSubmit={handleSendMessage} className="glass-effect rounded-2xl p-3 flex items-center space-x-3 bg-card/60">
+            <Input
+              value={message}
+              onChange={(e) => setMessage(e.target.value)}
+              placeholder="Ask your AI coach anything..."
+              className="flex-1 bg-transparent border-none text-foreground placeholder-muted-foreground focus-visible:ring-0 focus-visible:ring-offset-0 text-base"
+              disabled={sendMessageMutation.isPending}
+            />
+            <Button
+              type="submit"
+              size="sm"
+              className="w-10 h-10 bg-primary hover:bg-primary/90 rounded-full p-0 touch-target flex items-center justify-center"
+              disabled={!message.trim() || sendMessageMutation.isPending}
+            >
+              {sendMessageMutation.isPending ? (
+                <div className="w-4 h-4 border-2 border-white/30 border-t-white rounded-full animate-spin"></div>
+              ) : (
+                <Send size={16} />
+              )}
+            </Button>
+          </form>
         </div>
-      )}
-
-      {/* Chat Input */}
-      <div className="fixed bottom-20 left-1/2 transform -translate-x-1/2 w-full max-w-sm px-4">
-        <form onSubmit={handleSendMessage} className="glass-effect rounded-2xl p-4 flex items-center space-x-3">
-          <Input
-            value={message}
-            onChange={(e) => setMessage(e.target.value)}
-            placeholder="Ask your AI coach..."
-            className="flex-1 bg-transparent border-none text-foreground placeholder-muted-foreground focus-visible:ring-0 focus-visible:ring-offset-0"
-            disabled={sendMessageMutation.isPending}
-          />
-          <Button
-            type="submit"
-            size="sm"
-            className="w-10 h-10 bg-primary hover:bg-primary/90 rounded-full p-0 touch-target"
-            disabled={!message.trim() || sendMessageMutation.isPending}
-          >
-            <Send size={16} />
-          </Button>
-        </form>
       </div>
     </div>
   );
