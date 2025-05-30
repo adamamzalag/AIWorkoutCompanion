@@ -121,12 +121,13 @@ export default function WorkoutsPage() {
     }
   };
 
+  const { data: userProfile } = useQuery<User>({
+    queryKey: ["/api/profile"],
+  });
+
   const form = useForm<z.infer<typeof generatePlanSchema>>({
     resolver: zodResolver(generatePlanSchema),
     defaultValues: {
-      fitnessLevel: 'beginner',
-      equipment: ['none'],
-      goals: ['general_fitness'],
       duration: 4,
       workoutsPerWeek: 3,
       timePerWorkout: 45
