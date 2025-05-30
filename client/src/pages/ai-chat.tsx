@@ -81,7 +81,9 @@ export default function AIChatPage() {
       )}
 
       {/* Chat Messages */}
-      <div className="flex-1 px-4 py-6 pb-32 overflow-y-auto space-y-6">
+      <div className={`flex-1 px-4 py-6 pb-32 ${
+        messages && messages.length > 0 ? 'overflow-y-auto' : 'overflow-hidden flex items-center justify-center'
+      } space-y-6`}>
         {isLoading ? (
           <div className="space-y-4">
             {Array.from({ length: 3 }).map((_, i) => (
@@ -126,21 +128,17 @@ export default function AIChatPage() {
             </div>
           ))
         ) : (
-          <div className="flex flex-col items-center justify-center h-full px-6">
+          <div className="text-center px-6">
             {/* Welcome Message */}
-            <div className="text-center mb-8">
-              <div className="w-20 h-20 bg-gradient-to-r from-accent to-primary rounded-full flex items-center justify-center mx-auto mb-6">
-                <MessageCircle className="text-white" size={32} />
-              </div>
-              <h2 className="font-poppins font-bold text-2xl text-foreground mb-3">
-                Your AI Fitness Coach
-              </h2>
-              <p className="text-muted-foreground text-lg leading-relaxed">
-                Ready to help you reach your fitness goals with personalized advice and motivation
-              </p>
+            <div className="w-20 h-20 bg-gradient-to-r from-accent to-primary rounded-full flex items-center justify-center mx-auto mb-6">
+              <MessageCircle className="text-white" size={32} />
             </div>
-
-
+            <h2 className="font-poppins font-bold text-2xl text-foreground mb-3">
+              Your AI Fitness Coach
+            </h2>
+            <p className="text-muted-foreground text-lg leading-relaxed">
+              Ready to help you reach your fitness goals with personalized advice and motivation
+            </p>
           </div>
         )}
 
