@@ -174,8 +174,8 @@ export default function OnboardingPage() {
               )}
 
               {currentStep === 1 && (
-                <div className="flex-1 flex flex-col space-y-4">
-                  <div className="text-center">
+                <div className="flex-1 flex flex-col space-y-4 min-h-0">
+                  <div className="text-center flex-shrink-0">
                     <h3 className="font-poppins font-semibold text-lg text-foreground">
                       {steps[1].title}
                     </h3>
@@ -185,11 +185,11 @@ export default function OnboardingPage() {
                     control={form.control}
                     name="equipment"
                     render={() => (
-                      <FormItem className="flex-1 flex flex-col">
-                        <FormLabel className="text-foreground">Available Equipment</FormLabel>
-                        <div className="flex-1 flex flex-col space-y-3">
-                          <div className="flex-1 overflow-y-auto">
-                            <div className="grid grid-cols-1 gap-2">
+                      <FormItem className="flex-1 flex flex-col min-h-0">
+                        <FormLabel className="text-foreground flex-shrink-0">Available Equipment</FormLabel>
+                        <div className="flex-1 flex flex-col space-y-3 min-h-0">
+                          <div className="flex-1 overflow-y-auto min-h-[200px]">
+                            <div className="grid grid-cols-1 gap-2 pr-2">
                               {equipmentOptions.map((item) => (
                                 <FormField
                                   key={item}
@@ -282,8 +282,8 @@ export default function OnboardingPage() {
               )}
 
               {currentStep === 2 && (
-                <div className="flex-1 flex flex-col space-y-4">
-                  <div className="text-center">
+                <div className="flex-1 flex flex-col space-y-4 min-h-0">
+                  <div className="text-center flex-shrink-0">
                     <h3 className="font-poppins font-semibold text-lg text-foreground">
                       {steps[2].title}
                     </h3>
@@ -293,10 +293,10 @@ export default function OnboardingPage() {
                     control={form.control}
                     name="goals"
                     render={() => (
-                      <FormItem className="flex-1 flex flex-col">
-                        <FormLabel className="text-foreground">Fitness Goals</FormLabel>
-                        <div className="flex-1 overflow-y-auto">
-                          <div className="grid grid-cols-1 gap-2">
+                      <FormItem className="flex-1 flex flex-col min-h-0">
+                        <FormLabel className="text-foreground flex-shrink-0">Fitness Goals</FormLabel>
+                        <div className="flex-1 overflow-y-auto min-h-[200px]">
+                          <div className="grid grid-cols-1 gap-2 pr-2">
                             {goalOptions.map((item) => (
                               <FormField
                                 key={item}
