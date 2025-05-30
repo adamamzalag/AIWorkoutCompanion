@@ -30,6 +30,8 @@ import {
 } from 'lucide-react';
 import type { WorkoutPlan, Workout } from '@shared/schema';
 import type { WorkoutPlanRequest } from '@/lib/types';
+import { WorkoutCard } from '@/components/workout-card';
+import { GenerationProgress } from '@/components/generation-progress';
 
 // Mock user ID
 const MOCK_USER_ID = 1;
@@ -71,18 +73,27 @@ export default function WorkoutsPage() {
     enabled: !!selectedPlan?.id
   });
 
+  const [generationState, setGenerationState] = useState<{
+    isGenerating: boolean;
+    operationId: string | null;
+  }>({ isGenerating: false, operationId: null });
+
   const generatePlanMutation = useMutation({
     mutationFn: async (data: WorkoutPlanRequest) => {
       const response = await apiRequest('POST', '/api/generate-plan', data);
       return response.json();
     },
-    onSuccess: () => {
-      queryClient.invalidateQueries({ queryKey: ['/api/workout-plans', MOCK_USER_ID] });
-      setShowGenerateDialog(false);
-      toast({
-        title: "Workout Plan Generated!",
-        description: "Your personalized AI workout plan is ready.",
-      });
+    onSuccess: (data) => {
+      if (data.operationId) {
+        setGenerationState({ isGenerating: true, operationId: data.operationId });
+      } else {
+        queryClient.invalidateQueries({ queryKey: ['/api/workout-plans', MOCK_USER_ID] });
+        setShowGenerateDialog(false);
+        toast({
+          title: "Workout Plan Generated!",
+          description: "Your personalized AI workout plan is ready.",
+        });
+      }
     },
     onError: () => {
       toast({
@@ -92,6 +103,25 @@ export default function WorkoutsPage() {
       });
     }
   });
+
+  const handleGenerationComplete = (success: boolean, data?: any) => {
+    setGenerationState({ isGenerating: false, operationId: null });
+    
+    if (success) {
+      queryClient.invalidateQueries({ queryKey: ['/api/workout-plans', MOCK_USER_ID] });
+      setShowGenerateDialog(false);
+      toast({
+        title: "Workout Plan Generated!",
+        description: "Your personalized AI workout plan is ready.",
+      });
+    } else {
+      toast({
+        title: "Generation Failed",
+        description: "The workout plan generation encountered an error. Please try again.",
+        variant: "destructive",
+      });
+    }
+  };
 
   const form = useForm<z.infer<typeof generatePlanSchema>>({
     resolver: zodResolver(generatePlanSchema),
@@ -335,6 +365,18 @@ export default function WorkoutsPage() {
                 </Button>
               </form>
             </Form>
+          </DialogContent>
+        </Dialog>
+
+        {/* Generation Progress Dialog */}
+        <Dialog open={generationState.isGenerating} onOpenChange={() => {}}>
+          <DialogContent className="glass-effect border-border/50 max-w-md">
+            {generationState.operationId && (
+              <GenerationProgress 
+                operationId={generationState.operationId}
+                onComplete={handleGenerationComplete}
+              />
+            )}
           </DialogContent>
         </Dialog>
       </div>
