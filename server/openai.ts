@@ -111,14 +111,28 @@ Respond with JSON: {
   }
 }`;
 
-  const response = await openai.chat.completions.create({
-    model: "gpt-4.1",
+  const requestPayload = {
+    model: "gpt-4o",
     messages: [
-      { role: "system", content: "You are a workout program architect. Create strategic fitness frameworks in JSON format." },
-      { role: "user", content: prompt }
+      { role: "system" as const, content: "You are a workout program architect. Create strategic fitness frameworks in JSON format." },
+      { role: "user" as const, content: prompt }
     ],
-    response_format: { type: "json_object" },
-  });
+    response_format: { type: "json_object" as const },
+  };
+
+  console.log("📤 Framework Generation Request:");
+  console.log("Model:", requestPayload.model);
+  console.log("System Message Length:", requestPayload.messages[0].content.length);
+  console.log("User Prompt Length:", requestPayload.messages[1].content.length);
+  console.log("Total Estimated Tokens:", Math.ceil((requestPayload.messages[0].content.length + requestPayload.messages[1].content.length) / 4));
+  console.log("User Prompt Preview:", prompt.substring(0, 200) + "...");
+
+  const response = await openai.chat.completions.create(requestPayload);
+
+  console.log("📥 Framework Generation Response:");
+  console.log("Response Token Usage:", response.usage?.total_tokens || "unknown");
+  console.log("Response Length:", response.choices[0].message.content?.length || 0);
+  console.log("Response Preview:", response.choices[0].message.content?.substring(0, 200) + "...");
 
   return JSON.parse(response.choices[0].message.content || "{}");
 }
@@ -168,14 +182,30 @@ Respond with JSON array of workouts: [
   }
 ]`;
 
-  const response = await openai.chat.completions.create({
-    model: "gpt-4.1",
+  const requestPayload = {
+    model: "gpt-4o",
     messages: [
-      { role: "system", content: "You are a fitness trainer creating detailed workout sessions in JSON format." },
-      { role: "user", content: prompt }
+      { role: "system" as const, content: "You are a fitness trainer creating detailed workout sessions in JSON format." },
+      { role: "user" as const, content: prompt }
     ],
-    response_format: { type: "json_object" },
-  });
+    response_format: { type: "json_object" as const },
+  };
+
+  console.log(`📤 Week ${weekNumber} Generation Request:`);
+  console.log("Model:", requestPayload.model);
+  console.log("System Message Length:", requestPayload.messages[0].content.length);
+  console.log("User Prompt Length:", requestPayload.messages[1].content.length);
+  console.log("Total Estimated Tokens:", Math.ceil((requestPayload.messages[0].content.length + requestPayload.messages[1].content.length) / 4));
+  console.log("Framework Size:", JSON.stringify(currentWeek).length);
+  console.log("Previous Weeks Context Size:", previousWeeks ? JSON.stringify(previousWeeks).length : 0);
+  console.log("User Prompt Preview:", prompt.substring(0, 200) + "...");
+
+  const response = await openai.chat.completions.create(requestPayload);
+
+  console.log(`📥 Week ${weekNumber} Generation Response:`);
+  console.log("Response Token Usage:", response.usage?.total_tokens || "unknown");
+  console.log("Response Length:", response.choices[0].message.content?.length || 0);
+  console.log("Response Preview:", response.choices[0].message.content?.substring(0, 200) + "...");
 
   const result = JSON.parse(response.choices[0].message.content || "{}");
   return result.workouts || [];
