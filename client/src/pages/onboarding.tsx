@@ -160,7 +160,7 @@ export default function OnboardingPage() {
                               <SelectValue placeholder="Select your fitness level" />
                             </SelectTrigger>
                           </FormControl>
-                          <SelectContent className="glass-effect border-border/50 z-50">
+                          <SelectContent className="glass-effect border-border/50 z-50 w-[var(--radix-select-trigger-width)] max-h-[300px]">
                             <SelectItem value="beginner" className="hover:bg-card/60 focus:bg-card/60">Beginner - New to exercise</SelectItem>
                             <SelectItem value="intermediate" className="hover:bg-card/60 focus:bg-card/60">Intermediate - Regular exercise experience</SelectItem>
                             <SelectItem value="advanced" className="hover:bg-card/60 focus:bg-card/60">Advanced - Experienced athlete</SelectItem>
