@@ -85,7 +85,8 @@ export default function WorkoutsPage() {
     },
     onSuccess: (data) => {
       if (data.operationId) {
-        setGenerationState({ isGenerating: true, operationId: data.operationId });
+        setShowGenerateDialog(false); // Close the form dialog
+        setGenerationState({ isGenerating: true, operationId: data.operationId }); // Show progress dialog
       } else {
         queryClient.invalidateQueries({ queryKey: ['/api/workout-plans', MOCK_USER_ID] });
         setShowGenerateDialog(false);

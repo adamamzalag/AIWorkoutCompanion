@@ -112,7 +112,7 @@ Respond with JSON: {
 }`;
 
   const requestPayload = {
-    model: "gpt-4o",
+    model: "gpt-4.1",
     messages: [
       { role: "system" as const, content: "You are a workout program architect. Create strategic fitness frameworks in JSON format." },
       { role: "user" as const, content: prompt }
@@ -120,19 +120,25 @@ Respond with JSON: {
     response_format: { type: "json_object" as const },
   };
 
-  console.log("📤 Framework Generation Request:");
+  console.log("📤 OPENAI REQUEST - Framework Generation:");
+  console.log("===== FULL REQUEST PAYLOAD =====");
+  console.log(JSON.stringify(requestPayload, null, 2));
+  console.log("===== REQUEST ANALYSIS =====");
   console.log("Model:", requestPayload.model);
   console.log("System Message Length:", requestPayload.messages[0].content.length);
   console.log("User Prompt Length:", requestPayload.messages[1].content.length);
   console.log("Total Estimated Tokens:", Math.ceil((requestPayload.messages[0].content.length + requestPayload.messages[1].content.length) / 4));
-  console.log("User Prompt Preview:", prompt.substring(0, 200) + "...");
 
   const response = await openai.chat.completions.create(requestPayload);
 
-  console.log("📥 Framework Generation Response:");
+  console.log("📥 OPENAI RESPONSE - Framework Generation:");
+  console.log("===== FULL RESPONSE =====");
+  console.log(JSON.stringify(response, null, 2));
+  console.log("===== RESPONSE ANALYSIS =====");
   console.log("Response Token Usage:", response.usage?.total_tokens || "unknown");
-  console.log("Response Length:", response.choices[0].message.content?.length || 0);
-  console.log("Response Preview:", response.choices[0].message.content?.substring(0, 200) + "...");
+  console.log("Input Tokens:", response.usage?.prompt_tokens || "unknown");
+  console.log("Output Tokens:", response.usage?.completion_tokens || "unknown");
+  console.log("Response Content Length:", response.choices[0].message.content?.length || 0);
 
   return JSON.parse(response.choices[0].message.content || "{}");
 }
@@ -183,7 +189,7 @@ Respond with JSON array of workouts: [
 ]`;
 
   const requestPayload = {
-    model: "gpt-4o",
+    model: "gpt-4.1",
     messages: [
       { role: "system" as const, content: "You are a fitness trainer creating detailed workout sessions in JSON format." },
       { role: "user" as const, content: prompt }
@@ -191,21 +197,27 @@ Respond with JSON array of workouts: [
     response_format: { type: "json_object" as const },
   };
 
-  console.log(`📤 Week ${weekNumber} Generation Request:`);
+  console.log(`📤 OPENAI REQUEST - Week ${weekNumber} Generation:`);
+  console.log("===== FULL REQUEST PAYLOAD =====");
+  console.log(JSON.stringify(requestPayload, null, 2));
+  console.log("===== REQUEST ANALYSIS =====");
   console.log("Model:", requestPayload.model);
   console.log("System Message Length:", requestPayload.messages[0].content.length);
   console.log("User Prompt Length:", requestPayload.messages[1].content.length);
   console.log("Total Estimated Tokens:", Math.ceil((requestPayload.messages[0].content.length + requestPayload.messages[1].content.length) / 4));
   console.log("Framework Size:", JSON.stringify(currentWeek).length);
   console.log("Previous Weeks Context Size:", previousWeeks ? JSON.stringify(previousWeeks).length : 0);
-  console.log("User Prompt Preview:", prompt.substring(0, 200) + "...");
 
   const response = await openai.chat.completions.create(requestPayload);
 
-  console.log(`📥 Week ${weekNumber} Generation Response:`);
+  console.log(`📥 OPENAI RESPONSE - Week ${weekNumber} Generation:`);
+  console.log("===== FULL RESPONSE =====");
+  console.log(JSON.stringify(response, null, 2));
+  console.log("===== RESPONSE ANALYSIS =====");
   console.log("Response Token Usage:", response.usage?.total_tokens || "unknown");
-  console.log("Response Length:", response.choices[0].message.content?.length || 0);
-  console.log("Response Preview:", response.choices[0].message.content?.substring(0, 200) + "...");
+  console.log("Input Tokens:", response.usage?.prompt_tokens || "unknown");
+  console.log("Output Tokens:", response.usage?.completion_tokens || "unknown");
+  console.log("Response Content Length:", response.choices[0].message.content?.length || 0);
 
   const result = JSON.parse(response.choices[0].message.content || "{}");
   return result.workouts || [];
