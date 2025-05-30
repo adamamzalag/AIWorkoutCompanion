@@ -37,12 +37,9 @@ import { GenerationProgress } from '@/components/generation-progress';
 const MOCK_USER_ID = 1;
 
 const generatePlanSchema = z.object({
-  fitnessLevel: z.enum(['beginner', 'intermediate', 'advanced']),
-  equipment: z.array(z.string()).min(1, 'Select at least one equipment option'),
-  goals: z.array(z.string()).min(1, 'Select at least one goal'),
-  duration: z.number().min(1).max(52),
-  workoutsPerWeek: z.number().min(1).max(7),
-  timePerWorkout: z.number().min(15).max(180)
+  duration: z.number().min(1, "Duration must be at least 1 week").max(52, "Duration cannot exceed 52 weeks"),
+  workoutsPerWeek: z.number().min(1, "Must have at least 1 workout per week").max(7, "Cannot have more than 7 workouts per week"),
+  timePerWorkout: z.number().min(15, "Workouts must be at least 15 minutes").max(180, "Workouts cannot exceed 3 hours"),
 });
 
 const equipmentOptions = [

@@ -1,5 +1,5 @@
 import { Link, useLocation } from 'wouter';
-import { Home, Dumbbell, TrendingUp, MessageCircle } from 'lucide-react';
+import { Home, Dumbbell, TrendingUp, MessageCircle, Settings } from 'lucide-react';
 import { useState, useEffect } from 'react';
 
 export function BottomNavigation() {

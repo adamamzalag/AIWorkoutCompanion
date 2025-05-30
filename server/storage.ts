@@ -350,6 +350,22 @@ export class MemStorage implements IStorage {
     this.userProgress.set(id, progress);
     return progress;
   }
+
+  private initializeDefaultUser() {
+    // Create a default user without onboarding completed
+    const defaultUser: User = {
+      id: 1,
+      username: "user",
+      name: "User",
+      fitnessLevel: null,
+      equipment: [],
+      goals: [],
+      notes: null,
+      onboardingCompleted: false,
+      createdAt: new Date(),
+    };
+    this.users.set(1, defaultUser);
+  }
 }
 
 export const storage = new MemStorage();
