@@ -365,7 +365,7 @@ export async function registerRoutes(app: Express): Promise<Server> {
           let exerciseId: number;
           let exerciseName: string;
           
-          // Simple name-based matching for now (will enhance with AI later)
+          // Simple name-based matching (avoiding AI calls due to JSON format issues)
           const existingExercise = mappedExercises.find(ex => 
             ex.name.toLowerCase() === aiExercise.name.toLowerCase()
           );

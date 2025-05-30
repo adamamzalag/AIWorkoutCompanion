@@ -403,8 +403,8 @@ Consider these factors:
 - Form variations are acceptable (regular vs wide grip = same exercise)
 - Different exercises targeting same muscles are NOT the same (bench press vs push-ups = different)
 
-If "${exerciseName}" matches an existing exercise, respond with JSON: {"match": true, "exerciseId": [ID], "canonicalName": "[existing name]"}
-If no match, respond with JSON: {"match": false}`;
+If "${exerciseName}" matches an existing exercise, respond with JSON format: {"match": true, "exerciseId": [ID], "canonicalName": "[existing name]"}
+If no match, respond with JSON format: {"match": false}`;
 
   try {
     const response = await openai.chat.completions.create({
