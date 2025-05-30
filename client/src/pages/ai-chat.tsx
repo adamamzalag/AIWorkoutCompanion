@@ -74,9 +74,9 @@ export default function AIChatPage() {
   ];
 
   return (
-    <div className="flex flex-col h-screen bg-background">
+    <div className="flex flex-col h-screen bg-background pb-24 pt-20">
       {/* Chat Header */}
-      <div className="glass-effect px-4 py-3 flex items-center justify-between sticky top-0 z-50">
+      <div className="glass-effect px-4 py-3 flex items-center justify-between sticky top-16 z-40">
         <div className="flex items-center space-x-3">
           <div className="w-10 h-10 bg-gradient-to-r from-accent to-primary rounded-full flex items-center justify-center">
             <MessageCircle className="text-white" size={20} />
@@ -225,7 +225,7 @@ export default function AIChatPage() {
       )}
 
       {/* Chat Input */}
-      <div className="px-4 pb-4">
+      <div className="fixed bottom-20 left-1/2 transform -translate-x-1/2 w-full max-w-sm px-4">
         <form onSubmit={handleSendMessage} className="glass-effect rounded-2xl p-4 flex items-center space-x-3">
           <Input
             value={message}

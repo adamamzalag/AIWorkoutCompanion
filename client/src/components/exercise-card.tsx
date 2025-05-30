@@ -1,7 +1,7 @@
 import { useState } from 'react';
 import { Card, CardContent } from '@/components/ui/card';
 import { Button } from '@/components/ui/button';
-import { Dialog, DialogContent, DialogTrigger } from '@/components/ui/dialog';
+import { Dialog, DialogContent, DialogTrigger, DialogTitle } from '@/components/ui/dialog';
 import { Play, Minus, Plus, MessageCircle } from 'lucide-react';
 import type { Exercise } from '@shared/schema';
 import type { ExerciseLog } from '@/lib/types';
@@ -62,6 +62,7 @@ export function ExerciseCard({
             </button>
           </DialogTrigger>
           <DialogContent className="youtube-modal">
+            <DialogTitle className="sr-only">{exercise.name} Tutorial Video</DialogTitle>
             {exercise.youtubeId && (
               <iframe
                 className="youtube-iframe"
