@@ -7,7 +7,7 @@ import { Skeleton } from '@/components/ui/skeleton';
 import { WorkoutCard } from '@/components/workout-card';
 import { ProgressRing } from '@/components/progress-ring';
 import { Clock, Target, TrendingUp, Sparkles, MessageCircle } from 'lucide-react';
-import type { UserStats, WorkoutPlan, Workout, WorkoutSession } from '@shared/schema';
+import type { UserStats, ProgressAnalysis, WorkoutPlan, Workout, WorkoutSession } from '@shared/schema';
 
 // Mock user ID - in a real app this would come from auth
 const MOCK_USER_ID = 1;
@@ -264,7 +264,7 @@ export default function Home() {
                     </div>
                   </div>
                 </CardContent>
-              </Link>
+              </Card>
             ))
           ) : (
             <Card className="glass-effect">

@@ -136,3 +136,16 @@ export type ChatMessage = typeof chatMessages.$inferSelect;
 
 export type InsertUserProgress = z.infer<typeof insertUserProgressSchema>;
 export type UserProgress = typeof userProgress.$inferSelect;
+
+// Additional types used by the frontend
+export interface UserStats {
+  weekStreak: number;
+  weekWorkouts: number;
+  totalMinutes: number;
+}
+
+export interface ProgressAnalysis {
+  progressSummary: string;
+  recommendations: string[];
+  strengthImprovement: number;
+}

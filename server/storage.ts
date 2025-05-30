@@ -155,7 +155,9 @@ export class MemStorage implements IStorage {
   async createUser(insertUser: InsertUser): Promise<User> {
     const id = this.currentUserId++;
     const user: User = { 
-      ...insertUser, 
+      ...insertUser,
+      equipment: insertUser.equipment || [],
+      goals: insertUser.goals || [],
       id, 
       createdAt: new Date()
     };
@@ -184,7 +186,10 @@ export class MemStorage implements IStorage {
   async createWorkoutPlan(insertPlan: InsertWorkoutPlan): Promise<WorkoutPlan> {
     const id = this.currentWorkoutPlanId++;
     const plan: WorkoutPlan = { 
-      ...insertPlan, 
+      ...insertPlan,
+      equipment: insertPlan.equipment || [],
+      description: insertPlan.description || null,
+      isActive: insertPlan.isActive || false,
       id, 
       createdAt: new Date()
     };
@@ -217,7 +222,11 @@ export class MemStorage implements IStorage {
   async createExercise(insertExercise: InsertExercise): Promise<Exercise> {
     const id = this.currentExerciseId++;
     const exercise: Exercise = { 
-      ...insertExercise, 
+      ...insertExercise,
+      equipment: insertExercise.equipment || [],
+      description: insertExercise.description || null,
+      youtubeId: insertExercise.youtubeId || null,
+      imageUrl: insertExercise.imageUrl || null,
       id, 
       createdAt: new Date()
     };
@@ -247,7 +256,8 @@ export class MemStorage implements IStorage {
   async createWorkout(insertWorkout: InsertWorkout): Promise<Workout> {
     const id = this.currentWorkoutId++;
     const workout: Workout = { 
-      ...insertWorkout, 
+      ...insertWorkout,
+      description: insertWorkout.description || null,
       id, 
       createdAt: new Date()
     };
@@ -278,7 +288,11 @@ export class MemStorage implements IStorage {
   async createWorkoutSession(insertSession: InsertWorkoutSession): Promise<WorkoutSession> {
     const id = this.currentWorkoutSessionId++;
     const session: WorkoutSession = { 
-      ...insertSession, 
+      ...insertSession,
+      duration: insertSession.duration || null,
+      completedAt: insertSession.completedAt || null,
+      notes: insertSession.notes || null,
+      aiCoachFeedback: insertSession.aiCoachFeedback || null,
       id, 
       startedAt: new Date()
     };
