@@ -273,12 +273,16 @@ export async function registerRoutes(app: Express): Promise<Server> {
       
       // Generate plan using OpenAI
       console.log("🤖 Calling OpenAI to generate workout plan...");
+      updateProgress(req.body.userId, operationId, 2, 6, 'generating', 'Generating workout plan with AI...');
+      
       const generatedPlan = await generateWorkoutPlan(planRequest);
       console.log("✅ OpenAI plan generated:", {
         title: generatedPlan.title,
         totalWorkouts: generatedPlan.totalWorkouts,
         exerciseCount: generatedPlan.workouts.reduce((acc, w) => acc + w.exercises.length, 0)
       });
+      
+      updateProgress(req.body.userId, operationId, 3, 6, 'processing', 'Saving workout plan...');
       
       // Save the plan to storage
       console.log("💾 Saving workout plan to storage...");
@@ -294,11 +298,17 @@ export async function registerRoutes(app: Express): Promise<Server> {
       });
       console.log("✅ Workout plan saved with ID:", workoutPlan.id);
 
+      updateProgress(req.body.userId, operationId, 4, 6, 'processing', 'Processing exercises and workouts...');
+      
       // Process and save individual workouts with normalized exercises
       console.log("🔄 Processing exercises and creating workout records...");
       for (let i = 0; i < generatedPlan.workouts.length; i++) {
         const workout = generatedPlan.workouts[i];
         console.log(`📝 Processing workout ${i + 1}/${generatedPlan.workouts.length}: ${workout.title}`);
+        
+        // Update progress for each workout processed
+        const workoutProgress = 4 + (i / generatedPlan.workouts.length * 1); // Spread step 4-5 across workouts
+        updateProgress(req.body.userId, operationId, workoutProgress, 6, 'processing', `Processing workout ${i + 1}/${generatedPlan.workouts.length}...`);
         
         // Process each exercise to normalize and create exercise records
         const processedExercises = [];
@@ -372,11 +382,21 @@ export async function registerRoutes(app: Express): Promise<Server> {
         console.log(`✅ Workout created with ID: ${createdWorkout.id}`);
       }
 
+      updateProgress(req.body.userId, operationId, 6, 6, 'completed', 'Workout plan generation complete!');
+      
+      // Update progress with final result
+      const { completeProgress } = await import("./progress-tracker.js");
+      completeProgress(operationId);
+      
       console.log("🎉 Workout plan generation completed successfully!");
-      res.json(workoutPlan);
+      
+      // Process continues in background, client will get result via progress tracking
     } catch (error) {
       console.error("❌ Error generating workout plan:", error);
-      res.status(500).json({ error: "Failed to generate workout plan" });
+      
+      // Update progress with error
+      const { updateProgress } = await import("./progress-tracker.js");
+      updateProgress(req.body.userId, operationId, 0, 6, 'failed', 'Generation failed - please try again');
     }
   });
 

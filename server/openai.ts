@@ -109,7 +109,7 @@ CRITICAL: Follow this exact JSON structure for exercises:
 - Muscle groups: use lowercase (chest, shoulders, triceps, quadriceps, glutes, etc.)
 - Equipment: use lowercase, match available options (none, dumbbells, barbell, etc.)
 
-Ensure exercises progress logically throughout the plan with appropriate volume and intensity increases.`
+Ensure exercises progress logically throughout the plan with appropriate volume and intensity increases. Respond with JSON format.`
         },
         {
           role: "user",
@@ -117,6 +117,7 @@ Ensure exercises progress logically throughout the plan with appropriate volume 
         }
       ],
       response_format: { type: "json_object" },
+
     });
 
     const result = JSON.parse(response.choices[0].message.content || "{}");
