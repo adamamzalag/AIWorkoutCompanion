@@ -13,7 +13,7 @@ import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@
 import { Checkbox } from "@/components/ui/checkbox";
 import { Progress } from "@/components/ui/progress";
 import { apiRequest } from "@/lib/queryClient";
-import { ChevronLeft, ChevronRight, Sparkles } from "lucide-react";
+import { ChevronLeft, ChevronRight, Sparkles, Plus, X } from "lucide-react";
 
 const onboardingSchema = z.object({
   fitnessLevel: z.enum(["beginner", "intermediate", "advanced"]),
@@ -46,6 +46,7 @@ export default function OnboardingPage() {
   const [currentStep, setCurrentStep] = useState(0);
   const [_, setLocation] = useLocation();
   const queryClient = useQueryClient();
+  const [customEquipment, setCustomEquipment] = useState("");
 
   const form = useForm<OnboardingForm>({
     resolver: zodResolver(onboardingSchema),
@@ -97,9 +98,24 @@ export default function OnboardingPage() {
 
   const progress = ((currentStep + 1) / steps.length) * 100;
 
+  const addCustomEquipment = () => {
+    if (customEquipment.trim()) {
+      const currentEquipment = form.getValues("equipment");
+      if (!currentEquipment.includes(customEquipment.trim())) {
+        form.setValue("equipment", [...currentEquipment, customEquipment.trim()]);
+      }
+      setCustomEquipment("");
+    }
+  };
+
+  const removeEquipment = (equipmentToRemove: string) => {
+    const currentEquipment = form.getValues("equipment");
+    form.setValue("equipment", currentEquipment.filter(item => item !== equipmentToRemove));
+  };
+
   return (
     <div className="min-h-screen bg-gradient-to-br from-background via-background to-muted/30 flex items-center justify-center p-4">
-      <Card className="w-full max-w-lg glass-effect border-border/50">
+      <Card className="w-full max-w-md max-h-[85vh] overflow-y-auto glass-effect border-border/50">
         <CardHeader className="text-center space-y-4">
           <div className="mx-auto w-12 h-12 bg-gradient-to-r from-primary to-secondary rounded-full flex items-center justify-center">
             <Sparkles className="w-6 h-6 text-white" />
@@ -140,14 +156,14 @@ export default function OnboardingPage() {
                         <FormLabel className="text-foreground">How would you describe your fitness level?</FormLabel>
                         <Select onValueChange={field.onChange} value={field.value}>
                           <FormControl>
-                            <SelectTrigger className="glass-effect border-border/50">
+                            <SelectTrigger className="glass-effect border-border/50 h-12">
                               <SelectValue placeholder="Select your fitness level" />
                             </SelectTrigger>
                           </FormControl>
-                          <SelectContent>
-                            <SelectItem value="beginner">Beginner - New to exercise</SelectItem>
-                            <SelectItem value="intermediate">Intermediate - Regular exercise experience</SelectItem>
-                            <SelectItem value="advanced">Advanced - Experienced athlete</SelectItem>
+                          <SelectContent className="glass-effect border-border/50 z-50">
+                            <SelectItem value="beginner" className="hover:bg-card/60 focus:bg-card/60">Beginner - New to exercise</SelectItem>
+                            <SelectItem value="intermediate" className="hover:bg-card/60 focus:bg-card/60">Intermediate - Regular exercise experience</SelectItem>
+                            <SelectItem value="advanced" className="hover:bg-card/60 focus:bg-card/60">Advanced - Experienced athlete</SelectItem>
                           </SelectContent>
                         </Select>
                         <FormMessage />
@@ -171,37 +187,90 @@ export default function OnboardingPage() {
                     render={() => (
                       <FormItem>
                         <FormLabel className="text-foreground">Available Equipment</FormLabel>
-                        <div className="space-y-2 max-h-60 overflow-y-auto">
-                          {equipmentOptions.map((item) => (
-                            <FormField
-                              key={item}
-                              control={form.control}
-                              name="equipment"
-                              render={({ field }) => {
-                                return (
-                                  <FormItem>
-                                    <FormControl>
-                                      <label className="flex items-center space-x-3 glass-effect rounded-lg p-3 cursor-pointer hover:bg-card/60 transition-colors touch-target">
-                                        <Checkbox
-                                          checked={field.value?.includes(item)}
-                                          onCheckedChange={(checked) => {
-                                            return checked
-                                              ? field.onChange([...field.value, item])
-                                              : field.onChange(
-                                                  field.value?.filter((value) => value !== item)
-                                                )
-                                          }}
-                                        />
-                                        <span className="text-sm text-foreground font-medium capitalize flex-1">
-                                          {item.replace('_', ' ')}
-                                        </span>
-                                      </label>
-                                    </FormControl>
-                                  </FormItem>
-                                )
-                              }}
-                            />
-                          ))}
+                        <div className="space-y-3">
+                          <div className="grid grid-cols-1 gap-2 max-h-48 overflow-y-auto">
+                            {equipmentOptions.map((item) => (
+                              <FormField
+                                key={item}
+                                control={form.control}
+                                name="equipment"
+                                render={({ field }) => {
+                                  return (
+                                    <FormItem>
+                                      <FormControl>
+                                        <label className="flex items-center space-x-3 glass-effect rounded-lg p-2.5 cursor-pointer hover:bg-card/60 focus-within:bg-card/60 transition-colors touch-target">
+                                          <Checkbox
+                                            checked={field.value?.includes(item)}
+                                            className="data-[state=checked]:bg-primary data-[state=checked]:border-primary"
+                                            onCheckedChange={(checked) => {
+                                              return checked
+                                                ? field.onChange([...field.value, item])
+                                                : field.onChange(
+                                                    field.value?.filter((value) => value !== item)
+                                                  )
+                                            }}
+                                          />
+                                          <span className="text-sm text-foreground font-medium capitalize flex-1">
+                                            {item.replace('_', ' ')}
+                                          </span>
+                                        </label>
+                                      </FormControl>
+                                    </FormItem>
+                                  )
+                                }}
+                              />
+                            ))}
+                          </div>
+                          
+                          {/* Custom Equipment Input */}
+                          <div className="space-y-2">
+                            <div className="flex gap-2">
+                              <Input
+                                placeholder="Add custom equipment..."
+                                value={customEquipment}
+                                onChange={(e) => setCustomEquipment(e.target.value)}
+                                className="glass-effect border-border/50 flex-1"
+                                onKeyDown={(e) => {
+                                  if (e.key === 'Enter') {
+                                    e.preventDefault();
+                                    addCustomEquipment();
+                                  }
+                                }}
+                              />
+                              <Button
+                                type="button"
+                                size="sm"
+                                onClick={addCustomEquipment}
+                                className="bg-primary hover:bg-primary/90 px-3"
+                              >
+                                <Plus size={16} />
+                              </Button>
+                            </div>
+                            
+                            {/* Selected Equipment Tags */}
+                            {form.watch("equipment").length > 0 && (
+                              <div className="space-y-2">
+                                <p className="text-xs text-muted-foreground">Selected equipment:</p>
+                                <div className="flex flex-wrap gap-1">
+                                  {form.watch("equipment").map((item) => (
+                                    <div
+                                      key={item}
+                                      className="flex items-center gap-1 bg-primary/10 text-primary px-2 py-1 rounded-md text-xs"
+                                    >
+                                      <span className="capitalize">{item.replace('_', ' ')}</span>
+                                      <button
+                                        type="button"
+                                        onClick={() => removeEquipment(item)}
+                                        className="hover:bg-primary/20 rounded-full p-0.5"
+                                      >
+                                        <X size={12} />
+                                      </button>
+                                    </div>
+                                  ))}
+                                </div>
+                              </div>
+                            )}
+                          </div>
                         </div>
                         <FormMessage />
                       </FormItem>
@@ -224,7 +293,7 @@ export default function OnboardingPage() {
                     render={() => (
                       <FormItem>
                         <FormLabel className="text-foreground">Fitness Goals</FormLabel>
-                        <div className="space-y-2 max-h-60 overflow-y-auto">
+                        <div className="grid grid-cols-1 gap-2 max-h-48 overflow-y-auto">
                           {goalOptions.map((item) => (
                             <FormField
                               key={item}
@@ -234,9 +303,10 @@ export default function OnboardingPage() {
                                 return (
                                   <FormItem>
                                     <FormControl>
-                                      <label className="flex items-center space-x-3 glass-effect rounded-lg p-3 cursor-pointer hover:bg-card/60 transition-colors touch-target">
+                                      <label className="flex items-center space-x-3 glass-effect rounded-lg p-2.5 cursor-pointer hover:bg-card/60 focus-within:bg-card/60 transition-colors touch-target">
                                         <Checkbox
                                           checked={field.value?.includes(item)}
+                                          className="data-[state=checked]:bg-primary data-[state=checked]:border-primary"
                                           onCheckedChange={(checked) => {
                                             return checked
                                               ? field.onChange([...field.value, item])
