@@ -137,7 +137,7 @@ export default function OnboardingPage() {
           </div>
         </CardHeader>
 
-        <CardContent className="overflow-y-auto max-h-[calc(85vh-200px)]">
+        <CardContent className="max-h-[calc(85vh-200px)] overflow-hidden">
           <Form {...form}>
             <form onSubmit={form.handleSubmit(onSubmit)}>
               <div className="space-y-6">
@@ -189,9 +189,10 @@ export default function OnboardingPage() {
                       <FormItem>
                         <FormLabel className="text-foreground">Available Equipment</FormLabel>
                         <div className="space-y-3">
-                          <div className="grid grid-cols-1 gap-2">
-                            {equipmentOptions.map((item) => (
-                              <FormField
+                          <div className="max-h-[300px] overflow-y-auto">
+                            <div className="grid grid-cols-1 gap-2 pr-2">
+                              {equipmentOptions.map((item) => (
+                                <FormField
                                 key={item}
                                 control={form.control}
                                 name="equipment"
@@ -221,6 +222,7 @@ export default function OnboardingPage() {
                                 }}
                               />
                             ))}
+                            </div>
                           </div>
                           
                           {/* Custom Equipment Input */}
@@ -294,9 +296,10 @@ export default function OnboardingPage() {
                     render={() => (
                       <FormItem>
                         <FormLabel className="text-foreground">Fitness Goals</FormLabel>
-                        <div className="grid grid-cols-1 gap-2">
-                          {goalOptions.map((item) => (
-                            <FormField
+                        <div className="max-h-[300px] overflow-y-auto">
+                          <div className="grid grid-cols-1 gap-2 pr-2">
+                            {goalOptions.map((item) => (
+                              <FormField
                               key={item}
                               control={form.control}
                               name="goals"
@@ -326,6 +329,7 @@ export default function OnboardingPage() {
                               }}
                             />
                           ))}
+                          </div>
                         </div>
                         <FormMessage />
                       </FormItem>
