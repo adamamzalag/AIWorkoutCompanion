@@ -24,11 +24,23 @@ export const workoutPlans = pgTable("workout_plans", {
   difficulty: text("difficulty").notNull(), // beginner, intermediate, advanced
   equipment: text("equipment").array().notNull().default([]),
   isActive: boolean("is_active").notNull().default(false),
+  jsonMeta: jsonb("json_meta"), // flexible storage for AI-generated metadata
+  createdAt: timestamp("created_at").notNull().defaultNow(),
+});
+
+export const planWeeks = pgTable("plan_weeks", {
+  id: serial("id").primaryKey(),
+  planId: integer("plan_id").notNull(),
+  weekIndex: integer("week_index").notNull(), // 1, 2, 3, etc.
+  focusSummary: text("focus_summary").notNull(), // "Foundation Building", "Strength Focus", etc.
+  isCompleted: boolean("is_completed").notNull().default(false),
+  completedAt: timestamp("completed_at"),
   createdAt: timestamp("created_at").notNull().defaultNow(),
 });
 
 export const exercises = pgTable("exercises", {
   id: serial("id").primaryKey(),
+  slug: text("slug").notNull().unique(), // URL-friendly unique identifier for deduplication
   name: text("name").notNull(),
   description: text("description"),
   muscle_groups: text("muscle_groups").array().notNull(),
@@ -43,12 +55,14 @@ export const exercises = pgTable("exercises", {
 export const workouts = pgTable("workouts", {
   id: serial("id").primaryKey(),
   planId: integer("plan_id").notNull(),
+  planWeekId: integer("plan_week_id"), // nullable for backward compatibility
   userId: integer("user_id").notNull(),
   title: text("title").notNull(),
   description: text("description"),
   estimatedDuration: integer("estimated_duration").notNull(), // in minutes
   exercises: jsonb("exercises").notNull(), // array of exercise objects with sets/reps
   orderIndex: integer("order_index").notNull(),
+  dayIndex: integer("day_index"), // which day of the week (1-7)
   createdAt: timestamp("created_at").notNull().defaultNow(),
 });
 
@@ -79,6 +93,22 @@ export const userProgress = pgTable("user_progress", {
   value: text("value").notNull(),
   unit: text("unit").notNull(),
   recordedAt: timestamp("recorded_at").notNull().defaultNow(),
+});
+
+export const progressSnapshots = pgTable("progress_snapshots", {
+  id: serial("id").primaryKey(),
+  userId: integer("user_id").notNull(),
+  planId: integer("plan_id"),
+  planWeekId: integer("plan_week_id"), // if this snapshot is for a specific week
+  dateRange: text("date_range").notNull(), // "Week 1", "Month 1", "Jan 2025", etc.
+  adherencePercent: integer("adherence_percent"), // 0-100
+  subjectiveFatigue: text("subjective_fatigue"), // "low", "moderate", "high"
+  strengthPRs: jsonb("strength_prs"), // personal records achieved
+  volumePerMuscle: jsonb("volume_per_muscle"), // training volume by muscle group
+  flags: jsonb("flags"), // warning flags like "missed 3 days", "weight not progressing"
+  coachNotes: text("coach_notes").notNull(), // AI-generated summary of the period
+  jsonSnapshot: jsonb("json_snapshot").notNull(), // compressed data for AI context
+  createdAt: timestamp("created_at").notNull().defaultNow(),
 });
 
 // Insert schemas
@@ -117,6 +147,16 @@ export const insertUserProgressSchema = createInsertSchema(userProgress).omit({
   recordedAt: true,
 });
 
+export const insertPlanWeekSchema = createInsertSchema(planWeeks).omit({
+  id: true,
+  createdAt: true,
+});
+
+export const insertProgressSnapshotSchema = createInsertSchema(progressSnapshots).omit({
+  id: true,
+  createdAt: true,
+});
+
 // Types
 export type InsertUser = z.infer<typeof insertUserSchema>;
 export type User = typeof users.$inferSelect;
@@ -138,6 +178,12 @@ export type ChatMessage = typeof chatMessages.$inferSelect;
 
 export type InsertUserProgress = z.infer<typeof insertUserProgressSchema>;
 export type UserProgress = typeof userProgress.$inferSelect;
+
+export type InsertPlanWeek = z.infer<typeof insertPlanWeekSchema>;
+export type PlanWeek = typeof planWeeks.$inferSelect;
+
+export type InsertProgressSnapshot = z.infer<typeof insertProgressSnapshotSchema>;
+export type ProgressSnapshot = typeof progressSnapshots.$inferSelect;
 
 // Additional types used by the frontend
 export interface UserStats {
