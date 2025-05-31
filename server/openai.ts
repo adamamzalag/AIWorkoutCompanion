@@ -168,10 +168,28 @@ Framework: ${JSON.stringify(currentWeek)}
 Available Equipment (use what's appropriate for each workout): ${framework.equipment.join(', ')}
 ${progressionContext}
 
-Create ${currentWeek.workoutDays.length} detailed workouts following this structure:
-- Warm-up: 5-10 minutes of dynamic movements
-- Main exercises: Specific to the day's goal and target muscles
-- Cool-down: 5-10 minutes of static stretching
+Create ${currentWeek.workoutDays.length} detailed workouts following this EXACT structure:
+
+WARM-UP (5-8 minutes total):
+- Include 1-3 specific dynamic movements (not generic "dynamic stretching")
+- Examples: arm circles, leg swings, bodyweight squats, lunges, jumping jacks
+- Each movement should have specific instructions
+
+MAIN EXERCISES (varies by workout):
+- Include 3-5 exercises (vary the count based on workout intensity and type)
+- Strength workouts: 4-5 exercises
+- Flexibility/core workouts: 3-4 exercises
+- Each exercise needs sets, reps, weight guidance, rest time
+
+CARDIO (one specific exercise):
+- Include exactly ONE cardio exercise appropriate for the day
+- Examples: "10-minute treadmill intervals", "Air Bike sprints", "Jump rope HIIT"
+- Not generic descriptions, but specific cardio movements
+
+COOL-DOWN (5-8 minutes total):
+- Include 1-3 specific static stretches/movements
+- Examples: hamstring stretch, chest doorway stretch, spinal twist
+- Each movement should target muscles worked in main exercises
 
 Respond with JSON array of workouts: [
   {
@@ -181,14 +199,47 @@ Respond with JSON array of workouts: [
     "exercises": [
       {
         "section": "warm-up",
-        "name": "Dynamic exercise name",
+        "name": "Specific warm-up movement name",
         "sets": 1,
-        "reps": "10 each direction",
+        "reps": "10-15 each side",
         "weight": null,
         "restTime": "30 seconds",
-        "instructions": ["Clear instruction"],
-        "muscleGroups": ["target muscles"],
+        "instructions": ["Detailed movement instructions"],
+        "muscleGroups": ["muscles being warmed up"],
+        "equipment": ["equipment needed or none"]
+      },
+      {
+        "section": "main",
+        "name": "Main exercise name",
+        "sets": 3,
+        "reps": "8-12",
+        "weight": "moderate weight",
+        "restTime": "60-90 seconds",
+        "instructions": ["Proper form instructions"],
+        "muscleGroups": ["primary muscles worked"],
         "equipment": ["required equipment"]
+      },
+      {
+        "section": "cardio",
+        "name": "Specific cardio exercise",
+        "sets": 1,
+        "reps": "10-15 minutes or intervals",
+        "weight": null,
+        "restTime": "none",
+        "instructions": ["Cardio exercise instructions"],
+        "muscleGroups": ["cardiovascular"],
+        "equipment": ["cardio equipment needed"]
+      },
+      {
+        "section": "cool-down",
+        "name": "Specific stretch name",
+        "sets": 1,
+        "reps": "hold 20-30 seconds",
+        "weight": null,
+        "restTime": "none",
+        "instructions": ["Stretching instructions"],
+        "muscleGroups": ["muscles being stretched"],
+        "equipment": ["none or equipment needed"]
       }
     ]
   }
