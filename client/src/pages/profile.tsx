@@ -1,3 +1,4 @@
+import { useState } from "react";
 import { useQuery, useMutation, useQueryClient } from "@tanstack/react-query";
 import { useForm } from "react-hook-form";
 import { zodResolver } from "@hookform/resolvers/zod";
@@ -5,12 +6,13 @@ import { z } from "zod";
 import { Button } from "@/components/ui/button";
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from "@/components/ui/card";
 import { Form, FormControl, FormField, FormItem, FormLabel, FormMessage } from "@/components/ui/form";
+import { Input } from "@/components/ui/input";
 import { Textarea } from "@/components/ui/textarea";
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@/components/ui/select";
 import { Checkbox } from "@/components/ui/checkbox";
 import { apiRequest } from "@/lib/queryClient";
 import { User } from "@shared/schema";
-import { Settings, Save } from "lucide-react";
+import { Settings, Save, Plus, X } from "lucide-react";
 import { useToast } from "@/hooks/use-toast";
 
 const profileSchema = z.object({
@@ -36,6 +38,7 @@ const goalOptions = [
 export default function ProfilePage() {
   const { toast } = useToast();
   const queryClient = useQueryClient();
+  const [customEquipment, setCustomEquipment] = useState("");
 
   const { data: profile, isLoading } = useQuery<User>({
     queryKey: ["/api/profile"],
@@ -82,6 +85,21 @@ export default function ProfilePage() {
 
   const onSubmit = (data: ProfileForm) => {
     updateProfileMutation.mutate(data);
+  };
+
+  const addCustomEquipment = () => {
+    if (customEquipment.trim()) {
+      const currentEquipment = form.getValues("equipment");
+      if (!currentEquipment.includes(customEquipment.trim())) {
+        form.setValue("equipment", [...currentEquipment, customEquipment.trim()]);
+      }
+      setCustomEquipment("");
+    }
+  };
+
+  const removeEquipment = (equipmentToRemove: string) => {
+    const currentEquipment = form.getValues("equipment");
+    form.setValue("equipment", currentEquipment.filter(item => item !== equipmentToRemove));
   };
 
   if (isLoading) {
@@ -153,37 +171,90 @@ export default function ProfilePage() {
                 render={() => (
                   <FormItem>
                     <FormLabel className="text-foreground">Available Equipment</FormLabel>
-                    <div className="space-y-2 max-h-60 overflow-y-auto">
-                      {equipmentOptions.map((item) => (
-                        <FormField
-                          key={item}
-                          control={form.control}
-                          name="equipment"
-                          render={({ field }) => {
-                            return (
-                              <FormItem>
-                                <FormControl>
-                                  <label className="flex items-center space-x-3 glass-effect rounded-lg p-3 cursor-pointer hover:bg-card/60 transition-colors touch-target">
-                                    <Checkbox
-                                      checked={field.value?.includes(item)}
-                                      onCheckedChange={(checked) => {
-                                        return checked
-                                          ? field.onChange([...field.value, item])
-                                          : field.onChange(
-                                              field.value?.filter((value) => value !== item)
-                                            )
-                                      }}
-                                    />
-                                    <span className="text-sm text-foreground font-medium capitalize flex-1">
-                                      {item.replace('_', ' ')}
-                                    </span>
-                                  </label>
-                                </FormControl>
-                              </FormItem>
-                            )
-                          }}
-                        />
-                      ))}
+                    <div className="space-y-3">
+                      <div className="grid grid-cols-1 gap-2 max-h-60 overflow-y-auto">
+                        {equipmentOptions.map((item) => (
+                          <FormField
+                            key={item}
+                            control={form.control}
+                            name="equipment"
+                            render={({ field }) => {
+                              return (
+                                <FormItem>
+                                  <FormControl>
+                                    <label className="flex items-center space-x-3 glass-effect rounded-lg p-2.5 cursor-pointer hover:bg-card/60 focus-within:bg-card/60 transition-colors touch-target">
+                                      <Checkbox
+                                        checked={field.value?.includes(item)}
+                                        className="data-[state=checked]:bg-primary data-[state=checked]:border-primary"
+                                        onCheckedChange={(checked) => {
+                                          return checked
+                                            ? field.onChange([...field.value, item])
+                                            : field.onChange(
+                                                field.value?.filter((value) => value !== item)
+                                              )
+                                        }}
+                                      />
+                                      <span className="text-sm text-foreground font-medium capitalize flex-1">
+                                        {item.replace('_', ' ')}
+                                      </span>
+                                    </label>
+                                  </FormControl>
+                                </FormItem>
+                              )
+                            }}
+                          />
+                        ))}
+                      </div>
+                      
+                      {/* Custom Equipment Input */}
+                      <div className="space-y-2">
+                        <div className="flex gap-2">
+                          <Input
+                            placeholder="Add custom equipment..."
+                            value={customEquipment}
+                            onChange={(e) => setCustomEquipment(e.target.value)}
+                            className="glass-effect border-border/50 flex-1"
+                            onKeyDown={(e) => {
+                              if (e.key === 'Enter') {
+                                e.preventDefault();
+                                addCustomEquipment();
+                              }
+                            }}
+                          />
+                          <Button
+                            type="button"
+                            size="sm"
+                            onClick={addCustomEquipment}
+                            className="bg-primary hover:bg-primary/90 px-3"
+                          >
+                            <Plus size={16} />
+                          </Button>
+                        </div>
+                        
+                        {/* Selected Equipment Tags */}
+                        {form.watch("equipment").length > 0 && (
+                          <div className="space-y-2">
+                            <p className="text-xs text-muted-foreground">Selected equipment:</p>
+                            <div className="flex flex-wrap gap-1">
+                              {form.watch("equipment").map((item) => (
+                                <div
+                                  key={item}
+                                  className="flex items-center gap-1 bg-primary/10 text-primary px-2 py-1 rounded-md text-xs"
+                                >
+                                  <span className="capitalize">{item.replace('_', ' ')}</span>
+                                  <button
+                                    type="button"
+                                    onClick={() => removeEquipment(item)}
+                                    className="hover:bg-primary/20 rounded-full p-0.5"
+                                  >
+                                    <X size={12} />
+                                  </button>
+                                </div>
+                              ))}
+                            </div>
+                          </div>
+                        )}
+                      </div>
                     </div>
                     <FormMessage />
                   </FormItem>
