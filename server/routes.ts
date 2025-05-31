@@ -568,6 +568,107 @@ export async function registerRoutes(app: Express): Promise<Server> {
     }
   });
 
+  // Progress Snapshots API routes
+  app.post("/api/progress-snapshots/weekly", isAuthenticated, async (req, res) => {
+    try {
+      const { planId, planWeekId, weekNumber } = req.body;
+      const userId = req.user?.claims?.sub;
+      
+      if (!userId) {
+        return res.status(401).json({ error: "User not authenticated" });
+      }
+
+      const workoutSessions = await storage.getWorkoutSessions(parseInt(userId));
+      const user = await storage.getUser(parseInt(userId));
+      
+      if (!user) {
+        return res.status(404).json({ error: "User not found" });
+      }
+
+      const snapshotData = await createWeeklySnapshot(
+        parseInt(userId),
+        planId,
+        planWeekId,
+        weekNumber,
+        workoutSessions,
+        user.goals
+      );
+
+      const snapshot = await storage.createProgressSnapshot({
+        userId: parseInt(userId),
+        planId,
+        planWeekId,
+        dateRange: `Week ${weekNumber}`,
+        adherencePercent: snapshotData.adherencePercent,
+        subjectiveFatigue: snapshotData.subjectiveFatigue,
+        strengthPRs: snapshotData.strengthPRs,
+        volumePerMuscle: snapshotData.volumePerMuscle,
+        flags: snapshotData.flags,
+        coachNotes: snapshotData.coachNotes,
+        jsonSnapshot: snapshotData.jsonSnapshot
+      });
+
+      res.json(snapshot);
+    } catch (error) {
+      console.error("Error creating weekly snapshot:", error);
+      res.status(500).json({ error: "Failed to create weekly snapshot" });
+    }
+  });
+
+  app.post("/api/progress-snapshots/plan-completion", isAuthenticated, async (req, res) => {
+    try {
+      const { planId } = req.body;
+      const userId = req.user?.claims?.sub;
+      
+      if (!userId) {
+        return res.status(401).json({ error: "User not authenticated" });
+      }
+
+      const weeklySnapshots = await storage.getWeeklySnapshots(planId, parseInt(userId));
+      const user = await storage.getUser(parseInt(userId));
+      
+      if (!user) {
+        return res.status(404).json({ error: "User not found" });
+      }
+
+      const snapshotData = await createPlanCompletionSnapshot(
+        parseInt(userId),
+        planId,
+        weeklySnapshots,
+        user.goals
+      );
+
+      const snapshot = await storage.createProgressSnapshot({
+        userId: parseInt(userId),
+        planId,
+        planWeekId: null,
+        dateRange: `Plan Completion`,
+        adherencePercent: snapshotData.adherencePercent,
+        subjectiveFatigue: snapshotData.subjectiveFatigue,
+        strengthPRs: snapshotData.strengthPRs,
+        volumePerMuscle: snapshotData.volumePerMuscle,
+        flags: snapshotData.flags,
+        coachNotes: snapshotData.coachNotes,
+        jsonSnapshot: snapshotData.jsonSnapshot
+      });
+
+      res.json(snapshot);
+    } catch (error) {
+      console.error("Error creating plan completion snapshot:", error);
+      res.status(500).json({ error: "Failed to create plan completion snapshot" });
+    }
+  });
+
+  app.get("/api/progress-snapshots/plan-completions/:userId", async (req, res) => {
+    try {
+      const userId = parseInt(req.params.userId);
+      const snapshots = await storage.getPlanCompletionSnapshots(userId);
+      res.json(snapshots);
+    } catch (error) {
+      res.status(500).json({ error: "Failed to fetch plan completion snapshots" });
+    }
+  });
+
   const httpServer = createServer(app);
   return httpServer;
 }

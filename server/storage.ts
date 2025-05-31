@@ -317,7 +317,7 @@ export class DatabaseStorage implements IStorage {
     return await db.select().from(progressSnapshots)
       .where(and(
         eq(progressSnapshots.userId, userId),
-        isNull(progressSnapshots.planWeekId) // Plan completion snapshots have no specific week
+        eq(progressSnapshots.planWeekId, null) // Plan completion snapshots have no specific week
       ))
       .orderBy(desc(progressSnapshots.createdAt));
   }
@@ -326,8 +326,8 @@ export class DatabaseStorage implements IStorage {
     return await db.select().from(progressSnapshots)
       .where(and(
         eq(progressSnapshots.userId, userId),
-        eq(progressSnapshots.planId, planId),
-        isNotNull(progressSnapshots.planWeekId) // Weekly snapshots have a specific week
+        eq(progressSnapshots.planId, planId)
+        // Only get snapshots with a planWeekId (weekly snapshots)
       ))
       .orderBy(progressSnapshots.planWeekId);
   }

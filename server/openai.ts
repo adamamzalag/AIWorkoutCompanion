@@ -185,6 +185,34 @@ Respond with JSON array of workouts: [
 }
 
 export async function generateWorkoutPlan(request: WorkoutPlanRequest): Promise<GeneratedWorkoutPlan> {
+  // Get progress context for progressive plans
+  let progressContext = "";
+  if (request.planType === "progressive") {
+    console.log("📊 Fetching progress history for progressive plan...");
+    
+    try {
+      const planCompletionSnapshots = await storage.getPlanCompletionSnapshots(request.userId);
+      
+      if (planCompletionSnapshots.length > 0) {
+        // Use the 2 most recent plan completion snapshots for context
+        const recentSnapshots = planCompletionSnapshots.slice(0, 2);
+        progressContext = `
+
+WORKOUT HISTORY INSIGHTS:
+${recentSnapshots.map((snapshot, index) => `
+Previous Plan ${index + 1}:
+- Overall Performance: ${snapshot.coachNotes}
+- Success Rate: ${snapshot.adherencePercent}%
+- Key Learnings: ${JSON.stringify(snapshot.jsonSnapshot)}
+`).join('\n')}
+
+BUILD ON THESE INSIGHTS: Create a progressive plan that addresses past challenges and leverages proven strengths.`;
+      }
+    } catch (error) {
+      console.warn("Could not fetch progress snapshots:", error);
+    }
+  }
+
   const prompt = `Generate a comprehensive ${request.duration}-week workout plan with the following specifications:
 
 Fitness Level: ${request.fitnessLevel}
@@ -192,6 +220,7 @@ Available Equipment: ${request.equipment.join(", ") || "None (bodyweight only)"}
 Goals: ${request.goals.join(", ")}
 Workouts per week: ${request.workoutsPerWeek}
 Time per workout: ${request.timePerWorkout} minutes
+Plan Type: ${request.planType === "progressive" ? "Progressive (build on user history)" : "Independent (fresh start)"}${progressContext}
 
 Create a progressive plan that includes:
 1. A descriptive title and overview
