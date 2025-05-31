@@ -1,9 +1,27 @@
-import { pgTable, text, serial, integer, boolean, timestamp, jsonb } from "drizzle-orm/pg-core";
+import { pgTable, text, serial, integer, boolean, timestamp, jsonb, varchar, index } from "drizzle-orm/pg-core";
 import { createInsertSchema } from "drizzle-zod";
 import { z } from "zod";
 
+// Session storage table for Replit Auth  
+export const sessions = pgTable(
+  "sessions",
+  {
+    sid: varchar("sid").primaryKey(),
+    sess: jsonb("sess").notNull(),
+    expire: timestamp("expire").notNull(),
+  },
+  (table) => [index("IDX_session_expire").on(table.expire)],
+);
+
 export const users = pgTable("users", {
   id: serial("id").primaryKey(),
+  // Replit Auth fields
+  replitId: varchar("replit_id").unique(), // Replit user ID for auth
+  email: varchar("email").unique(),
+  firstName: varchar("first_name"),
+  lastName: varchar("last_name"),  
+  profileImageUrl: varchar("profile_image_url"),
+  // Existing fitness app fields
   username: text("username").notNull().unique(),
   name: text("name").notNull(),
   fitnessLevel: text("fitness_level"), // beginner, intermediate, advanced
@@ -12,11 +30,12 @@ export const users = pgTable("users", {
   notes: text("notes"), // additional notes for workout generation
   onboardingCompleted: boolean("onboarding_completed").notNull().default(false),
   createdAt: timestamp("created_at").notNull().defaultNow(),
+  updatedAt: timestamp("updated_at").defaultNow(),
 });
 
 export const workoutPlans = pgTable("workout_plans", {
   id: serial("id").primaryKey(),
-  userId: integer("user_id").notNull(),
+  userId: varchar("user_id").notNull(),
   title: text("title").notNull(),
   description: text("description"),
   duration: integer("duration").notNull(), // in weeks
