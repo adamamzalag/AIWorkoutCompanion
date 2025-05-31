@@ -18,7 +18,7 @@ import { ChevronLeft, ChevronRight, Sparkles, Plus, X } from "lucide-react";
 const onboardingSchema = z.object({
   fitnessLevel: z.enum(["beginner", "intermediate", "advanced"]),
   equipment: z.array(z.string()).min(1, "Please select at least one equipment option"),
-  goals: z.array(z.string()).min(1, "Please select at least one fitness goal"),
+  goals: z.string().min(1, "Please select a fitness goal"),
   notes: z.string().optional(),
 });
 

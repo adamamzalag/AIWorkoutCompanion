@@ -133,7 +133,8 @@ Respond with JSON: {
 export async function generateWeeklyWorkouts(
   framework: any,
   weekNumber: number,
-  previousWeeks?: any[]
+  previousWeeks?: any[],
+  timePerWorkout?: number
 ): Promise<GeneratedWorkout[]> {
   console.log("🔍 WEEKLY WORKOUT GENERATION - Input Data:");
   console.log("Framework:", JSON.stringify(framework, null, 2));
@@ -150,7 +151,7 @@ export async function generateWeeklyWorkouts(
   const prompt = `Generate detailed workouts for Week ${weekNumber} of this fitness plan.
 
 Framework: ${JSON.stringify(currentWeek)}
-Equipment: ${framework.equipment.join(', ')}
+Available Equipment (use what's appropriate for each workout): ${framework.equipment.join(', ')}
 ${progressionContext}
 
 Create ${currentWeek.workoutDays.length} detailed workouts following this structure:
@@ -162,7 +163,7 @@ Respond with JSON array of workouts: [
   {
     "title": "Workout day title",
     "description": "Workout focus",
-    "estimatedDuration": ${framework.totalWorkouts ? Math.floor(framework.totalWorkouts / framework.duration * 60 / currentWeek.workoutDays.length) : 45},
+    "estimatedDuration": ${timePerWorkout || 45},
     "exercises": [
       {
         "section": "warm-up",

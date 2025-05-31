@@ -347,7 +347,7 @@ export async function registerRoutes(app: Express): Promise<Server> {
         console.log(`🏋️ Generating Week ${week} workouts...`);
         updateProgress(req.body.userId, operationId, 3 + (week - 1) / framework.duration, 'generating', `Generating Week ${week} workouts...`);
         
-        const weekWorkouts = await generateWeeklyWorkouts(framework, week, weeklyResults);
+        const weekWorkouts = await generateWeeklyWorkouts(framework, week, weeklyResults, planRequest.timePerWorkout);
         allWorkouts.push(...weekWorkouts);
         weeklyResults.push({ week, workouts: weekWorkouts });
         
