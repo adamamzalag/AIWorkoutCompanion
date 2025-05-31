@@ -1,7 +1,7 @@
 import { 
   users, workoutPlans, exercises, workouts, workoutSessions, chatMessages, userProgress,
   planWeeks, progressSnapshots,
-  type User, type InsertUser,
+  type User, type InsertUser, type UpsertUser,
   type WorkoutPlan, type InsertWorkoutPlan,
   type Exercise, type InsertExercise,
   type Workout, type InsertWorkout,
@@ -18,8 +18,10 @@ export interface IStorage {
   // Users
   getUser(id: number): Promise<User | undefined>;
   getUserByUsername(username: string): Promise<User | undefined>;
+  getUserByReplitId(replitId: string): Promise<User | undefined>;
   createUser(user: InsertUser): Promise<User>;
   updateUser(id: number, updates: Partial<InsertUser>): Promise<User | undefined>;
+  upsertUser(user: UpsertUser): Promise<User>;
 
   // Workout Plans
   getWorkoutPlans(userId: number): Promise<WorkoutPlan[]>;
@@ -77,6 +79,26 @@ export class DatabaseStorage implements IStorage {
   async getUserByUsername(username: string): Promise<User | undefined> {
     const [user] = await db.select().from(users).where(eq(users.username, username));
     return user || undefined;
+  }
+
+  async getUserByReplitId(replitId: string): Promise<User | undefined> {
+    const [user] = await db.select().from(users).where(eq(users.replitId, replitId));
+    return user || undefined;
+  }
+
+  async upsertUser(userData: UpsertUser): Promise<User> {
+    const [user] = await db
+      .insert(users)
+      .values(userData)
+      .onConflictDoUpdate({
+        target: users.replitId,
+        set: {
+          ...userData,
+          updatedAt: new Date(),
+        },
+      })
+      .returning();
+    return user;
   }
 
   async createUser(insertUser: InsertUser): Promise<User> {

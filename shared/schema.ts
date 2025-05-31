@@ -35,7 +35,7 @@ export const users = pgTable("users", {
 
 export const workoutPlans = pgTable("workout_plans", {
   id: serial("id").primaryKey(),
-  userId: varchar("user_id").notNull(),
+  userId: integer("user_id").notNull(),
   title: text("title").notNull(),
   description: text("description"),
   duration: integer("duration").notNull(), // in weeks
@@ -180,6 +180,9 @@ export const insertProgressSnapshotSchema = createInsertSchema(progressSnapshots
 // Types
 export type InsertUser = z.infer<typeof insertUserSchema>;
 export type User = typeof users.$inferSelect;
+
+// Replit Auth specific types
+export type UpsertUser = typeof users.$inferInsert;
 
 export type InsertWorkoutPlan = z.infer<typeof insertWorkoutPlanSchema>;
 export type WorkoutPlan = typeof workoutPlans.$inferSelect;
