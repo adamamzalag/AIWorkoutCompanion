@@ -59,23 +59,16 @@ export default function OnboardingPage() {
 
   const updateProfileMutation = useMutation({
     mutationFn: async (data: OnboardingForm) => {
-      const response = await fetch("/api/profile", {
+      return await apiRequest("/api/profile", {
         method: "PUT",
-        headers: {
-          "Content-Type": "application/json",
-        },
         body: JSON.stringify({
           ...data,
           onboardingCompleted: true,
         }),
       });
-      if (!response.ok) {
-        throw new Error("Failed to update profile");
-      }
-      return response.json();
     },
     onSuccess: () => {
-      queryClient.invalidateQueries({ queryKey: ["/api/profile"] });
+      queryClient.invalidateQueries({ queryKey: ["/api/auth/user"] });
       setLocation("/");
     },
   });
