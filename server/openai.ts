@@ -226,7 +226,7 @@ export async function generateWorkoutPlan(request: WorkoutPlanRequest): Promise<
         progressContext = `
 
 WORKOUT HISTORY INSIGHTS:
-${recentSnapshots.map((snapshot, index) => `
+${recentSnapshots.map((snapshot: any, index: number) => `
 Previous Plan ${index + 1}:
 - Overall Performance: ${snapshot.coachNotes}
 - Success Rate: ${snapshot.adherencePercent}%
@@ -244,7 +244,7 @@ BUILD ON THESE INSIGHTS: Create a progressive plan that addresses past challenge
 
 Fitness Level: ${request.fitnessLevel}
 Available Equipment: ${request.equipment.join(", ") || "None (bodyweight only)"}
-Goals: ${typeof request.goals === 'string' ? request.goals : request.goals?.join(", ") || 'General fitness'}
+Goals: ${request.goals}
 Workouts per week: ${request.workoutsPerWeek}
 Time per workout: ${request.timePerWorkout} minutes
 Plan Type: ${request.planType === "progressive" ? "Progressive (build on user history)" : "Independent (fresh start)"}${progressContext}
