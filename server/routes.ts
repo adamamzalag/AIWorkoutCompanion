@@ -290,7 +290,7 @@ export async function registerRoutes(app: Express): Promise<Server> {
       // Get user profile data to combine with form inputs
       const user = await storage.getUser(req.body.userId);
       if (!user || !user.fitnessLevel || !user.equipment || !user.goals) {
-        updateProgress(req.body.userId, operationId, 0, 6, 'failed', 'User profile incomplete - please complete onboarding');
+        updateProgress(req.body.userId, operationId, 0, 'failed', 'User profile incomplete - please complete onboarding');
         return;
       }
 
@@ -302,11 +302,11 @@ export async function registerRoutes(app: Express): Promise<Server> {
         goals: user.goals,
       };
       
-      updateProgress(req.body.userId, operationId, 1, 6, 'generating', 'Analyzing requirements...');
+      updateProgress(req.body.userId, operationId, 1, 'generating', 'Analyzing requirements...');
       
       // Generate framework using OpenAI (Batch 1)
       console.log("🤖 Generating workout framework...");
-      updateProgress(req.body.userId, operationId, 2, 6, 'generating', 'Creating workout framework...');
+      updateProgress(req.body.userId, operationId, 2, 'generating', 'Creating workout framework...');
       
       const { generateWorkoutFramework, generateWeeklyWorkouts } = await import("./openai.js");
       const framework = await generateWorkoutFramework(planRequest);
@@ -316,7 +316,7 @@ export async function registerRoutes(app: Express): Promise<Server> {
         workoutsPerWeek: framework.weeklyStructure[0]?.workoutDays.length || 0
       });
 
-      updateProgress(req.body.userId, operationId, 3, 6, 'generating', 'Generating detailed workouts...');
+      updateProgress(req.body.userId, operationId, 3, 'generating', 'Generating detailed workouts...');
 
       // Generate weekly workouts using framework (Batch 2)
       const allWorkouts: any[] = [];
@@ -324,7 +324,7 @@ export async function registerRoutes(app: Express): Promise<Server> {
       
       for (let week = 1; week <= framework.duration; week++) {
         console.log(`🏋️ Generating Week ${week} workouts...`);
-        updateProgress(req.body.userId, operationId, 3 + (week - 1) / framework.duration, 6, 'generating', `Generating Week ${week} workouts...`);
+        updateProgress(req.body.userId, operationId, 3 + (week - 1) / framework.duration, 'generating', `Generating Week ${week} workouts...`);
         
         const weekWorkouts = await generateWeeklyWorkouts(framework, week, weeklyResults);
         allWorkouts.push(...weekWorkouts);
@@ -349,7 +349,7 @@ export async function registerRoutes(app: Express): Promise<Server> {
         exerciseCount: generatedPlan.workouts.reduce((acc, w) => acc + w.exercises.length, 0)
       });
       
-      updateProgress(req.body.userId, operationId, 3, 6, 'processing', 'Saving workout plan...');
+      updateProgress(req.body.userId, operationId, 3, 'processing', 'Saving workout plan...');
       
       // Save the plan to storage
       console.log("💾 Saving workout plan to storage...");
@@ -365,7 +365,7 @@ export async function registerRoutes(app: Express): Promise<Server> {
       });
       console.log("✅ Workout plan saved with ID:", workoutPlan.id);
 
-      updateProgress(req.body.userId, operationId, 4, 6, 'processing', 'Processing exercises and workouts...');
+      updateProgress(req.body.userId, operationId, 4, 'processing', 'Processing exercises and workouts...');
       
       // Process and save individual workouts with normalized exercises
       console.log("🔄 Processing exercises and creating workout records...");
@@ -375,7 +375,7 @@ export async function registerRoutes(app: Express): Promise<Server> {
         
         // Update progress for each workout processed
         const workoutProgress = 4 + (i / generatedPlan.workouts.length * 1); // Spread step 4-5 across workouts
-        updateProgress(req.body.userId, operationId, workoutProgress, 6, 'processing', `Processing workout ${i + 1}/${generatedPlan.workouts.length}...`);
+        updateProgress(req.body.userId, operationId, workoutProgress, 'processing', `Processing workout ${i + 1}/${generatedPlan.workouts.length}...`);
         
         // Process each exercise to normalize and create exercise records
         const processedExercises = [];
@@ -411,12 +411,13 @@ export async function registerRoutes(app: Express): Promise<Server> {
             console.log(`➕ Creating new exercise: "${aiExercise.name}"`);
             // Create new exercise record
             const newExercise = await storage.createExercise({
+              slug: slugify(aiExercise.name),
               name: aiExercise.name,
+              difficulty: "intermediate",
               muscle_groups: aiExercise.muscleGroups,
-              equipment: aiExercise.equipment,
               instructions: aiExercise.instructions,
-              youtubeId: null,
-              difficulty: "intermediate"
+              equipment: aiExercise.equipment,
+              youtubeId: null
             });
             exerciseId = newExercise.id;
             exerciseName = newExercise.name;
@@ -449,7 +450,7 @@ export async function registerRoutes(app: Express): Promise<Server> {
         console.log(`✅ Workout created with ID: ${createdWorkout.id}`);
       }
 
-      updateProgress(req.body.userId, operationId, 6, 6, 'completed', 'Workout plan generation complete!');
+      updateProgress(req.body.userId, operationId, 6, 'completed', 'Workout plan generation complete!');
       
       // Update progress with final result
       const { completeProgress } = await import("./progress-tracker.js");
@@ -463,7 +464,7 @@ export async function registerRoutes(app: Express): Promise<Server> {
       
       // Update progress with error
       const { updateProgress } = await import("./progress-tracker.js");
-      updateProgress(req.body.userId, operationId, 0, 6, 'failed', 'Generation failed - please try again');
+      updateProgress(req.body.userId, operationId, 0, 'failed', 'Generation failed - please try again');
     }
   });
 

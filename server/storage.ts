@@ -1,12 +1,15 @@
 import { 
   users, workoutPlans, exercises, workouts, workoutSessions, chatMessages, userProgress,
+  planWeeks, progressSnapshots,
   type User, type InsertUser,
   type WorkoutPlan, type InsertWorkoutPlan,
   type Exercise, type InsertExercise,
   type Workout, type InsertWorkout,
   type WorkoutSession, type InsertWorkoutSession,
   type ChatMessage, type InsertChatMessage,
-  type UserProgress, type InsertUserProgress
+  type UserProgress, type InsertUserProgress,
+  type PlanWeek, type InsertPlanWeek,
+  type ProgressSnapshot, type InsertProgressSnapshot
 } from "@shared/schema";
 import { db } from "./db";
 import { eq, desc, like, and } from "drizzle-orm";
