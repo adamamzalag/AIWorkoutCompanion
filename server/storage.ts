@@ -54,6 +54,18 @@ export interface IStorage {
   // User Progress
   getUserProgress(userId: number): Promise<UserProgress[]>;
   createUserProgress(progress: InsertUserProgress): Promise<UserProgress>;
+
+  // Plan Weeks
+  getPlanWeeks(planId: number): Promise<PlanWeek[]>;
+  getPlanWeek(id: number): Promise<PlanWeek | undefined>;
+  createPlanWeek(planWeek: InsertPlanWeek): Promise<PlanWeek>;
+  updatePlanWeek(id: number, updates: Partial<InsertPlanWeek>): Promise<PlanWeek | undefined>;
+  
+  // Progress Snapshots
+  getProgressSnapshots(userId: number): Promise<ProgressSnapshot[]>;
+  getProgressSnapshot(id: number): Promise<ProgressSnapshot | undefined>;
+  createProgressSnapshot(snapshot: InsertProgressSnapshot): Promise<ProgressSnapshot>;
+  getLatestProgressSnapshot(userId: number): Promise<ProgressSnapshot | undefined>;
 }
 
 export class DatabaseStorage implements IStorage {
@@ -217,6 +229,63 @@ export class DatabaseStorage implements IStorage {
       .values(insertProgress)
       .returning();
     return progress;
+  }
+
+  // Plan Weeks
+  async getPlanWeeks(planId: number): Promise<PlanWeek[]> {
+    return await db.select().from(planWeeks)
+      .where(eq(planWeeks.planId, planId))
+      .orderBy(planWeeks.weekIndex);
+  }
+
+  async getPlanWeek(id: number): Promise<PlanWeek | undefined> {
+    const [planWeek] = await db.select().from(planWeeks).where(eq(planWeeks.id, id));
+    return planWeek || undefined;
+  }
+
+  async createPlanWeek(insertPlanWeek: InsertPlanWeek): Promise<PlanWeek> {
+    const [planWeek] = await db
+      .insert(planWeeks)
+      .values(insertPlanWeek)
+      .returning();
+    return planWeek;
+  }
+
+  async updatePlanWeek(id: number, updates: Partial<InsertPlanWeek>): Promise<PlanWeek | undefined> {
+    const [planWeek] = await db
+      .update(planWeeks)
+      .set(updates)
+      .where(eq(planWeeks.id, id))
+      .returning();
+    return planWeek || undefined;
+  }
+
+  // Progress Snapshots
+  async getProgressSnapshots(userId: number): Promise<ProgressSnapshot[]> {
+    return await db.select().from(progressSnapshots)
+      .where(eq(progressSnapshots.userId, userId))
+      .orderBy(desc(progressSnapshots.createdAt));
+  }
+
+  async getProgressSnapshot(id: number): Promise<ProgressSnapshot | undefined> {
+    const [snapshot] = await db.select().from(progressSnapshots).where(eq(progressSnapshots.id, id));
+    return snapshot || undefined;
+  }
+
+  async createProgressSnapshot(insertSnapshot: InsertProgressSnapshot): Promise<ProgressSnapshot> {
+    const [snapshot] = await db
+      .insert(progressSnapshots)
+      .values(insertSnapshot)
+      .returning();
+    return snapshot;
+  }
+
+  async getLatestProgressSnapshot(userId: number): Promise<ProgressSnapshot | undefined> {
+    const [snapshot] = await db.select().from(progressSnapshots)
+      .where(eq(progressSnapshots.userId, userId))
+      .orderBy(desc(progressSnapshots.createdAt))
+      .limit(1);
+    return snapshot || undefined;
   }
 }
 
