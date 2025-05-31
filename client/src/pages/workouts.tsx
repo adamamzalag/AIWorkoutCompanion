@@ -40,16 +40,15 @@ const generatePlanSchema = z.object({
   duration: z.number().min(1, "Duration must be at least 1 week").max(52, "Duration cannot exceed 52 weeks"),
   workoutsPerWeek: z.number().min(1, "Must have at least 1 workout per week").max(7, "Cannot have more than 7 workouts per week"),
   timePerWorkout: z.number().min(15, "Workouts must be at least 15 minutes").max(180, "Workouts cannot exceed 3 hours"),
+  planType: z.enum(["independent", "progressive"], {
+    required_error: "Please select a plan type",
+  }),
 });
 
-const equipmentOptions = [
-  'none', 'dumbbells', 'barbell', 'resistance_bands', 'kettlebells', 
-  'pull_up_bar', 'bench', 'cable_machine', 'treadmill', 'stationary_bike'
-];
-
-const goalOptions = [
-  'weight_loss', 'muscle_gain', 'strength', 'endurance', 'flexibility', 
-  'general_fitness', 'athletic_performance', 'rehabilitation'
+// Plan type options
+const planTypeOptions = [
+  { value: 'independent', label: 'Independent Plan', description: 'Create a fresh plan based on your current profile' },
+  { value: 'progressive', label: 'Progressive Plan', description: 'Build on your previous plan results and progress' }
 ];
 
 export default function WorkoutsPage() {
@@ -130,7 +129,8 @@ export default function WorkoutsPage() {
     defaultValues: {
       duration: 4,
       workoutsPerWeek: 3,
-      timePerWorkout: 45
+      timePerWorkout: 45,
+      planType: "independent"
     }
   });
 
