@@ -11,6 +11,8 @@ export interface WorkoutPlanRequest {
   duration: number; // weeks
   workoutsPerWeek: number;
   timePerWorkout: number; // minutes
+  planType: "independent" | "progressive";
+  userId: number;
 }
 
 export interface GeneratedWorkout {

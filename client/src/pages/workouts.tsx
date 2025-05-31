@@ -29,7 +29,7 @@ import {
   Search
 } from 'lucide-react';
 import type { WorkoutPlan, Workout, User } from '@shared/schema';
-import type { WorkoutPlanRequest } from '@/lib/types';
+import type { WorkoutPlanRequest } from '../../../server/openai';
 import { WorkoutCard } from '@/components/workout-card';
 import { GenerationProgress } from '@/components/generation-progress';
 
@@ -135,9 +135,21 @@ export default function WorkoutsPage() {
   });
 
   const onSubmit = (values: z.infer<typeof generatePlanSchema>) => {
-    const planRequest: WorkoutPlanRequest = {
+    if (!userProfile) {
+      toast({
+        title: "Profile Required",
+        description: "Please complete your profile before generating a workout plan.",
+        variant: "destructive",
+      });
+      return;
+    }
+
+    const planRequest = {
       ...values,
-      userId: MOCK_USER_ID
+      userId: MOCK_USER_ID,
+      fitnessLevel: (userProfile.fitnessLevel as 'beginner' | 'intermediate' | 'advanced') || 'beginner',
+      equipment: userProfile.equipment || [],
+      goals: userProfile.goals || []
     };
     generatePlanMutation.mutate(planRequest);
   };
@@ -181,25 +193,33 @@ export default function WorkoutsPage() {
             
             <Form {...form}>
               <form onSubmit={form.handleSubmit(onSubmit)} className="space-y-4">
-                {/* Fitness Level */}
+                {/* Plan Type */}
                 <FormField
                   control={form.control}
-                  name="fitnessLevel"
+                  name="planType"
                   render={({ field }) => (
                     <FormItem>
-                      <FormLabel className="text-foreground">Fitness Level</FormLabel>
-                      <Select onValueChange={field.onChange} defaultValue={field.value}>
-                        <FormControl>
-                          <SelectTrigger className="glass-effect border-border/50">
-                            <SelectValue placeholder="Select fitness level" />
-                          </SelectTrigger>
-                        </FormControl>
-                        <SelectContent>
-                          <SelectItem value="beginner">Beginner</SelectItem>
-                          <SelectItem value="intermediate">Intermediate</SelectItem>
-                          <SelectItem value="advanced">Advanced</SelectItem>
-                        </SelectContent>
-                      </Select>
+                      <FormLabel className="text-foreground">Plan Type</FormLabel>
+                      <div className="space-y-3">
+                        {planTypeOptions.map((option) => (
+                          <FormControl key={option.value}>
+                            <label className="flex items-start space-x-3 glass-effect rounded-lg p-4 cursor-pointer hover:bg-card/60 transition-colors touch-target">
+                              <input
+                                type="radio"
+                                name="planType"
+                                value={option.value}
+                                checked={field.value === option.value}
+                                onChange={() => field.onChange(option.value)}
+                                className="mt-1 w-4 h-4 text-primary bg-transparent border-border focus:ring-primary focus:ring-2"
+                              />
+                              <div className="flex-1">
+                                <div className="text-foreground font-medium">{option.label}</div>
+                                <div className="text-muted-foreground text-sm mt-1">{option.description}</div>
+                              </div>
+                            </label>
+                          </FormControl>
+                        ))}
+                      </div>
                       <FormMessage />
                     </FormItem>
                   )}
@@ -271,100 +291,22 @@ export default function WorkoutsPage() {
                   )}
                 />
 
-                {/* Equipment */}
-                <FormField
-                  control={form.control}
-                  name="equipment"
-                  render={() => (
-                    <FormItem>
-                      <FormLabel className="text-foreground">Available Equipment</FormLabel>
-                      <div className="space-y-2">
-                        {equipmentOptions.map((item) => (
-                          <FormField
-                            key={item}
-                            control={form.control}
-                            name="equipment"
-                            render={({ field }) => {
-                              return (
-                                <FormItem>
-                                  <FormControl>
-                                    <label className="flex items-center space-x-3 glass-effect rounded-lg p-3 cursor-pointer hover:bg-card/60 transition-colors touch-target">
-                                      <Checkbox
-                                        checked={field.value?.includes(item)}
-                                        onCheckedChange={(checked) => {
-                                          return checked
-                                            ? field.onChange([...field.value, item])
-                                            : field.onChange(
-                                                field.value?.filter((value) => value !== item)
-                                              )
-                                        }}
-                                      />
-                                      <span className="text-sm text-foreground font-medium capitalize flex-1">
-                                        {item.replace('_', ' ')}
-                                      </span>
-                                    </label>
-                                  </FormControl>
-                                </FormItem>
-                              )
-                            }}
-                          />
-                        ))}
-                      </div>
-                      <FormMessage />
-                    </FormItem>
-                  )}
-                />
-
-                {/* Goals */}
-                <FormField
-                  control={form.control}
-                  name="goals"
-                  render={() => (
-                    <FormItem>
-                      <FormLabel className="text-foreground">Fitness Goals</FormLabel>
-                      <div className="space-y-2">
-                        {goalOptions.map((item) => (
-                          <FormField
-                            key={item}
-                            control={form.control}
-                            name="goals"
-                            render={({ field }) => {
-                              return (
-                                <FormItem>
-                                  <FormControl>
-                                    <label className="flex items-center space-x-3 glass-effect rounded-lg p-3 cursor-pointer hover:bg-card/60 transition-colors touch-target">
-                                      <Checkbox
-                                        checked={field.value?.includes(item)}
-                                        onCheckedChange={(checked) => {
-                                          return checked
-                                            ? field.onChange([...field.value, item])
-                                            : field.onChange(
-                                                field.value?.filter((value) => value !== item)
-                                              )
-                                        }}
-                                      />
-                                      <span className="text-sm text-foreground font-medium capitalize flex-1">
-                                        {item.replace('_', ' ')}
-                                      </span>
-                                    </label>
-                                  </FormControl>
-                                </FormItem>
-                              )
-                            }}
-                          />
-                        ))}
-                      </div>
-                      <FormMessage />
-                    </FormItem>
-                  )}
-                />
-
                 <Button 
                   type="submit" 
-                  className="w-full bg-primary hover:bg-primary/90 text-primary-foreground py-3 touch-target"
+                  className="w-full bg-gradient-to-r from-primary to-secondary hover:from-primary/90 hover:to-secondary/90 text-white py-3 touch-target"
                   disabled={generatePlanMutation.isPending}
                 >
-                  {generatePlanMutation.isPending ? 'Generating...' : 'Generate Plan'}
+                  {generatePlanMutation.isPending ? (
+                    <>
+                      <div className="w-4 h-4 border-2 border-white border-t-transparent rounded-full animate-spin mr-2" />
+                      Generating...
+                    </>
+                  ) : (
+                    <>
+                      <Sparkles size={16} className="mr-2" />
+                      Generate Plan
+                    </>
+                  )}
                 </Button>
               </form>
             </Form>
