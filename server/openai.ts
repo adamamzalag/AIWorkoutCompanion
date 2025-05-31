@@ -67,6 +67,8 @@ export async function generateWorkoutFramework(request: WorkoutPlanRequest): Pro
     intensityProgression: string;
   };
 }> {
+  console.log("🔍 FRAMEWORK GENERATION - Input Data:", JSON.stringify(request, null, 2));
+  
   const prompt = `Create a strategic ${request.duration}-week workout framework for ${request.fitnessLevel} level.
 
 Requirements:
@@ -112,6 +114,8 @@ Respond with JSON: {
   }
 }`;
 
+  console.log("🔍 FRAMEWORK GENERATION - Prompt:", prompt);
+
   const response = await openai.chat.completions.create({
     model: "gpt-4.1-nano",
     messages: [
@@ -131,6 +135,11 @@ export async function generateWeeklyWorkouts(
   weekNumber: number,
   previousWeeks?: any[]
 ): Promise<GeneratedWorkout[]> {
+  console.log("🔍 WEEKLY WORKOUT GENERATION - Input Data:");
+  console.log("Framework:", JSON.stringify(framework, null, 2));
+  console.log("Week Number:", weekNumber);
+  console.log("Previous Weeks:", JSON.stringify(previousWeeks, null, 2));
+  
   const currentWeek = framework.weeklyStructure.find((w: any) => w.week === weekNumber);
   if (!currentWeek) throw new Error(`Week ${weekNumber} not found in framework`);
 
@@ -169,6 +178,8 @@ Respond with JSON array of workouts: [
     ]
   }
 ]`;
+
+  console.log("🔍 WEEKLY WORKOUT GENERATION - Prompt:", prompt);
 
   const response = await openai.chat.completions.create({
     model: "gpt-4.1-nano",
