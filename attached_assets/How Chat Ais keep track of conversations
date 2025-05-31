@@ -1,0 +1,53 @@
+How chat-style AIs keep track of a conversation (and how you can replicate it in your own app)
+
+The model itself only has a “context window.”
+• Large-language-models (LLMs) are giant pattern-recognition engines. They read a single stream of tokens (roughly words & symbols) and predict the next ones.
+• Whatever you pass in that stream is the model’s entire memory for that call. Newer models have huge windows—GPT-4o mini can see ≈ 128 000 tokens, Claude 3 can see ≈ 200 000, and Gemini 1.5 Pro reaches ≈ 1 million. 
+OpenAI
+Anthropic
+Google AI for Developers
+
+“Conversation” is created by re-sending history on every turn.
+• When you send message #5, your backend usually concatenates:
+System instructions → all or some previous user/assistant messages → the new user message → Assistant: (empty)
+• The whole bundle is inside the context window, so the model can refer to earlier parts by attention.
+
+Why the window eventually overflows (and what production systems do).
+• At ≈ 3-4 characters per token, 128 k tokens is ~100 pages—big but not infinite.
+• Long-running chats therefore need external memory strategies that decide what to resend:
+– Sliding window – keep only the last N turns.
+– Running summary – store a short synopsis; regenerate/refresh it when it grows.
+– Vector (embedding) retrieval – save each past message (or document) as a vector; on every turn embed the new user query; retrieve the K most relevant snippets and insert just those (“RAG”).
+– Hybrid – recent chat + summary + retrieved facts.
+
+True “long-term memory” is still an app-level feature.
+• OpenAI’s ChatGPT “Memory” simply stores key/value notes on the server and auto-prepends them to future prompts. It’s conceptually the same trick—just automated and opt-in. 
+WIRED
+
+• Other stacks (LangChain, Llama-Index, Google Vertex AI, etc.) give plug-and-play “conversation memory” classes that implement the same sliding / summary / vector ideas.
+
+How you can add it to your own (non-coding-heavy) app.
+• Pick a provider that fits your budget & size needs (OpenAI Assistants API, Google Gemini API, Anthropic Claude API, or an open-source model behind something like Groq or Ollama).
+• Store each user/assistant message in your database with a timestamp and, ideally, an embedding vector. (Most APIs have a single-line call to create embeddings.)
+• On every new user message:
+
+Pull the last ~4-8 chat turns.
+
+Query your vector store for the top-k past messages or docs that are semantically similar.
+
+Optionally add a 1-2 sentence running summary you update every ~20 turns.
+
+Assemble system + summary + retrieved + recent + new user into the prompt and send it.
+
+Save the assistant reply, create its embedding, and loop.
+• If you use a no-code/low-code wrapper (LangChain Templates, Flowise, Pipedream, Zapier Interfaces) many of these steps are drag-and-drop.
+
+Practical tips.
+• Keep an eye on token count—most SDKs have a counter so you can trim automatically.
+• Make your “system” section explicit about style, persona, and allowed tools; that’s usually only ~100 tokens.
+• Ask users for consent before persisting personal data; give them a “forget my data” button.
+• Test cost: 1 million tokens in Gemini ≈ US $10 input / $35 output; 128 k in GPT-4o mini ≈ US $0.02 input / $0.08 output (rough numbers).
+• Latency matters—retrieval queries should be local or cached.
+
+Bottom line
+LLMs only appear to remember; the trick is that your app continuously decides which slices of past context to feed back in. Start with a sliding window, add a short summary, then move up to embedding-based retrieval once your chat histories—or attached documents—get bigger. That pattern will scale from a hobby project all the way to enterprise-grade assistants.

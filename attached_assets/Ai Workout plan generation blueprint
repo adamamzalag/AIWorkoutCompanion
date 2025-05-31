@@ -1,0 +1,95 @@
+## 0 Global constants
+
+SYSTEM\_PROMPT = `You are “Atlas”, a certified strength‑and‑conditioning coach and data architect. Output ONLY JSON that matches the provided schema; no markdown. For each workout include 1‑2 warmUps, 3‑5 mainExercises, optionally 1 cardio, and 2‑3 coolDowns. When you introduce an exercise, add it once to exerciseLibrary and reuse the exact name elsewhere. Do NOT include video URLs. Maintain progressive overload and consistent tone.`
+
+LONG\_JSON\_SCHEMA = \`\`\`json {"\$schema":"\[\[[https://json-schema.org/draft/2020-12/schema","required":\["workoutPlan","exerciseLibrary","weeks"\],"properties":{"workoutPlan":{"type":"object","required":\["title","description","duration","totalWorkouts","difficulty","equipment"\]},"exerciseLibrary":{"type":"array","items":{"type":"object","required":\["exerciseName","primaryMuscle","equipment"\],"properties":{"exerciseName":{"type":"string"},"primaryMuscle":{"type":"string"},"secondaryMuscle":{"type":\["string","null"\]},"equipment":{"type":"string"},"movementType":{"type":\["string","null"\]}}}},"weeks":{"type":"array","items":{"type":"object","required":\["weekIndex","focus","workouts"\],"properties":{"weekIndex":{"type":"integer"},"focus":{"type":"string"},"workouts":{"type":"array","items":{"type":"object","required":\["dayIndex","title","description","estimatedDuration","warmUps","mainExercises","cardio","coolDowns"\],"properties":{"dayIndex":{"type":"integer"},"title":{"type":"string"},"description":{"type":"string"},"estimatedDuration":{"type":"integer"},"warmUps":{"type":"array","minItems":1,"maxItems":2,"items":{"\$ref":"#/definitions/ex"}},"mainExercises":{"type":"array","minItems":3,"maxItems":5,"items":{"\$ref":"#/definitions/ex"}},"cardio":{"type":"array","minItems":0,"maxItems":1,"items":{"\$ref":"#/definitions/ex"}},"coolDowns":{"type":"array","minItems":2,"maxItems":3,"items":{"\$ref":"#/definitions/ex"}}}}}}}},"definitions":{"ex":{"type":"object","required](https://json-schema.org/draft/2020-12/schema%22,%22required%22:[%22workoutPlan%22,%22exerciseLibrary%22,%22weeks%22],%22properties%22:{%22workoutPlan%22:{%22type%22:%22object%22,%22required%22:[%22title%22,%22description%22,%22duration%22,%22totalWorkouts%22,%22difficulty%22,%22equipment%22]},%22exerciseLibrary%22:{%22type%22:%22array%22,%22items%22:{%22type%22:%22object%22,%22required%22:[%22exerciseName%22,%22primaryMuscle%22,%22equipment%22],%22properties%22:{%22exerciseName%22:{%22type%22:%22string%22},%22primaryMuscle%22:{%22type%22:%22string%22},%22secondaryMuscle%22:{%22type%22:[%22string%22,%22null%22]},%22equipment%22:{%22type%22:%22string%22},%22movementType%22:{%22type%22:[%22string%22,%22null%22]}}}},%22weeks%22:{%22type%22:%22array%22,%22items%22:{%22type%22:%22object%22,%22required%22:[%22weekIndex%22,%22focus%22,%22workouts%22],%22properties%22:{%22weekIndex%22:{%22type%22:%22integer%22},%22focus%22:{%22type%22:%22string%22},%22workouts%22:{%22type%22:%22array%22,%22items%22:{%22type%22:%22object%22,%22required%22:[%22dayIndex%22,%22title%22,%22description%22,%22estimatedDuration%22,%22warmUps%22,%22mainExercises%22,%22cardio%22,%22coolDowns%22],%22properties%22:{%22dayIndex%22:{%22type%22:%22integer%22},%22title%22:{%22type%22:%22string%22},%22description%22:{%22type%22:%22string%22},%22estimatedDuration%22:{%22type%22:%22integer%22},%22warmUps%22:{%22type%22:%22array%22,%22minItems%22:1,%22maxItems%22:2,%22items%22:{%22$ref%22:%22#/definitions/ex%22}},%22mainExercises%22:{%22type%22:%22array%22,%22minItems%22:3,%22maxItems%22:5,%22items%22:{%22$ref%22:%22#/definitions/ex%22}},%22cardio%22:{%22type%22:%22array%22,%22minItems%22:0,%22maxItems%22:1,%22items%22:{%22$ref%22:%22#/definitions/ex%22}},%22coolDowns%22:{%22type%22:%22array%22,%22minItems%22:2,%22maxItems%22:3,%22items%22:{%22$ref%22:%22#/definitions/ex%22}}}}}}}},%22definitions%22:{%22ex%22:{%22type%22:%22object%22,%22required)":["exerciseName","sets","reps","restTime","notes"\],"properties":{"exerciseName":{"type":"string"},"sets":{"type":"integer"},"reps":{"type":"string"},"weight":{"type](https://json-schema.org/draft/2020-12/schema%22,%22required%22:[%22workoutPlan%22,%22exerciseLibrary%22,%22weeks%22],%22properties%22:{%22workoutPlan%22:{%22type%22:%22object%22,%22required%22:[%22title%22,%22description%22,%22duration%22,%22totalWorkouts%22,%22difficulty%22,%22equipment%22]},%22exerciseLibrary%22:{%22type%22:%22array%22,%22items%22:{%22type%22:%22object%22,%22required%22:[%22exerciseName%22,%22primaryMuscle%22,%22equipment%22],%22properties%22:{%22exerciseName%22:{%22type%22:%22string%22},%22primaryMuscle%22:{%22type%22:%22string%22},%22secondaryMuscle%22:{%22type%22:[%22string%22,%22null%22]},%22equipment%22:{%22type%22:%22string%22},%22movementType%22:{%22type%22:[%22string%22,%22null%22]}}}},%22weeks%22:{%22type%22:%22array%22,%22items%22:{%22type%22:%22object%22,%22required%22:[%22weekIndex%22,%22focus%22,%22workouts%22],%22properties%22:{%22weekIndex%22:{%22type%22:%22integer%22},%22focus%22:{%22type%22:%22string%22},%22workouts%22:{%22type%22:%22array%22,%22items%22:{%22type%22:%22object%22,%22required%22:[%22dayIndex%22,%22title%22,%22description%22,%22estimatedDuration%22,%22warmUps%22,%22mainExercises%22,%22cardio%22,%22coolDowns%22],%22properties%22:{%22dayIndex%22:{%22type%22:%22integer%22},%22title%22:{%22type%22:%22string%22},%22description%22:{%22type%22:%22string%22},%22estimatedDuration%22:{%22type%22:%22integer%22},%22warmUps%22:{%22type%22:%22array%22,%22minItems%22:1,%22maxItems%22:2,%22items%22:{%22$ref%22:%22#/definitions/ex%22}},%22mainExercises%22:{%22type%22:%22array%22,%22minItems%22:3,%22maxItems%22:5,%22items%22:{%22$ref%22:%22#/definitions/ex%22}},%22cardio%22:{%22type%22:%22array%22,%22minItems%22:0,%22maxItems%22:1,%22items%22:{%22$ref%22:%22#/definitions/ex%22}},%22coolDowns%22:{%22type%22:%22array%22,%22minItems%22:2,%22maxItems%22:3,%22items%22:{%22$ref%22:%22#/definitions/ex%22}}}}}}}},%22definitions%22:{%22ex%22:{%22type%22:%22object%22,%22required%22:[%22exerciseName%22,%22sets%22,%22reps%22,%22restTime%22,%22notes%22],%22properties%22:{%22exerciseName%22:{%22type%22:%22string%22},%22sets%22:{%22type%22:%22integer%22},%22reps%22:{%22type%22:%22string%22},%22weight%22:{%22type)":["string","null"\]},"restTime":{"type":"string"},"notes":{"type":"string"}}}}}](https://json-schema.org/draft/2020-12/schema%22,%22required%22:[%22workoutPlan%22,%22exerciseLibrary%22,%22weeks%22],%22properties%22:{%22workoutPlan%22:{%22type%22:%22object%22,%22required%22:[%22title%22,%22description%22,%22duration%22,%22totalWorkouts%22,%22difficulty%22,%22equipment%22]},%22exerciseLibrary%22:{%22type%22:%22array%22,%22items%22:{%22type%22:%22object%22,%22required%22:[%22exerciseName%22,%22primaryMuscle%22,%22equipment%22],%22properties%22:{%22exerciseName%22:{%22type%22:%22string%22},%22primaryMuscle%22:{%22type%22:%22string%22},%22secondaryMuscle%22:{%22type%22:[%22string%22,%22null%22]},%22equipment%22:{%22type%22:%22string%22},%22movementType%22:{%22type%22:[%22string%22,%22null%22]}}}},%22weeks%22:{%22type%22:%22array%22,%22items%22:{%22type%22:%22object%22,%22required%22:[%22weekIndex%22,%22focus%22,%22workouts%22],%22properties%22:{%22weekIndex%22:{%22type%22:%22integer%22},%22focus%22:{%22type%22:%22string%22},%22workouts%22:{%22type%22:%22array%22,%22items%22:{%22type%22:%22object%22,%22required%22:[%22dayIndex%22,%22title%22,%22description%22,%22estimatedDuration%22,%22warmUps%22,%22mainExercises%22,%22cardio%22,%22coolDowns%22],%22properties%22:{%22dayIndex%22:{%22type%22:%22integer%22},%22title%22:{%22type%22:%22string%22},%22description%22:{%22type%22:%22string%22},%22estimatedDuration%22:{%22type%22:%22integer%22},%22warmUps%22:{%22type%22:%22array%22,%22minItems%22:1,%22maxItems%22:2,%22items%22:{%22$ref%22:%22#/definitions/ex%22}},%22mainExercises%22:{%22type%22:%22array%22,%22minItems%22:3,%22maxItems%22:5,%22items%22:{%22$ref%22:%22#/definitions/ex%22}},%22cardio%22:{%22type%22:%22array%22,%22minItems%22:0,%22maxItems%22:1,%22items%22:{%22$ref%22:%22#/definitions/ex%22}},%22coolDowns%22:{%22type%22:%22array%22,%22minItems%22:2,%22maxItems%22:3,%22items%22:{%22$ref%22:%22#/definitions/ex%22}}}}}}}},%22definitions%22:{%22ex%22:{%22type%22:%22object%22,%22required%22:[%22exerciseName%22,%22sets%22,%22reps%22,%22restTime%22,%22notes%22],%22properties%22:{%22exerciseName%22:{%22type%22:%22string%22},%22sets%22:{%22type%22:%22integer%22},%22reps%22:{%22type%22:%22string%22},%22weight%22:{%22type%22:[%22string%22,%22null%22]},%22restTime%22:{%22type%22:%22string%22},%22notes%22:{%22type%22:%22string%22}}}}})
+
+````
+
+---
+## 1 Database schema (Prisma models)
+model Exercise {id Int @id @default(autoincrement()) slug String @unique name String primaryMuscle String secondaryMuscle String? equipment String movementType String? videoUrl String? WorkoutExercise WorkoutExercise[]}
+model WorkoutPlan {id Int @id @default(autoincrement()) userId Int title String description String durationWeeks Int totalWorkouts Int difficulty String equipment Json jsonMeta Json? PlanWeek PlanWeek[]}
+model PlanWeek {id Int @id @default(autoincrement()) planId Int weekIndex Int focusSummary String workouts Workout[]}
+model Workout {id Int @id @default(autoincrement()) planWeekId Int dayIndex Int title String description String estimatedDuration Int workoutExercises WorkoutExercise[]}
+model WorkoutExercise {id Int @id @default(autoincrement()) workoutId Int exerciseId Int sets Int reps String weight String? restTime String notes String}
+model WorkoutSession {id Int @id @default(autoincrement()) userId Int workoutId Int performedAt DateTime duration Int notes String? jsonPerformance Json}
+model ProgressSnapshot {id Int @id @default(autoincrement()) userId Int planId Int dateRange String adherencePct Int subjectiveFatigue String strengthPRs Json volumePerMuscle Json flags Json coachNotes String jsonSnapshot Json}
+model ChatMessage {id Int @id @default(autoincrement()) userId Int role String message String timestamp DateTime}
+
+---
+## 2 Utility helpers (`server/utils.ts`)
+```ts
+export const slugify = (n:string)=> n.toLowerCase().replace(/[^a-z0-9]+/g,"-").replace(/(^-|-$)/g,"");
+export const upsertExercise = async (ex,prisma)=> prisma.exercise.upsert({
+  where:{slug:slugify(ex.exerciseName)},
+  update:{primaryMuscle:ex.primaryMuscle,secondaryMuscle:ex.secondaryMuscle,equipment:ex.equipment,movementType:ex.movementType},
+  create:{slug:slugify(ex.exerciseName),name:ex.exerciseName,primaryMuscle:ex.primaryMuscle,secondaryMuscle:ex.secondaryMuscle,equipment:ex.equipment,movementType:ex.movementType}
+});
+````
+
+---
+
+## 3 OpenAI wrapper (`server/openai.ts`)
+
+```ts
+export const callOpenAI = (msgs)=> openai.chat.completions.create({
+  model:"gpt-4.1-mini",stream:true,response_format:{type:"json_object"},max_tokens:8000,temperature:0.3,top_p:1,messages:msgs
+});
+// streaming JSON validator using Ajv compiled from LONG_JSON_SCHEMA
+```
+
+---
+
+## 4 Generation pipeline
+
+**SKELETON CALL**
+
+```ts
+msgs=[{role:"system",content:SYSTEM_PROMPT},{role:"assistant",content:LONG_JSON_SCHEMA},{role:"user",content:JSON.stringify({profile,prefs,request:"create skeleton only"})}];
+```
+
+• insert WorkoutPlan & PlanWeek from response.
+
+**WEEK DETAIL LOOP** (for w=1‥durationWeeks)
+
+```ts
+msgs=[system,schema,{role:"user",content:JSON.stringify(profile)},{role:"assistant",content:JSON.stringify({planMeta:{id, title:plan.title},weeksSummary})},{role:"user",content:`{"request":"populate weekIndex":${w}}`}
+]
+```
+
+• callOpenAI → upsertExercise() → insert workouts & workoutExercises.
+
+---
+
+## 5 Weekly progress summariser
+
+raw sessions → small **o4-mini** call → save ProgressSnapshot (200‑300 tokens).
+
+---
+
+## 6 Next-plan generator
+
+```ts
+msgs=[system,schema,{role:"user",content:JSON.stringify(profile)},{role:"assistant",content:JSON.stringify({priorProgress:latestSnapshot.jsonSnapshot})},{role:"user",content:JSON.stringify({prefs:newPrefs,newGoal,request:"create full plan"})}]
+```
+
+• model "gpt-4.1-mini" (switch to "o4-mini" only if >8 K expected).
+
+---
+
+## 7 Token safety recap
+
+schema≈600 + profile≈50 + snapshot≈250 + request≈30 < **1 K prompt** per‑week output ≈3–4 K ⇒ three weeks < 12 K ⇒ far inside 32 K cap.
+
+---
+
+## 8 Hand‑off notes for the dev
+
+• Do **not** ask OpenAI for `videoUrl`; leave null. • A separate cron/service hits the YouTube API to fill `videoUrl` where null. • Chat / tips reuse this architecture—inject `profile` + latest `priorProgress` snapshot, never raw sessions. • Switch to week‑at‑a‑time if duration >6 to stay under 8 K tokens/call. • Use “” follow‑up if stream ends mid‑JSON.
+
+---
+
+### WHY THIS VERSION SUCCEEDS
+
+• Structured variability keeps workouts fresh yet consistent. • Tiny snapshots preserve long‑term memory (<300 tokens/month). • Chunked generation avoids token overflows. • Single schema guarantees DB‑ready output. • Slug‑based upsert prevents duplicate exercises.

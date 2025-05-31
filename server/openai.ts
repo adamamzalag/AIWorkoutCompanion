@@ -1,8 +1,7 @@
 import OpenAI from "openai";
 
-// Updated to use GPT-4.1 for improved reasoning and JSON structure adherence
 const openai = new OpenAI({ 
-  apiKey: process.env.OPENAI_API_KEY || process.env.OPENAI_API_KEY_ENV_VAR || "default_key"
+  apiKey: process.env.OPENAI_API_KEY
 });
 
 export interface WorkoutPlanRequest {
@@ -111,34 +110,15 @@ Respond with JSON: {
   }
 }`;
 
-  const requestPayload = {
-    model: "gpt-4.1",
+  const response = await openai.chat.completions.create({
+    model: "gpt-4.1-nano",
     messages: [
-      { role: "system" as const, content: "You are a workout program architect. Create strategic fitness frameworks in JSON format." },
-      { role: "user" as const, content: prompt }
+      { role: "system", content: "You are a workout program architect. Create strategic fitness frameworks in JSON format." },
+      { role: "user", content: prompt }
     ],
-    response_format: { type: "json_object" as const },
-  };
-
-  console.log("📤 OPENAI REQUEST - Framework Generation:");
-  console.log("===== FULL REQUEST PAYLOAD =====");
-  console.log(JSON.stringify(requestPayload, null, 2));
-  console.log("===== REQUEST ANALYSIS =====");
-  console.log("Model:", requestPayload.model);
-  console.log("System Message Length:", requestPayload.messages[0].content.length);
-  console.log("User Prompt Length:", requestPayload.messages[1].content.length);
-  console.log("Total Estimated Tokens:", Math.ceil((requestPayload.messages[0].content.length + requestPayload.messages[1].content.length) / 4));
-
-  const response = await openai.chat.completions.create(requestPayload);
-
-  console.log("📥 OPENAI RESPONSE - Framework Generation:");
-  console.log("===== FULL RESPONSE =====");
-  console.log(JSON.stringify(response, null, 2));
-  console.log("===== RESPONSE ANALYSIS =====");
-  console.log("Response Token Usage:", response.usage?.total_tokens || "unknown");
-  console.log("Input Tokens:", response.usage?.prompt_tokens || "unknown");
-  console.log("Output Tokens:", response.usage?.completion_tokens || "unknown");
-  console.log("Response Content Length:", response.choices[0].message.content?.length || 0);
+    response_format: { type: "json_object" },
+    temperature: 0.3,
+  });
 
   return JSON.parse(response.choices[0].message.content || "{}");
 }
@@ -188,36 +168,15 @@ Respond with JSON array of workouts: [
   }
 ]`;
 
-  const requestPayload = {
-    model: "gpt-4.1",
+  const response = await openai.chat.completions.create({
+    model: "gpt-4.1-nano",
     messages: [
-      { role: "system" as const, content: "You are a fitness trainer creating detailed workout sessions in JSON format." },
-      { role: "user" as const, content: prompt }
+      { role: "system", content: "You are a fitness trainer creating detailed workout sessions in JSON format." },
+      { role: "user", content: prompt }
     ],
-    response_format: { type: "json_object" as const },
-  };
-
-  console.log(`📤 OPENAI REQUEST - Week ${weekNumber} Generation:`);
-  console.log("===== FULL REQUEST PAYLOAD =====");
-  console.log(JSON.stringify(requestPayload, null, 2));
-  console.log("===== REQUEST ANALYSIS =====");
-  console.log("Model:", requestPayload.model);
-  console.log("System Message Length:", requestPayload.messages[0].content.length);
-  console.log("User Prompt Length:", requestPayload.messages[1].content.length);
-  console.log("Total Estimated Tokens:", Math.ceil((requestPayload.messages[0].content.length + requestPayload.messages[1].content.length) / 4));
-  console.log("Framework Size:", JSON.stringify(currentWeek).length);
-  console.log("Previous Weeks Context Size:", previousWeeks ? JSON.stringify(previousWeeks).length : 0);
-
-  const response = await openai.chat.completions.create(requestPayload);
-
-  console.log(`📥 OPENAI RESPONSE - Week ${weekNumber} Generation:`);
-  console.log("===== FULL RESPONSE =====");
-  console.log(JSON.stringify(response, null, 2));
-  console.log("===== RESPONSE ANALYSIS =====");
-  console.log("Response Token Usage:", response.usage?.total_tokens || "unknown");
-  console.log("Input Tokens:", response.usage?.prompt_tokens || "unknown");
-  console.log("Output Tokens:", response.usage?.completion_tokens || "unknown");
-  console.log("Response Content Length:", response.choices[0].message.content?.length || 0);
+    response_format: { type: "json_object" },
+    temperature: 0.3,
+  });
 
   const result = JSON.parse(response.choices[0].message.content || "{}");
   return result.workouts || [];
@@ -277,7 +236,7 @@ IMPORTANT:
 
   try {
     const response = await openai.chat.completions.create({
-      model: "gpt-4.1",
+      model: "gpt-4.1-nano",
       messages: [
         {
           role: "system",
@@ -300,7 +259,7 @@ Ensure exercises progress logically throughout the plan with appropriate volume 
         }
       ],
       response_format: { type: "json_object" },
-
+      temperature: 0.3,
     });
 
     const result = JSON.parse(response.choices[0].message.content || "{}");
@@ -325,7 +284,7 @@ Give a personalized, encouraging tip that helps improve form, motivation, or per
 
   try {
     const response = await openai.chat.completions.create({
-      model: "gpt-4.1",
+      model: "gpt-4.1-nano",
       messages: [
         {
           role: "system",
@@ -336,6 +295,7 @@ Give a personalized, encouraging tip that helps improve form, motivation, or per
           content: prompt
         }
       ],
+      temperature: 0.3,
     });
 
     return response.choices[0].message.content || "Great work! Keep focusing on proper form and controlled movements.";
@@ -364,7 +324,7 @@ Respond as a knowledgeable, supportive AI fitness coach. Provide helpful advice,
 
   try {
     const response = await openai.chat.completions.create({
-      model: "gpt-4.1",
+      model: "gpt-4.1-nano",
       messages: [
         {
           role: "system",
@@ -375,6 +335,7 @@ Respond as a knowledgeable, supportive AI fitness coach. Provide helpful advice,
           content: contextPrompt
         }
       ],
+      temperature: 0.3,
     });
 
     return response.choices[0].message.content || "I'm here to help you reach your fitness goals! What would you like to know?";
@@ -408,7 +369,7 @@ If no match, respond with JSON format: {"match": false}`;
 
   try {
     const response = await openai.chat.completions.create({
-      model: "gpt-4.1", // the newest OpenAI model is "gpt-4o" which was released May 13, 2024. do not change this unless explicitly requested by the user
+      model: "gpt-4.1-nano",
       messages: [
         {
           role: "system",
@@ -420,6 +381,7 @@ If no match, respond with JSON format: {"match": false}`;
         }
       ],
       response_format: { type: "json_object" },
+      temperature: 0.3,
     });
 
     const result = JSON.parse(response.choices[0].message.content || "{}");
