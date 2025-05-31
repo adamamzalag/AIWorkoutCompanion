@@ -511,7 +511,7 @@ export async function registerRoutes(app: Express): Promise<Server> {
         return res.status(404).json({ error: "User not found" });
       }
 
-      const analysis = await analyzeWorkoutProgress(workoutSessions, user.goals);
+      const analysis = await analyzeWorkoutProgress(workoutSessions, typeof user.goals === 'string' ? user.goals : user.goals?.[0] || 'general_fitness');
       res.json(analysis);
     } catch (error) {
       res.status(500).json({ error: "Failed to analyze progress" });

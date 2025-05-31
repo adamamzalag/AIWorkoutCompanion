@@ -244,7 +244,7 @@ BUILD ON THESE INSIGHTS: Create a progressive plan that addresses past challenge
 
 Fitness Level: ${request.fitnessLevel}
 Available Equipment: ${request.equipment.join(", ") || "None (bodyweight only)"}
-Goals: ${request.goals.join(", ")}
+Goals: ${typeof request.goals === 'string' ? request.goals : request.goals?.join(", ") || 'General fitness'}
 Workouts per week: ${request.workoutsPerWeek}
 Time per workout: ${request.timePerWorkout} minutes
 Plan Type: ${request.planType === "progressive" ? "Progressive (build on user history)" : "Independent (fresh start)"}${progressContext}

@@ -18,7 +18,7 @@ import { useToast } from "@/hooks/use-toast";
 const profileSchema = z.object({
   fitnessLevel: z.enum(["beginner", "intermediate", "advanced"]),
   equipment: z.array(z.string()).min(1, "Please select at least one equipment option"),
-  goals: z.array(z.string()).min(1, "Please select at least one fitness goal"),
+  goals: z.string().min(1, "Please select a fitness goal"),
   notes: z.string().optional(),
 });
 
@@ -49,13 +49,13 @@ export default function ProfilePage() {
     defaultValues: {
       fitnessLevel: profile?.fitnessLevel as any || "beginner",
       equipment: profile?.equipment || [],
-      goals: profile?.goals || [],
+      goals: profile?.goals || "",
       notes: profile?.notes || "",
     },
     values: profile ? {
       fitnessLevel: profile.fitnessLevel as any || "beginner",
       equipment: profile.equipment || [],
-      goals: profile.goals || [],
+      goals: profile.goals || "",
       notes: profile.notes || "",
     } : undefined,
   });
@@ -265,41 +265,23 @@ export default function ProfilePage() {
               <FormField
                 control={form.control}
                 name="goals"
-                render={() => (
+                render={({ field }) => (
                   <FormItem>
-                    <FormLabel className="text-foreground">Fitness Goals</FormLabel>
-                    <div className="space-y-2 max-h-60 overflow-y-auto">
-                      {goalOptions.map((item) => (
-                        <FormField
-                          key={item}
-                          control={form.control}
-                          name="goals"
-                          render={({ field }) => {
-                            return (
-                              <FormItem>
-                                <FormControl>
-                                  <label className="flex items-center space-x-3 glass-effect rounded-lg p-3 cursor-pointer hover:bg-card/60 transition-colors touch-target">
-                                    <Checkbox
-                                      checked={field.value?.includes(item)}
-                                      onCheckedChange={(checked) => {
-                                        return checked
-                                          ? field.onChange([...field.value, item])
-                                          : field.onChange(
-                                              field.value?.filter((value) => value !== item)
-                                            )
-                                      }}
-                                    />
-                                    <span className="text-sm text-foreground font-medium capitalize flex-1">
-                                      {item.replace('_', ' ')}
-                                    </span>
-                                  </label>
-                                </FormControl>
-                              </FormItem>
-                            )
-                          }}
-                        />
-                      ))}
-                    </div>
+                    <FormLabel className="text-foreground">Primary Fitness Goal</FormLabel>
+                    <Select onValueChange={field.onChange} value={field.value}>
+                      <FormControl>
+                        <SelectTrigger className="glass-effect border-border/50 h-12">
+                          <SelectValue placeholder="Select your primary goal" />
+                        </SelectTrigger>
+                      </FormControl>
+                      <SelectContent className="glass-effect border-border/50 z-50 w-[var(--radix-select-trigger-width)] max-h-[300px]">
+                        {goalOptions.map((item) => (
+                          <SelectItem key={item} value={item} className="hover:bg-card/60 focus:bg-card/60 capitalize">
+                            {item.replace(/_/g, ' ')}
+                          </SelectItem>
+                        ))}
+                      </SelectContent>
+                    </Select>
                     <FormMessage />
                   </FormItem>
                 )}
