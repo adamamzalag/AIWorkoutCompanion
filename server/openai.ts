@@ -191,6 +191,7 @@ export async function generateWorkoutPlan(request: WorkoutPlanRequest): Promise<
     console.log("📊 Fetching progress history for progressive plan...");
     
     try {
+      const { storage } = require("./storage");
       const planCompletionSnapshots = await storage.getPlanCompletionSnapshots(request.userId);
       
       if (planCompletionSnapshots.length > 0) {

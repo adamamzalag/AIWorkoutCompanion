@@ -14,6 +14,8 @@ import {
   generateCoachingTip, 
   generateChatResponse, 
   analyzeWorkoutProgress,
+  createWeeklySnapshot,
+  createPlanCompletionSnapshot,
   type WorkoutPlanRequest 
 } from "./openai";
 
