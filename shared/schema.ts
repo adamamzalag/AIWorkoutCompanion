@@ -26,7 +26,7 @@ export const users = pgTable("users", {
   name: text("name").notNull(),
   fitnessLevel: text("fitness_level"), // beginner, intermediate, advanced
   equipment: text("equipment").array().notNull().default([]), // available equipment
-  goals: text("goals").array().notNull().default([]), // fitness goals
+  goals: text("goals"), // primary fitness goal
   notes: text("notes"), // additional notes for workout generation
   onboardingCompleted: boolean("onboarding_completed").notNull().default(false),
   createdAt: timestamp("created_at").notNull().defaultNow(),

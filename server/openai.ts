@@ -75,7 +75,7 @@ Requirements:
 - ${request.workoutsPerWeek} workouts per week
 - ${request.timePerWorkout} minutes per workout  
 - Available equipment: ${request.equipment.join(', ')}
-- Goals: ${request.goals.join(', ')}
+- Primary Goal: ${request.goals}
 
 Create a framework with:
 1. Weekly progression structure (focus and intensity for each week)

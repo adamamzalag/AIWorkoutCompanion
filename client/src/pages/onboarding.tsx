@@ -52,7 +52,7 @@ export default function OnboardingPage() {
     resolver: zodResolver(onboardingSchema),
     defaultValues: {
       equipment: [],
-      goals: [],
+      goals: "",
       notes: "",
     },
   });
@@ -284,42 +284,23 @@ export default function OnboardingPage() {
                   <FormField
                     control={form.control}
                     name="goals"
-                    render={() => (
+                    render={({ field }) => (
                       <FormItem>
-                        <FormLabel className="text-foreground">Fitness Goals</FormLabel>
-                        <div className="grid grid-cols-1 gap-2">
-                          {goalOptions.map((item) => (
-                            <FormField
-                              key={item}
-                              control={form.control}
-                              name="goals"
-                              render={({ field }) => {
-                                return (
-                                  <FormItem>
-                                    <FormControl>
-                                      <label className="flex items-center space-x-3 glass-effect rounded-lg p-2.5 cursor-pointer hover:bg-card/60 focus-within:bg-card/60 transition-colors touch-target">
-                                        <Checkbox
-                                          checked={field.value?.includes(item)}
-                                          className="data-[state=checked]:bg-primary data-[state=checked]:border-primary"
-                                          onCheckedChange={(checked) => {
-                                            return checked
-                                              ? field.onChange([...field.value, item])
-                                              : field.onChange(
-                                                  field.value?.filter((value) => value !== item)
-                                                )
-                                          }}
-                                        />
-                                        <span className="text-sm text-foreground font-medium capitalize flex-1">
-                                          {item.replace('_', ' ')}
-                                        </span>
-                                      </label>
-                                    </FormControl>
-                                  </FormItem>
-                                )
-                              }}
-                            />
-                          ))}
-                        </div>
+                        <FormLabel className="text-foreground">Primary Fitness Goal</FormLabel>
+                        <Select onValueChange={field.onChange} value={field.value}>
+                          <FormControl>
+                            <SelectTrigger className="glass-effect border-border/50 h-12">
+                              <SelectValue placeholder="Select your primary goal" />
+                            </SelectTrigger>
+                          </FormControl>
+                          <SelectContent className="glass-effect border-border/50 z-50 w-[var(--radix-select-trigger-width)] max-h-[300px]">
+                            {goalOptions.map((item) => (
+                              <SelectItem key={item} value={item} className="hover:bg-card/60 focus:bg-card/60 capitalize">
+                                {item.replace(/_/g, ' ')}
+                              </SelectItem>
+                            ))}
+                          </SelectContent>
+                        </Select>
                         <FormMessage />
                       </FormItem>
                     )}
