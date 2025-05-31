@@ -171,7 +171,7 @@ Respond with JSON array of workouts: [
 ]`;
 
   const response = await openai.chat.completions.create({
-    model: "gpt-4.1-nano",
+    model: "gpt-4o-mini",
     messages: [
       { role: "system", content: "You are a fitness trainer creating detailed workout sessions in JSON format." },
       { role: "user", content: prompt }
@@ -268,7 +268,7 @@ IMPORTANT:
 
   try {
     const response = await openai.chat.completions.create({
-      model: "gpt-4.1-nano",
+      model: "gpt-4o-mini",
       messages: [
         {
           role: "system",
@@ -316,7 +316,7 @@ Give a personalized, encouraging tip that helps improve form, motivation, or per
 
   try {
     const response = await openai.chat.completions.create({
-      model: "gpt-4.1-nano",
+      model: "gpt-4o-mini",
       messages: [
         {
           role: "system",
@@ -356,7 +356,7 @@ Respond as a knowledgeable, supportive AI fitness coach. Provide helpful advice,
 
   try {
     const response = await openai.chat.completions.create({
-      model: "gpt-4.1-nano",
+      model: "gpt-4o-mini",
       messages: [
         {
           role: "system",
@@ -401,7 +401,7 @@ If no match, respond with JSON format: {"match": false}`;
 
   try {
     const response = await openai.chat.completions.create({
-      model: "gpt-4.1-nano",
+      model: "gpt-4o-mini",
       messages: [
         {
           role: "system",
@@ -472,7 +472,7 @@ Focus on data that would be useful for generating future workout plans.`;
 
   try {
     const response = await openai.chat.completions.create({
-      model: "gpt-4.1-nano",
+      model: "gpt-4o-mini",
       messages: [
         {
           role: "system",
@@ -555,7 +555,7 @@ CRITICAL: Only include insights that would help generate better future workout p
 
   try {
     const response = await openai.chat.completions.create({
-      model: "gpt-4.1-nano",
+      model: "gpt-4o-mini",
       messages: [
         {
           role: "system",
@@ -618,7 +618,7 @@ Calculate strength improvement as a percentage and provide actionable recommenda
 
   try {
     const response = await openai.chat.completions.create({
-      model: "gpt-4.1-nano",
+      model: "gpt-4o-mini",
       messages: [
         {
           role: "system",
