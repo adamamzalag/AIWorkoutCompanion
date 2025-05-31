@@ -115,7 +115,7 @@ export default function OnboardingPage() {
 
   return (
     <div className="min-h-screen bg-gradient-to-br from-background via-background to-muted/30 flex items-center justify-center p-4">
-      <Card className="w-full max-w-md max-h-[85vh] glass-effect border-border/50">
+      <Card className="w-full max-w-md h-[85vh] flex flex-col glass-effect border-border/50">
         <CardHeader className="text-center space-y-4">
           <div className="mx-auto w-12 h-12 bg-gradient-to-r from-primary to-secondary rounded-full flex items-center justify-center">
             <Sparkles className="w-6 h-6 text-white" />
@@ -137,7 +137,7 @@ export default function OnboardingPage() {
           </div>
         </CardHeader>
 
-        <CardContent className="max-h-[calc(85vh-200px)] overflow-hidden">
+        <CardContent className="flex-1 overflow-y-auto">
           <Form {...form}>
             <form onSubmit={form.handleSubmit(onSubmit)}>
               <div className="space-y-6">
