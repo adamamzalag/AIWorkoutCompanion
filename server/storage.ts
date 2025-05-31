@@ -12,7 +12,7 @@ import {
   type ProgressSnapshot, type InsertProgressSnapshot
 } from "@shared/schema";
 import { db } from "./db";
-import { eq, desc, like, and } from "drizzle-orm";
+import { eq, desc, like, and, isNull, isNotNull } from "drizzle-orm";
 
 export interface IStorage {
   // Users
@@ -68,6 +68,8 @@ export interface IStorage {
   getProgressSnapshot(id: number): Promise<ProgressSnapshot | undefined>;
   createProgressSnapshot(snapshot: InsertProgressSnapshot): Promise<ProgressSnapshot>;
   getLatestProgressSnapshot(userId: number): Promise<ProgressSnapshot | undefined>;
+  getPlanCompletionSnapshots(userId: number): Promise<ProgressSnapshot[]>;
+  getWeeklySnapshots(planId: number, userId: number): Promise<ProgressSnapshot[]>;
 }
 
 export class DatabaseStorage implements IStorage {
@@ -309,6 +311,25 @@ export class DatabaseStorage implements IStorage {
       .orderBy(desc(progressSnapshots.createdAt))
       .limit(1);
     return snapshot || undefined;
+  }
+
+  async getPlanCompletionSnapshots(userId: number): Promise<ProgressSnapshot[]> {
+    return await db.select().from(progressSnapshots)
+      .where(and(
+        eq(progressSnapshots.userId, userId),
+        isNull(progressSnapshots.planWeekId) // Plan completion snapshots have no specific week
+      ))
+      .orderBy(desc(progressSnapshots.createdAt));
+  }
+
+  async getWeeklySnapshots(planId: number, userId: number): Promise<ProgressSnapshot[]> {
+    return await db.select().from(progressSnapshots)
+      .where(and(
+        eq(progressSnapshots.userId, userId),
+        eq(progressSnapshots.planId, planId),
+        isNotNull(progressSnapshots.planWeekId) // Weekly snapshots have a specific week
+      ))
+      .orderBy(progressSnapshots.planWeekId);
   }
 }
 

@@ -400,6 +400,170 @@ If no match, respond with JSON format: {"match": false}`;
   }
 }
 
+// Create weekly progress snapshot
+export async function createWeeklySnapshot(
+  userId: number,
+  planId: number,
+  planWeekId: number,
+  weekNumber: number,
+  workoutSessions: any[],
+  userGoals: string[]
+): Promise<{
+  coachNotes: string;
+  jsonSnapshot: any;
+  adherencePercent: number;
+  subjectiveFatigue: string;
+  strengthPRs: any[];
+  volumePerMuscle: any;
+  flags: any[];
+}> {
+  const prompt = `Analyze this user's Week ${weekNumber} workout performance:
+
+Workout sessions: ${JSON.stringify(workoutSessions)}
+User goals: ${userGoals.join(", ")}
+
+Create a weekly progress snapshot in JSON format:
+{
+  "coachNotes": "Brief summary of week performance (max 100 words)",
+  "adherencePercent": 85,
+  "subjectiveFatigue": "moderate",
+  "strengthPRs": [{"exercise": "Bench Press", "weight": "135 lbs", "reps": 8}],
+  "volumePerMuscle": {"chest": 12, "legs": 16, "back": 10},
+  "flags": ["missed_friday_workout", "weight_not_progressing_squats"],
+  "jsonSnapshot": {
+    "weekSummary": "Key insights for future plan generation",
+    "avgWeight": {"bench": "125 lbs", "squat": "155 lbs"},
+    "completionRate": 85,
+    "userPreferences": ["shorter_rest_periods", "prefers_morning_workouts"]
+  }
+}
+
+Focus on data that would be useful for generating future workout plans.`;
+
+  try {
+    const response = await openai.chat.completions.create({
+      model: "gpt-4.1-nano",
+      messages: [
+        {
+          role: "system",
+          content: "You are a fitness data analyst. Create concise weekly progress snapshots focusing on actionable insights."
+        },
+        {
+          role: "user",
+          content: prompt
+        }
+      ],
+      response_format: { type: "json_object" },
+      temperature: 0.3,
+    });
+
+    const result = JSON.parse(response.choices[0].message.content || "{}");
+    return {
+      coachNotes: result.coachNotes || "Good progress this week!",
+      jsonSnapshot: result.jsonSnapshot || {},
+      adherencePercent: result.adherencePercent || 80,
+      subjectiveFatigue: result.subjectiveFatigue || "moderate",
+      strengthPRs: result.strengthPRs || [],
+      volumePerMuscle: result.volumePerMuscle || {},
+      flags: result.flags || []
+    };
+  } catch (error) {
+    console.error("Error creating weekly snapshot:", error);
+    return {
+      coachNotes: "Week completed successfully",
+      jsonSnapshot: {},
+      adherencePercent: 80,
+      subjectiveFatigue: "moderate",
+      strengthPRs: [],
+      volumePerMuscle: {},
+      flags: []
+    };
+  }
+}
+
+// Create plan completion snapshot (distilled from all weekly snapshots)
+export async function createPlanCompletionSnapshot(
+  userId: number,
+  planId: number,
+  weeklySnapshots: any[],
+  userGoals: string[]
+): Promise<{
+  coachNotes: string;
+  jsonSnapshot: any;
+  adherencePercent: number;
+  subjectiveFatigue: string;
+  strengthPRs: any[];
+  volumePerMuscle: any;
+  flags: any[];
+}> {
+  const prompt = `Analyze this user's complete workout plan performance based on weekly snapshots:
+
+Weekly snapshots: ${JSON.stringify(weeklySnapshots)}
+User goals: ${userGoals.join(", ")}
+
+Create a DISTILLED plan completion summary focusing ONLY on insights useful for future plan generation:
+
+{
+  "coachNotes": "Overall plan assessment and key learnings (max 150 words)",
+  "adherencePercent": 85,
+  "subjectiveFatigue": "moderate",
+  "strengthPRs": [{"exercise": "Bench Press", "improvement": "20 lbs gained"}],
+  "volumePerMuscle": {"chest": "responded well to high volume", "legs": "needs more frequency"},
+  "flags": ["tends_to_skip_leg_days", "excels_at_upper_body"],
+  "jsonSnapshot": {
+    "planOutcome": "successful",
+    "keyStrengths": ["consistency", "progressive_overload"],
+    "areasForImprovement": ["leg_training", "cardio"],
+    "preferredExercises": ["bench_press", "pull_ups"],
+    "optimal_training_frequency": 4,
+    "progression_response": "responds_well_to_linear_progression",
+    "equipment_effectiveness": {"dumbbells": "highly_effective", "machines": "less_preferred"}
+  }
+}
+
+CRITICAL: Only include insights that would help generate better future workout plans. This summary will be used as context for AI plan generation.`;
+
+  try {
+    const response = await openai.chat.completions.create({
+      model: "gpt-4.1-nano",
+      messages: [
+        {
+          role: "system",
+          content: "You are a fitness program architect. Distill workout data into insights for future plan generation. Be concise and focus on actionable patterns."
+        },
+        {
+          role: "user",
+          content: prompt
+        }
+      ],
+      response_format: { type: "json_object" },
+      temperature: 0.3,
+    });
+
+    const result = JSON.parse(response.choices[0].message.content || "{}");
+    return {
+      coachNotes: result.coachNotes || "Plan completed successfully with good progress!",
+      jsonSnapshot: result.jsonSnapshot || {},
+      adherencePercent: result.adherencePercent || 80,
+      subjectiveFatigue: result.subjectiveFatigue || "moderate",
+      strengthPRs: result.strengthPRs || [],
+      volumePerMuscle: result.volumePerMuscle || {},
+      flags: result.flags || []
+    };
+  } catch (error) {
+    console.error("Error creating plan completion snapshot:", error);
+    return {
+      coachNotes: "Plan completed successfully",
+      jsonSnapshot: {},
+      adherencePercent: 80,
+      subjectiveFatigue: "moderate",
+      strengthPRs: [],
+      volumePerMuscle: {},
+      flags: []
+    };
+  }
+}
+
 export async function analyzeWorkoutProgress(
   workoutSessions: any[],
   userGoals: string[]
