@@ -54,13 +54,29 @@ function updateUserSession(
 }
 
 async function upsertUser(claims: any) {
-  await storage.upsertUser({
-    id: claims["sub"],
-    email: claims["email"],
-    firstName: claims["first_name"],
-    lastName: claims["last_name"],
-    profileImageUrl: claims["profile_image_url"],
-  });
+  // First check if user exists by Replit ID
+  let user = await storage.getUserByReplitId(claims["sub"]);
+  
+  if (!user) {
+    // Create new user with required fields
+    user = await storage.upsertUser({
+      replitId: claims["sub"],
+      email: claims["email"],
+      firstName: claims["first_name"],
+      lastName: claims["last_name"],
+      profileImageUrl: claims["profile_image_url"],
+      // Required fields for existing schema
+      username: claims["email"] || `user_${claims["sub"]}`,
+      name: `${claims["first_name"] || ""} ${claims["last_name"] || ""}`.trim() || "User",
+      fitnessLevel: null,
+      equipment: [],
+      goals: [],
+      notes: null,
+      onboardingCompleted: false,
+    });
+  }
+  
+  return user;
 }
 
 export async function setupAuth(app: Express) {
