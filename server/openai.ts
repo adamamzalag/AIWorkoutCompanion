@@ -7,7 +7,7 @@ const openai = new OpenAI({
 export interface WorkoutPlanRequest {
   fitnessLevel: string;
   equipment: string[];
-  goals: string[];
+  goals: string;
   duration: number; // weeks
   workoutsPerWeek: number;
   timePerWorkout: number; // minutes
@@ -79,10 +79,10 @@ Requirements:
 
 Create a framework with:
 1. Weekly progression structure (focus and intensity for each week)
-2. Individual workout day goals and target muscles
+2. Individual workout day goals and target muscles for ${request.workoutsPerWeek} workouts per week
 3. Progression rules for advancing between weeks
 
-Each workout should follow: Warm-up → Main Exercises → Cool-down
+Each workout should include: Warm-up → Main Exercises → Cardio → Cool-down
 
 Respond with JSON: {
   "title": "Plan name",
@@ -102,6 +102,20 @@ Respond with JSON: {
           "goal": "Upper Body Strength",
           "targetMuscles": ["chest", "shoulders", "triceps"],
           "workoutType": "strength",
+          "estimatedDuration": ${request.timePerWorkout}
+        },
+        {
+          "dayNumber": 2,
+          "goal": "Lower Body Power",
+          "targetMuscles": ["quadriceps", "glutes", "hamstrings"],
+          "workoutType": "strength",
+          "estimatedDuration": ${request.timePerWorkout}
+        },
+        {
+          "dayNumber": 3,
+          "goal": "Core & Flexibility",
+          "targetMuscles": ["core", "back"],
+          "workoutType": "flexibility",
           "estimatedDuration": ${request.timePerWorkout}
         }
       ]
