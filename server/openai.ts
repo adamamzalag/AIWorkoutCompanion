@@ -113,7 +113,7 @@ Respond with JSON: {
 }`;
 
   const response = await openai.chat.completions.create({
-    model: "gpt-4.1-nano",
+    model: "gpt-4o-mini",
     messages: [
       { role: "system", content: "You are a workout program architect. Create strategic fitness frameworks in JSON format." },
       { role: "user", content: prompt }
