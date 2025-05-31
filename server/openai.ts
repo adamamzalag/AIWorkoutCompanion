@@ -422,7 +422,7 @@ Calculate strength improvement as a percentage and provide actionable recommenda
 
   try {
     const response = await openai.chat.completions.create({
-      model: "gpt-4.1",
+      model: "gpt-4.1-nano",
       messages: [
         {
           role: "system",
@@ -434,6 +434,7 @@ Calculate strength improvement as a percentage and provide actionable recommenda
         }
       ],
       response_format: { type: "json_object" },
+      temperature: 0.3,
     });
 
     const result = JSON.parse(response.choices[0].message.content || "{}");
