@@ -31,6 +31,7 @@ export const workoutPlans = pgTable("workout_plans", {
 export const planWeeks = pgTable("plan_weeks", {
   id: serial("id").primaryKey(),
   planId: integer("plan_id").notNull(),
+  userId: integer("user_id").notNull(),
   weekIndex: integer("week_index").notNull(), // 1, 2, 3, etc.
   focusSummary: text("focus_summary").notNull(), // "Foundation Building", "Strength Focus", etc.
   isCompleted: boolean("is_completed").notNull().default(false),

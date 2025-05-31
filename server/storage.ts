@@ -56,10 +56,10 @@ export interface IStorage {
   createUserProgress(progress: InsertUserProgress): Promise<UserProgress>;
 
   // Plan Weeks
-  getPlanWeeks(planId: number): Promise<PlanWeek[]>;
-  getPlanWeek(id: number): Promise<PlanWeek | undefined>;
+  getPlanWeeks(planId: number, userId: number): Promise<PlanWeek[]>;
+  getPlanWeek(id: number, userId: number): Promise<PlanWeek | undefined>;
   createPlanWeek(planWeek: InsertPlanWeek): Promise<PlanWeek>;
-  updatePlanWeek(id: number, updates: Partial<InsertPlanWeek>): Promise<PlanWeek | undefined>;
+  updatePlanWeek(id: number, userId: number, updates: Partial<InsertPlanWeek>): Promise<PlanWeek | undefined>;
   
   // Progress Snapshots
   getProgressSnapshots(userId: number): Promise<ProgressSnapshot[]>;
@@ -232,14 +232,15 @@ export class DatabaseStorage implements IStorage {
   }
 
   // Plan Weeks
-  async getPlanWeeks(planId: number): Promise<PlanWeek[]> {
+  async getPlanWeeks(planId: number, userId: number): Promise<PlanWeek[]> {
     return await db.select().from(planWeeks)
-      .where(eq(planWeeks.planId, planId))
+      .where(and(eq(planWeeks.planId, planId), eq(planWeeks.userId, userId)))
       .orderBy(planWeeks.weekIndex);
   }
 
-  async getPlanWeek(id: number): Promise<PlanWeek | undefined> {
-    const [planWeek] = await db.select().from(planWeeks).where(eq(planWeeks.id, id));
+  async getPlanWeek(id: number, userId: number): Promise<PlanWeek | undefined> {
+    const [planWeek] = await db.select().from(planWeeks)
+      .where(and(eq(planWeeks.id, id), eq(planWeeks.userId, userId)));
     return planWeek || undefined;
   }
 
@@ -251,11 +252,11 @@ export class DatabaseStorage implements IStorage {
     return planWeek;
   }
 
-  async updatePlanWeek(id: number, updates: Partial<InsertPlanWeek>): Promise<PlanWeek | undefined> {
+  async updatePlanWeek(id: number, userId: number, updates: Partial<InsertPlanWeek>): Promise<PlanWeek | undefined> {
     const [planWeek] = await db
       .update(planWeeks)
       .set(updates)
-      .where(eq(planWeeks.id, id))
+      .where(and(eq(planWeeks.id, id), eq(planWeeks.userId, userId)))
       .returning();
     return planWeek || undefined;
   }
