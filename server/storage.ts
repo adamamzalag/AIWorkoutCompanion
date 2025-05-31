@@ -8,6 +8,8 @@ import {
   type ChatMessage, type InsertChatMessage,
   type UserProgress, type InsertUserProgress
 } from "@shared/schema";
+import { db } from "./db";
+import { eq, desc, like, and } from "drizzle-orm";
 
 export interface IStorage {
   // Users
@@ -49,6 +51,170 @@ export interface IStorage {
   // User Progress
   getUserProgress(userId: number): Promise<UserProgress[]>;
   createUserProgress(progress: InsertUserProgress): Promise<UserProgress>;
+}
+
+export class DatabaseStorage implements IStorage {
+  async getUser(id: number): Promise<User | undefined> {
+    const [user] = await db.select().from(users).where(eq(users.id, id));
+    return user || undefined;
+  }
+
+  async getUserByUsername(username: string): Promise<User | undefined> {
+    const [user] = await db.select().from(users).where(eq(users.username, username));
+    return user || undefined;
+  }
+
+  async createUser(insertUser: InsertUser): Promise<User> {
+    const [user] = await db
+      .insert(users)
+      .values(insertUser)
+      .returning();
+    return user;
+  }
+
+  async updateUser(id: number, updates: Partial<InsertUser>): Promise<User | undefined> {
+    const [user] = await db
+      .update(users)
+      .set(updates)
+      .where(eq(users.id, id))
+      .returning();
+    return user || undefined;
+  }
+
+  async getWorkoutPlans(userId: number): Promise<WorkoutPlan[]> {
+    return await db.select().from(workoutPlans).where(eq(workoutPlans.userId, userId));
+  }
+
+  async getWorkoutPlan(id: number): Promise<WorkoutPlan | undefined> {
+    const [plan] = await db.select().from(workoutPlans).where(eq(workoutPlans.id, id));
+    return plan || undefined;
+  }
+
+  async createWorkoutPlan(insertPlan: InsertWorkoutPlan): Promise<WorkoutPlan> {
+    const [plan] = await db
+      .insert(workoutPlans)
+      .values(insertPlan)
+      .returning();
+    return plan;
+  }
+
+  async updateWorkoutPlan(id: number, updates: Partial<InsertWorkoutPlan>): Promise<WorkoutPlan | undefined> {
+    const [plan] = await db
+      .update(workoutPlans)
+      .set(updates)
+      .where(eq(workoutPlans.id, id))
+      .returning();
+    return plan || undefined;
+  }
+
+  async deleteWorkoutPlan(id: number): Promise<boolean> {
+    const result = await db.delete(workoutPlans).where(eq(workoutPlans.id, id));
+    return (result.rowCount ?? 0) > 0;
+  }
+
+  async getExercises(): Promise<Exercise[]> {
+    return await db.select().from(exercises);
+  }
+
+  async getExercise(id: number): Promise<Exercise | undefined> {
+    const [exercise] = await db.select().from(exercises).where(eq(exercises.id, id));
+    return exercise || undefined;
+  }
+
+  async createExercise(insertExercise: InsertExercise): Promise<Exercise> {
+    const [exercise] = await db
+      .insert(exercises)
+      .values(insertExercise)
+      .returning();
+    return exercise;
+  }
+
+  async searchExercises(query: string): Promise<Exercise[]> {
+    return await db.select().from(exercises).where(like(exercises.name, `%${query}%`));
+  }
+
+  async getWorkouts(planId: number): Promise<Workout[]> {
+    return await db.select().from(workouts).where(eq(workouts.planId, planId));
+  }
+
+  async getWorkout(id: number): Promise<Workout | undefined> {
+    const [workout] = await db.select().from(workouts).where(eq(workouts.id, id));
+    return workout || undefined;
+  }
+
+  async createWorkout(insertWorkout: InsertWorkout): Promise<Workout> {
+    const [workout] = await db
+      .insert(workouts)
+      .values(insertWorkout)
+      .returning();
+    return workout;
+  }
+
+  async updateWorkout(id: number, updates: Partial<InsertWorkout>): Promise<Workout | undefined> {
+    const [workout] = await db
+      .update(workouts)
+      .set(updates)
+      .where(eq(workouts.id, id))
+      .returning();
+    return workout || undefined;
+  }
+
+  async getWorkoutSessions(userId: number): Promise<WorkoutSession[]> {
+    return await db.select().from(workoutSessions).where(eq(workoutSessions.userId, userId)).orderBy(desc(workoutSessions.startedAt));
+  }
+
+  async getWorkoutSession(id: number): Promise<WorkoutSession | undefined> {
+    const [session] = await db.select().from(workoutSessions).where(eq(workoutSessions.id, id));
+    return session || undefined;
+  }
+
+  async createWorkoutSession(insertSession: InsertWorkoutSession): Promise<WorkoutSession> {
+    const [session] = await db
+      .insert(workoutSessions)
+      .values(insertSession)
+      .returning();
+    return session;
+  }
+
+  async updateWorkoutSession(id: number, updates: Partial<InsertWorkoutSession>): Promise<WorkoutSession | undefined> {
+    const [session] = await db
+      .update(workoutSessions)
+      .set(updates)
+      .where(eq(workoutSessions.id, id))
+      .returning();
+    return session || undefined;
+  }
+
+  async getRecentWorkoutSessions(userId: number, limit: number): Promise<WorkoutSession[]> {
+    return await db.select().from(workoutSessions)
+      .where(eq(workoutSessions.userId, userId))
+      .orderBy(desc(workoutSessions.startedAt))
+      .limit(limit);
+  }
+
+  async getChatMessages(userId: number): Promise<ChatMessage[]> {
+    return await db.select().from(chatMessages).where(eq(chatMessages.userId, userId)).orderBy(desc(chatMessages.timestamp));
+  }
+
+  async createChatMessage(insertMessage: InsertChatMessage): Promise<ChatMessage> {
+    const [message] = await db
+      .insert(chatMessages)
+      .values(insertMessage)
+      .returning();
+    return message;
+  }
+
+  async getUserProgress(userId: number): Promise<UserProgress[]> {
+    return await db.select().from(userProgress).where(eq(userProgress.userId, userId)).orderBy(desc(userProgress.recordedAt));
+  }
+
+  async createUserProgress(insertProgress: InsertUserProgress): Promise<UserProgress> {
+    const [progress] = await db
+      .insert(userProgress)
+      .values(insertProgress)
+      .returning();
+    return progress;
+  }
 }
 
 export class MemStorage implements IStorage {
@@ -368,4 +534,4 @@ export class MemStorage implements IStorage {
   }
 }
 
-export const storage = new MemStorage();
+export const storage = new DatabaseStorage();
