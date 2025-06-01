@@ -34,6 +34,7 @@ export interface IStorage {
   getExercises(): Promise<Exercise[]>;
   getExercise(id: number): Promise<Exercise | undefined>;
   createExercise(exercise: InsertExercise): Promise<Exercise>;
+  updateExercise(id: number, updates: Partial<InsertExercise>): Promise<Exercise | undefined>;
   searchExercises(query: string): Promise<Exercise[]>;
 
   // Workouts
@@ -164,6 +165,15 @@ export class DatabaseStorage implements IStorage {
     const [exercise] = await db
       .insert(exercises)
       .values(insertExercise)
+      .returning();
+    return exercise;
+  }
+
+  async updateExercise(id: number, updates: Partial<InsertExercise>): Promise<Exercise | undefined> {
+    const [exercise] = await db
+      .update(exercises)
+      .set(updates)
+      .where(eq(exercises.id, id))
       .returning();
     return exercise;
   }

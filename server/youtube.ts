@@ -202,9 +202,61 @@ function parseDuration(duration: string): number {
   return hours * 3600 + minutes * 60 + seconds;
 }
 
-export async function updateExerciseVideos(): Promise<void> {
+export async function updateExerciseVideos(storage: any): Promise<void> {
   console.log('Starting exercise video update process...');
   
-  // This would be called during plan generation to pre-fetch videos
-  // Implementation depends on your storage interface
+  try {
+    // Get all exercises without YouTube videos
+    const exercises = await storage.getExercises();
+    const exercisesToUpdate = exercises.filter((ex: any) => !ex.youtubeId || !ex.thumbnailUrl);
+    
+    console.log(`Found ${exercisesToUpdate.length} exercises that need YouTube videos`);
+    
+    for (const exercise of exercisesToUpdate) {
+      console.log(`Searching video for: ${exercise.name}`);
+      
+      const video = await searchExerciseVideo(exercise.name);
+      
+      if (video) {
+        console.log(`Found video for ${exercise.name}: ${video.id}`);
+        
+        // Update exercise with video data
+        await storage.updateExercise(exercise.id, {
+          youtubeId: video.id,
+          thumbnailUrl: video.thumbnailUrl
+        });
+        
+        console.log(`Updated ${exercise.name} with video ${video.id}`);
+      } else {
+        console.log(`No suitable video found for ${exercise.name}`);
+      }
+      
+      // Add a small delay to respect YouTube API rate limits
+      await new Promise(resolve => setTimeout(resolve, 1000));
+    }
+    
+    console.log('Exercise video update process completed');
+  } catch (error) {
+    console.error('Error updating exercise videos:', error);
+  }
+}
+
+export async function updateSpecificExerciseVideo(storage: any, exerciseId: number): Promise<void> {
+  try {
+    const exercise = await storage.getExercise(exerciseId);
+    if (!exercise) return;
+    
+    console.log(`Searching video for specific exercise: ${exercise.name}`);
+    const video = await searchExerciseVideo(exercise.name);
+    
+    if (video) {
+      await storage.updateExercise(exerciseId, {
+        youtubeId: video.id,
+        thumbnailUrl: video.thumbnailUrl
+      });
+      console.log(`Updated ${exercise.name} with video ${video.id}`);
+    }
+  } catch (error) {
+    console.error(`Error updating video for exercise ${exerciseId}:`, error);
+  }
 }
