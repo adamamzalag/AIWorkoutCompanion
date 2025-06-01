@@ -176,6 +176,10 @@ export default function WorkoutsPage() {
     return matchesSearch && matchesDifficulty;
   });
 
+  // Separate active and inactive plans
+  const activePlans = filteredPlans?.filter(plan => plan.isActive) || [];
+  const inactivePlans = filteredPlans?.filter(plan => !plan.isActive) || [];
+
   const getDifficultyColor = (difficulty: string) => {
     switch (difficulty) {
       case 'beginner': return 'bg-accent text-accent-foreground';
@@ -398,68 +402,151 @@ export default function WorkoutsPage() {
             </Card>
           ))
         ) : filteredPlans && filteredPlans.length > 0 ? (
-          filteredPlans.map((plan) => (
-            <Card key={plan.id} className="glass-effect hover:bg-card/50 transition-colors cursor-pointer">
-              <CardContent className="p-4">
-                <div className="flex items-start justify-between mb-3">
-                  <div className="flex-1">
-                    <div className="flex items-center space-x-2 mb-1">
-                      <h3 className="font-poppins font-semibold text-foreground">{plan.title}</h3>
-                      {plan.isActive && (
-                        <Badge className="bg-accent text-accent-foreground text-xs">Active</Badge>
-                      )}
-                    </div>
-                    <Badge className={`text-xs ${getDifficultyColor(plan.difficulty)}`}>
-                      {plan.difficulty}
-                    </Badge>
-                  </div>
+          <div className="space-y-6">
+            {/* Active Plans Section */}
+            {activePlans.length > 0 && (
+              <div>
+                <div className="flex items-center justify-between mb-4">
+                  <h3 className="font-poppins font-semibold text-lg text-foreground">Active Plan</h3>
+                  <Badge className="bg-accent text-accent-foreground">Current</Badge>
                 </div>
-                
-                {plan.description && (
-                  <p className="text-sm text-muted-foreground mb-3 line-clamp-2">
-                    {plan.description}
-                  </p>
-                )}
-                
-                <div className="flex items-center justify-between text-sm text-muted-foreground mb-3">
-                  <div className="flex items-center space-x-4">
-                    <div className="flex items-center space-x-1">
-                      <Calendar size={14} />
-                      <span>{plan.duration} weeks</span>
-                    </div>
-                    <div className="flex items-center space-x-1">
-                      <Target size={14} />
-                      <span>{plan.totalWorkouts} workouts</span>
-                    </div>
-                  </div>
+                <div className="space-y-3">
+                  {activePlans.map((plan) => (
+                    <Card key={plan.id} className="glass-effect hover:bg-card/50 transition-colors cursor-pointer border-accent/30">
+                      <CardContent className="p-4">
+                        <div className="flex items-start justify-between mb-3">
+                          <div className="flex-1">
+                            <div className="flex items-center space-x-2 mb-1">
+                              <h3 className="font-poppins font-semibold text-foreground">{plan.title}</h3>
+                              <Badge className="bg-accent text-accent-foreground text-xs">Active</Badge>
+                            </div>
+                            <Badge className={`text-xs ${getDifficultyColor(plan.difficulty)}`}>
+                              {plan.difficulty}
+                            </Badge>
+                          </div>
+                        </div>
+                        
+                        {plan.description && (
+                          <p className="text-sm text-muted-foreground mb-3 line-clamp-2">
+                            {plan.description}
+                          </p>
+                        )}
+                        
+                        <div className="flex items-center justify-between text-sm text-muted-foreground mb-3">
+                          <div className="flex items-center space-x-4">
+                            <div className="flex items-center space-x-1">
+                              <Calendar size={14} />
+                              <span>{plan.duration} weeks</span>
+                            </div>
+                            <div className="flex items-center space-x-1">
+                              <Target size={14} />
+                              <span>{plan.totalWorkouts} workouts</span>
+                            </div>
+                          </div>
+                        </div>
+                        
+                        <div className="flex items-center justify-between">
+                          <div className="flex flex-wrap gap-1">
+                            {plan.equipment.slice(0, 3).map((eq) => (
+                              <Badge key={eq} variant="outline" className="text-xs border-border/50">
+                                {eq.replace('_', ' ')}
+                              </Badge>
+                            ))}
+                            {plan.equipment.length > 3 && (
+                              <Badge variant="outline" className="text-xs border-border/50">
+                                +{plan.equipment.length - 3}
+                              </Badge>
+                            )}
+                          </div>
+                          
+                          <Link href={`/plan/${plan.id}`}>
+                            <Button
+                              size="sm"
+                              className="bg-primary hover:bg-primary/90 text-primary-foreground"
+                            >
+                              View Plan
+                            </Button>
+                          </Link>
+                        </div>
+                      </CardContent>
+                    </Card>
+                  ))}
                 </div>
-                
-                <div className="flex items-center justify-between">
-                  <div className="flex flex-wrap gap-1">
-                    {plan.equipment.slice(0, 3).map((eq) => (
-                      <Badge key={eq} variant="outline" className="text-xs border-border/50">
-                        {eq.replace('_', ' ')}
-                      </Badge>
-                    ))}
-                    {plan.equipment.length > 3 && (
-                      <Badge variant="outline" className="text-xs border-border/50">
-                        +{plan.equipment.length - 3}
-                      </Badge>
-                    )}
-                  </div>
-                  
-                  <Link href={`/plan/${plan.id}`}>
-                    <Button
-                      size="sm"
-                      className="bg-primary hover:bg-primary/90 text-primary-foreground"
-                    >
-                      View Plan
-                    </Button>
-                  </Link>
+              </div>
+            )}
+
+            {/* Previous Plans Section */}
+            {inactivePlans.length > 0 && (
+              <div>
+                <div className="flex items-center justify-between mb-4">
+                  <h3 className="font-poppins font-semibold text-lg text-foreground">Previous Plans</h3>
+                  <Badge variant="outline" className="text-muted-foreground">Archive</Badge>
                 </div>
-              </CardContent>
-            </Card>
-          ))
+                <div className="space-y-3">
+                  {inactivePlans.map((plan) => (
+                    <Card key={plan.id} className="glass-effect hover:bg-card/50 transition-colors cursor-pointer opacity-75">
+                      <CardContent className="p-4">
+                        <div className="flex items-start justify-between mb-3">
+                          <div className="flex-1">
+                            <div className="flex items-center space-x-2 mb-1">
+                              <h3 className="font-poppins font-semibold text-foreground">{plan.title}</h3>
+                            </div>
+                            <Badge className={`text-xs ${getDifficultyColor(plan.difficulty)}`}>
+                              {plan.difficulty}
+                            </Badge>
+                          </div>
+                        </div>
+                        
+                        {plan.description && (
+                          <p className="text-sm text-muted-foreground mb-3 line-clamp-2">
+                            {plan.description}
+                          </p>
+                        )}
+                        
+                        <div className="flex items-center justify-between text-sm text-muted-foreground mb-3">
+                          <div className="flex items-center space-x-4">
+                            <div className="flex items-center space-x-1">
+                              <Calendar size={14} />
+                              <span>{plan.duration} weeks</span>
+                            </div>
+                            <div className="flex items-center space-x-1">
+                              <Target size={14} />
+                              <span>{plan.totalWorkouts} workouts</span>
+                            </div>
+                          </div>
+                        </div>
+                        
+                        <div className="flex items-center justify-between">
+                          <div className="flex flex-wrap gap-1">
+                            {plan.equipment.slice(0, 3).map((eq) => (
+                              <Badge key={eq} variant="outline" className="text-xs border-border/50">
+                                {eq.replace('_', ' ')}
+                              </Badge>
+                            ))}
+                            {plan.equipment.length > 3 && (
+                              <Badge variant="outline" className="text-xs border-border/50">
+                                +{plan.equipment.length - 3}
+                              </Badge>
+                            )}
+                          </div>
+                          
+                          <Link href={`/plan/${plan.id}`}>
+                            <Button
+                              variant="outline"
+                              size="sm"
+                              className="glass-effect border-border/50"
+                            >
+                              View Plan
+                            </Button>
+                          </Link>
+                        </div>
+                      </CardContent>
+                    </Card>
+                  ))}
+                </div>
+              </div>
+            )}
+          </div>
         ) : (
           <Card className="glass-effect">
             <CardContent className="p-8 text-center">
@@ -488,8 +575,6 @@ export default function WorkoutsPage() {
           </Card>
         )}
       </div>
-
-
     </div>
   );
 }
