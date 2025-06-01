@@ -35,9 +35,7 @@ export default function Home() {
     enabled: !!(userProfile as any)?.id,
   });
 
-  console.log('Debug - userProfile:', userProfile);
-  console.log('Debug - workoutPlans:', workoutPlans);
-  console.log('Debug - plansLoading:', plansLoading);
+
 
   const { data: recentSessions, isLoading: sessionsLoading } = useQuery<WorkoutSession[]>({
     queryKey: ['/api/recent-sessions', (userProfile as any)?.id, 5],
@@ -69,11 +67,6 @@ export default function Home() {
   const handleStartWorkout = () => {
     // Navigate to workout screen
     window.location.href = '/workout';
-  };
-
-  const handlePreviewWorkout = () => {
-    // Show workout preview modal
-    console.log('Preview workout');
   };
 
   const formatDate = (date: Date) => {
@@ -132,7 +125,6 @@ export default function Home() {
           todaysWorkout={todaysWorkout}
           progress={75}
           onStartWorkout={handleStartWorkout}
-          onPreviewWorkout={handlePreviewWorkout}
         />
       )}
 
