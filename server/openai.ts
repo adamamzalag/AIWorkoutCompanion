@@ -69,20 +69,31 @@ export async function generateWorkoutFramework(request: WorkoutPlanRequest): Pro
 }> {
   console.log("🔍 FRAMEWORK GENERATION - Input Data:", JSON.stringify(request, null, 2));
   
-  const prompt = `Create a strategic ${request.duration}-week workout framework for ${request.fitnessLevel} level.
+  const prompt = `You are an experienced personal trainer with expertise in exercise physiology, periodization, and program design. Think strategically about this client's needs and create an intelligent workout framework.
 
-Requirements:
-- ${request.workoutsPerWeek} workouts per week
-- ${request.timePerWorkout} minutes per workout  
-- Available equipment: ${request.equipment.join(', ')}
-- Primary Goal: ${request.goals}
+Client Analysis:
+- Fitness Level: ${request.fitnessLevel}
+- Time Per Session: ${request.timePerWorkout} minutes
+- Weekly Frequency: ${request.workoutsPerWeek} workouts
+- Training Goal: ${request.goals}
+- Available Equipment: ${request.equipment.join(', ')}
+- Plan Duration: ${request.duration} weeks
 
-Create a framework with:
-1. Weekly progression structure (focus and intensity for each week)
-2. Individual workout day goals and target muscles for ${request.workoutsPerWeek} workouts per week
-3. Progression rules for advancing between weeks
+As an expert trainer, consider these principles:
+• Progressive Overload: How will you systematically increase training demands?
+• Specificity: How does each workout serve the stated goal of ${request.goals}?
+• Recovery & Adaptation: How will you balance training stress with recovery?
+• Individual Needs: How does ${request.fitnessLevel} level affect workout complexity?
+• Time Efficiency: How can ${request.timePerWorkout} minutes be optimally utilized?
 
-Each workout should include: Warm-up → Main Exercises → Cardio → Cool-down
+Think through your coaching strategy:
+1. What workout split maximizes results for this goal and schedule?
+2. How should training intensity and volume progress over ${request.duration} weeks?
+3. What equipment selection strategy best serves the training goals?
+4. How will each workout complement others in the weekly structure?
+
+Create a strategic framework that demonstrates your expertise:
+Each workout structure: Warm-up → Main Training → Cardio Component → Cool-down
 
 Respond with JSON: {
   "title": "Plan name",
@@ -133,7 +144,7 @@ Respond with JSON: {
   const response = await openai.chat.completions.create({
     model: "gpt-4.1-nano",
     messages: [
-      { role: "system", content: "You are a workout program architect. Create strategic fitness frameworks in JSON format." },
+      { role: "system", content: "You are an expert personal trainer and exercise physiologist with 15+ years of experience designing effective workout programs. Apply evidence-based training principles and intelligent coaching decisions to create strategic fitness frameworks in JSON format." },
       { role: "user", content: prompt }
     ],
     response_format: { type: "json_object" },
@@ -168,28 +179,28 @@ Framework: ${JSON.stringify(currentWeek)}
 Available Equipment (use what's appropriate for each workout): ${framework.equipment.join(', ')}
 ${progressionContext}
 
-Create ${currentWeek.workoutDays.length} detailed workouts following this EXACT structure:
+As an expert trainer, design ${currentWeek.workoutDays.length} intelligent workouts that maximize training effectiveness within the time constraints:
 
-WARM-UP (5-8 minutes total):
-- Include 1-3 specific dynamic movements (not generic "dynamic stretching")
-- Examples: arm circles, leg swings, bodyweight squats, lunges, jumping jacks
-- Each movement should have specific instructions
+COACHING APPROACH:
+Think like an experienced trainer making smart decisions about:
+• Exercise selection based on ${timePerWorkout || 45} minutes available
+• Movement patterns that complement each other
+• Appropriate training volume for the client's level
+• Equipment utilization that serves the training goals
+• Progressive challenge while maintaining form quality
 
-MAIN EXERCISES (CRITICAL - Follow exact counts):
-- Strength workouts (Upper Body, Lower Body): EXACTLY 4-5 exercises
-- Core/Flexibility workouts: EXACTLY 3-4 exercises
-- NEVER use only 3 exercises for strength workouts
-- Each exercise needs sets, reps, weight guidance, rest time
+INTELLIGENT EXERCISE SELECTION:
+• Choose optimal number of main exercises (typically 3-5) based on workout duration and complexity
+• For shorter sessions (30 min): Focus on fewer, high-impact compound movements
+• For longer sessions (45-60 min): Include comprehensive training with accessory work
+• Prioritize movement quality and training effect over rigid exercise counts
+• Consider fatigue management and exercise sequencing
 
-CARDIO (one specific exercise):
-- Include exactly ONE cardio exercise appropriate for the day
-- Examples: "10-minute treadmill intervals", "Air Bike sprints", "Jump rope HIIT"
-- Not generic descriptions, but specific cardio movements
-
-COOL-DOWN (5-8 minutes total):
-- Include 1-3 specific static stretches/movements
-- Examples: hamstring stretch, chest doorway stretch, spinal twist
-- Each movement should target muscles worked in main exercises
+WORKOUT STRUCTURE:
+WARM-UP (5-8 minutes): Dynamic preparation specific to the session's focus
+MAIN TRAINING: Intelligently selected exercises that serve the workout's purpose
+CARDIO COMPONENT: Appropriate cardiovascular work for the day's goals
+COOL-DOWN (5-8 minutes): Targeted recovery addressing muscles worked
 
 Respond with JSON array of workouts: [
   {
@@ -250,7 +261,7 @@ Respond with JSON array of workouts: [
   const response = await openai.chat.completions.create({
     model: "gpt-4.1-nano",
     messages: [
-      { role: "system", content: "You are a fitness trainer creating detailed workout sessions in JSON format." },
+      { role: "system", content: "You are an expert personal trainer with deep knowledge of exercise physiology, biomechanics, and periodization. Apply intelligent coaching decisions and evidence-based training principles to design effective workout sessions in JSON format." },
       { role: "user", content: prompt }
     ],
     response_format: { type: "json_object" },
