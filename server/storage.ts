@@ -183,7 +183,7 @@ export class DatabaseStorage implements IStorage {
   }
 
   async getWorkouts(planId: number): Promise<Workout[]> {
-    return await db.select().from(workouts).where(eq(workouts.planId, planId));
+    return await db.select().from(workouts).where(eq(workouts.planId, planId)).orderBy(workouts.orderIndex);
   }
 
   async getWorkout(id: number): Promise<Workout | undefined> {
