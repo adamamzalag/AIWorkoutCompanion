@@ -1,10 +1,130 @@
 import { searchExerciseVideo } from './server/youtube.js';
 import { storage } from './server/storage.js';
 
+function slugify(text) {
+  return text
+    .toLowerCase()
+    .replace(/[^\w\s-]/g, '')
+    .replace(/[\s_-]+/g, '-')
+    .replace(/^-+|-+$/g, '');
+}
+
+async function migrateAllWorkouts() {
+  console.log('🔧 First, migrating all workouts to use real exercise IDs...');
+  
+  try {
+    const allWorkouts = await storage.getWorkouts();
+    console.log(`Found ${allWorkouts.length} workouts to migrate`);
+    
+    let migratedCount = 0;
+    
+    for (const workout of allWorkouts) {
+      let needsUpdate = false;
+      let updatedWarmUp = workout.warmUp;
+      let updatedCoolDown = workout.coolDown;
+      
+      // Process warmup activities
+      if (workout.warmUp && typeof workout.warmUp === 'object' && workout.warmUp.activities) {
+        const processedActivities = [];
+        for (const activity of workout.warmUp.activities) {
+          if (!activity.exerciseId || typeof activity.exerciseId === 'string') {
+            const exercises = await storage.getExercises();
+            const targetSlug = slugify(activity.exercise);
+            let existingExercise = exercises.find(ex => 
+              ex.name.toLowerCase() === activity.exercise.toLowerCase() ||
+              ex.slug === targetSlug ||
+              ex.name.toLowerCase().includes(activity.exercise.toLowerCase()) ||
+              activity.exercise.toLowerCase().includes(ex.name.toLowerCase())
+            );
+            
+            if (!existingExercise) {
+              existingExercise = await storage.createExercise({
+                slug: targetSlug,
+                name: activity.exercise,
+                difficulty: "beginner",
+                muscle_groups: ["general"],
+                instructions: [`Perform ${activity.exercise.toLowerCase()} as instructed`],
+                equipment: ["none"],
+                youtubeId: null
+              });
+            }
+            
+            processedActivities.push({
+              ...activity,
+              exerciseId: existingExercise.id,
+              exercise: existingExercise.name
+            });
+            needsUpdate = true;
+          } else {
+            processedActivities.push(activity);
+          }
+        }
+        updatedWarmUp = { ...workout.warmUp, activities: processedActivities };
+      }
+      
+      // Process cooldown activities
+      if (workout.coolDown && typeof workout.coolDown === 'object' && workout.coolDown.activities) {
+        const processedActivities = [];
+        for (const activity of workout.coolDown.activities) {
+          if (!activity.exerciseId || typeof activity.exerciseId === 'string') {
+            const exercises = await storage.getExercises();
+            const targetSlug = slugify(activity.exercise);
+            let existingExercise = exercises.find(ex => 
+              ex.name.toLowerCase() === activity.exercise.toLowerCase() ||
+              ex.slug === targetSlug ||
+              ex.name.toLowerCase().includes(activity.exercise.toLowerCase()) ||
+              activity.exercise.toLowerCase().includes(ex.name.toLowerCase())
+            );
+            
+            if (!existingExercise) {
+              existingExercise = await storage.createExercise({
+                slug: targetSlug,
+                name: activity.exercise,
+                difficulty: "beginner",
+                muscle_groups: ["general"],
+                instructions: [`Perform ${activity.exercise.toLowerCase()} as instructed`],
+                equipment: ["none"],
+                youtubeId: null
+              });
+            }
+            
+            processedActivities.push({
+              ...activity,
+              exerciseId: existingExercise.id,
+              exercise: existingExercise.name
+            });
+            needsUpdate = true;
+          } else {
+            processedActivities.push(activity);
+          }
+        }
+        updatedCoolDown = { ...workout.coolDown, activities: processedActivities };
+      }
+      
+      if (needsUpdate) {
+        await storage.updateWorkout(workout.id, {
+          warmUp: updatedWarmUp,
+          coolDown: updatedCoolDown
+        });
+        migratedCount++;
+        console.log(`  ✅ Migrated workout ${workout.id}: ${workout.title}`);
+      }
+    }
+    
+    console.log(`🎉 Migration completed! Updated ${migratedCount} workouts with real exercise IDs`);
+    
+  } catch (error) {
+    console.error('💥 Error during workout migration:', error);
+  }
+}
+
 async function populateVideos() {
   console.log('🚀 Starting intelligent YouTube video population with debugging...');
   
   try {
+    // First migrate all workouts
+    await migrateAllWorkouts();
+    
     // Get exercises that need videos
     const allExercises = await storage.getExercises();
     const exercisesNeedingVideos = allExercises.filter(ex => !ex.youtubeId);

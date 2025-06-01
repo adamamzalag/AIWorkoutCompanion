@@ -165,12 +165,114 @@ export async function registerRoutes(app: Express): Promise<Server> {
   app.get("/api/workout/:id", async (req, res) => {
     try {
       const workoutId = parseInt(req.params.id);
-      const workout = await storage.getWorkout(workoutId);
+      let workout = await storage.getWorkout(workoutId);
       if (!workout) {
         return res.status(404).json({ error: "Workout not found" });
       }
+
+      // Migrate warmup/cooldown data on-the-fly if needed
+      let needsUpdate = false;
+      let updatedWarmUp = workout.warmUp;
+      let updatedCoolDown = workout.coolDown;
+
+      // Process warmup activities
+      if (workout.warmUp && typeof workout.warmUp === 'object' && workout.warmUp.activities) {
+        const processedWarmUpActivities = [];
+        for (const activity of workout.warmUp.activities) {
+          if (!activity.exerciseId || typeof activity.exerciseId === 'string') {
+            // Find or create exercise for this activity
+            const exercises = await storage.getExercises();
+            const targetSlug = slugify(activity.exercise);
+            let existingExercise = exercises.find(ex => 
+              ex.name.toLowerCase() === activity.exercise.toLowerCase() ||
+              ex.slug === targetSlug ||
+              ex.name.toLowerCase().includes(activity.exercise.toLowerCase()) ||
+              activity.exercise.toLowerCase().includes(ex.name.toLowerCase())
+            );
+
+            if (!existingExercise) {
+              // Create new exercise
+              existingExercise = await storage.createExercise({
+                slug: targetSlug,
+                name: activity.exercise,
+                difficulty: "beginner",
+                muscle_groups: ["general"],
+                instructions: [`Perform ${activity.exercise.toLowerCase()} as instructed`],
+                equipment: ["none"],
+                youtubeId: null
+              });
+            }
+
+            processedWarmUpActivities.push({
+              ...activity,
+              exerciseId: existingExercise.id,
+              exercise: existingExercise.name
+            });
+            needsUpdate = true;
+          } else {
+            processedWarmUpActivities.push(activity);
+          }
+        }
+        updatedWarmUp = { ...workout.warmUp, activities: processedWarmUpActivities };
+      }
+
+      // Process cooldown activities
+      if (workout.coolDown && typeof workout.coolDown === 'object' && workout.coolDown.activities) {
+        const processedCoolDownActivities = [];
+        for (const activity of workout.coolDown.activities) {
+          if (!activity.exerciseId || typeof activity.exerciseId === 'string') {
+            const exercises = await storage.getExercises();
+            const targetSlug = slugify(activity.exercise);
+            let existingExercise = exercises.find(ex => 
+              ex.name.toLowerCase() === activity.exercise.toLowerCase() ||
+              ex.slug === targetSlug ||
+              ex.name.toLowerCase().includes(activity.exercise.toLowerCase()) ||
+              activity.exercise.toLowerCase().includes(ex.name.toLowerCase())
+            );
+
+            if (!existingExercise) {
+              existingExercise = await storage.createExercise({
+                slug: targetSlug,
+                name: activity.exercise,
+                difficulty: "beginner",
+                muscle_groups: ["general"],
+                instructions: [`Perform ${activity.exercise.toLowerCase()} as instructed`],
+                equipment: ["none"],
+                youtubeId: null
+              });
+            }
+
+            processedCoolDownActivities.push({
+              ...activity,
+              exerciseId: existingExercise.id,
+              exercise: existingExercise.name
+            });
+            needsUpdate = true;
+          } else {
+            processedCoolDownActivities.push(activity);
+          }
+        }
+        updatedCoolDown = { ...workout.coolDown, activities: processedCoolDownActivities };
+      }
+
+      // Update workout if migration was needed
+      if (needsUpdate) {
+        await storage.updateWorkout(workoutId, {
+          warmUp: updatedWarmUp,
+          coolDown: updatedCoolDown
+        });
+
+        // Return updated workout data
+        workout = {
+          ...workout,
+          warmUp: updatedWarmUp,
+          coolDown: updatedCoolDown
+        };
+      }
+
       res.json(workout);
     } catch (error) {
+      console.error("Error fetching workout:", error);
       res.status(400).json({ error: "Invalid workout ID" });
     }
   });
