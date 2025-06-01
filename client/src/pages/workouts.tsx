@@ -444,14 +444,14 @@ export default function WorkoutsPage() {
                         </div>
                         
                         <div className="mb-3">
-                          <div className="flex flex-wrap gap-1">
+                          <div className="flex flex-wrap gap-2">
                             {plan.equipment.slice(0, 3).map((eq) => (
-                              <span key={eq} className="px-2 py-1 text-xs bg-blue-100 dark:bg-blue-900/30 text-blue-800 dark:text-blue-200 rounded border border-blue-300 dark:border-blue-700">
+                              <span key={eq} className="px-3 py-1 bg-gradient-to-r from-primary/10 to-accent/10 text-primary border border-primary/20 rounded-full font-medium text-xs shadow-sm hover:shadow-md transition-shadow">
                                 {eq.replace('_', ' ')}
                               </span>
                             ))}
                             {plan.equipment.length > 3 && (
-                              <span className="px-2 py-1 text-xs bg-blue-100 dark:bg-blue-900/30 text-blue-800 dark:text-blue-200 rounded border border-blue-300 dark:border-blue-700">
+                              <span className="px-3 py-1 bg-gradient-to-r from-primary/10 to-accent/10 text-primary border border-primary/20 rounded-full font-medium text-xs shadow-sm hover:shadow-md transition-shadow">
                                 +{plan.equipment.length - 3}
                               </span>
                             )}
@@ -513,14 +513,14 @@ export default function WorkoutsPage() {
                         </div>
                         
                         <div className="mb-3">
-                          <div className="flex flex-wrap gap-1">
+                          <div className="flex flex-wrap gap-2">
                             {plan.equipment.slice(0, 3).map((eq) => (
-                              <span key={eq} className="px-2 py-1 text-xs bg-blue-100 dark:bg-blue-900/30 text-blue-800 dark:text-blue-200 rounded border border-blue-300 dark:border-blue-700">
+                              <span key={eq} className="px-3 py-1 bg-gradient-to-r from-primary/10 to-accent/10 text-primary border border-primary/20 rounded-full font-medium text-xs shadow-sm hover:shadow-md transition-shadow">
                                 {eq.replace('_', ' ')}
                               </span>
                             ))}
                             {plan.equipment.length > 3 && (
-                              <span className="px-2 py-1 text-xs bg-blue-100 dark:bg-blue-900/30 text-blue-800 dark:text-blue-200 rounded border border-blue-300 dark:border-blue-700">
+                              <span className="px-3 py-1 bg-gradient-to-r from-primary/10 to-accent/10 text-primary border border-primary/20 rounded-full font-medium text-xs shadow-sm hover:shadow-md transition-shadow">
                                 +{plan.equipment.length - 3}
                               </span>
                             )}
