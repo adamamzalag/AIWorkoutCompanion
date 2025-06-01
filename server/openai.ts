@@ -52,42 +52,7 @@ const WEEKLY_SNAPSHOT_SCHEMA = `{
   }
 }`;
 
-const WORKOUT_GENERATION_SCHEMA = {
-  type: "object",
-  properties: {
-    workouts: {
-      type: "array",
-      items: {
-        type: "object",
-        properties: {
-          title: { type: "string" },
-          description: { type: "string" },
-          estimatedDuration: { type: "number" },
-          exercises: {
-            type: "array",
-            items: {
-              type: "object",
-              properties: {
-                section: { type: "string", enum: ["warm-up", "main", "cardio", "cool-down"] },
-                name: { type: "string" },
-                sets: { type: "number" },
-                reps: { type: "string" },
-                weight: { type: ["string", "null"] },
-                restTime: { type: "string" },
-                instructions: { type: "array", items: { type: "string" } },
-                muscleGroups: { type: "array", items: { type: "string" } },
-                equipment: { type: "array", items: { type: "string" } }
-              },
-              required: ["section", "name", "sets", "reps", "weight", "restTime", "instructions", "muscleGroups", "equipment"]
-            }
-          }
-        },
-        required: ["title", "description", "estimatedDuration", "exercises"]
-      }
-    }
-  },
-  required: ["workouts"]
-};
+
 
 const PLAN_COMPLETION_SCHEMA = `{
   "coachNotes": "Overall plan assessment and key learnings (max 150 words)",
@@ -240,10 +205,7 @@ Return only valid JSON with this exact structure: {
       { role: "system", content: UNIFIED_COACH_SYSTEM_PROMPT + " " + JSON_RESPONSE_RULES },
       { role: "user", content: prompt }
     ],
-    response_format: { 
-      type: "json_object",
-      schema: WORKOUT_GENERATION_SCHEMA
-    },
+    response_format: { type: "json_object" },
     temperature: 0.3,
   });
 
