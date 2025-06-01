@@ -45,11 +45,11 @@ function WorkoutBottomControls() {
           <ChevronRight size={12} className="ml-1" />
         </Button>
 
-        {/* Exit Button - More intuitive */}
+        {/* Exit Button - Red circular border */}
         <Button
-          variant="ghost"
+          variant="outline"
           size="sm"
-          className="w-8 h-8 rounded-full p-0"
+          className="w-8 h-8 rounded-full p-0 border-2 border-red-500 text-red-500 hover:bg-red-500 hover:text-white"
           onClick={() => {
             window.dispatchEvent(new CustomEvent('workout-menu'));
           }}

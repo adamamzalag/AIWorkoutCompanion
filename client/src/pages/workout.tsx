@@ -251,16 +251,9 @@ export default function WorkoutPage() {
 
   return (
     <div className="min-h-screen bg-background pb-4">
-      {/* Simplified Workout Header - no floating title bar */}
+      {/* Simplified Workout Header - single exit button */}
       <div className="px-4 py-3 flex items-center justify-between">
-        <Button
-          variant="outline"
-          size="sm"
-          className="w-10 h-10 rounded-full p-0 glass-effect border-border/50"
-          onClick={handleExitWorkout}
-        >
-          <X size={16} />
-        </Button>
+        <div className="w-10 h-10"></div> {/* Spacer */}
         
         <div className="text-center">
           <div className="font-medium text-foreground">

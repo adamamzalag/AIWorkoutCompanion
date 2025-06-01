@@ -29,16 +29,27 @@ export function ExerciseCard({
 }: ExerciseCardProps) {
   const [reps, setReps] = useState(12);
   const [weight, setWeight] = useState(15);
+  const [duration, setDuration] = useState(30);
   const [showTutorial, setShowTutorial] = useState(false);
 
   const currentSet = exerciseLog?.sets[currentSetIndex];
-  const totalSets = exerciseLog?.sets.length || 3;
+  const totalSets = exerciseLog?.sets.length || 1;
+  
+  // Determine exercise type based on exerciseLog properties
+  const isWarmup = exerciseLog?.isWarmup;
+  const isCooldown = exerciseLog?.isCooldown;
+  const isCardio = exerciseLog?.isCardio;
+  const isTimeBased = isWarmup || isCooldown || isCardio;
 
   const handleCompleteSet = () => {
-    onCompleteSet({
-      reps,
-      weight: exercise.equipment.includes('none') ? undefined : weight
-    });
+    if (isTimeBased) {
+      onCompleteSet({ reps: 0, duration });
+    } else {
+      onCompleteSet({
+        reps,
+        weight: exercise.equipment && !exercise.equipment.includes('none') ? weight : undefined
+      });
+    }
   };
 
   return (
@@ -84,14 +95,26 @@ export function ExerciseCard({
         </h2>
         <p className="text-muted-foreground mb-4">{exercise.description}</p>
         
-        {/* Set Counter */}
+        {/* Dynamic Exercise Info */}
         <Card className="glass-effect mb-6">
           <CardContent className="p-6 text-center">
-            <div className="text-4xl font-bold text-primary mb-2">{reps}</div>
-            <div className="text-muted-foreground mb-2">reps</div>
-            <div className="text-sm">
-              <span className="text-accent font-medium">Set {currentSetIndex + 1}</span> of {totalSets}
-            </div>
+            {isTimeBased ? (
+              <>
+                <div className="text-4xl font-bold text-primary mb-2">{exerciseLog?.duration || 30}</div>
+                <div className="text-muted-foreground mb-2">seconds</div>
+                <div className="text-sm">
+                  <span className="text-accent font-medium">{isWarmup ? 'Warm-up' : isCooldown ? 'Cool-down' : 'Cardio'}</span> exercise
+                </div>
+              </>
+            ) : (
+              <>
+                <div className="text-4xl font-bold text-primary mb-2">{currentSet?.reps || reps}</div>
+                <div className="text-muted-foreground mb-2">reps</div>
+                <div className="text-sm">
+                  <span className="text-accent font-medium">Set {currentSetIndex + 1}</span> of {totalSets}
+                </div>
+              </>
+            )}
           </CardContent>
         </Card>
 
@@ -111,75 +134,72 @@ export function ExerciseCard({
           </Card>
         )}
 
-        {/* Weight/Reps Adjustment */}
-        <Card className="glass-effect mb-6">
-          <CardContent className="p-4 space-y-4">
-            {/* Reps */}
-            <div className="flex items-center justify-between">
-              <span className="text-sm text-foreground">Reps</span>
-              <div className="flex items-center space-x-2">
-                <Button
-                  variant="outline"
-                  size="sm"
-                  className="w-8 h-8 rounded-full p-0 glass-effect border-border/50"
-                  onClick={() => setReps(Math.max(1, reps - 1))}
-                >
-                  <Minus size={14} />
-                </Button>
-                <span className="w-12 text-center font-medium">{reps}</span>
-                <Button
-                  variant="outline"
-                  size="sm"
-                  className="w-8 h-8 rounded-full p-0 glass-effect border-border/50"
-                  onClick={() => setReps(reps + 1)}
-                >
-                  <Plus size={14} />
-                </Button>
-              </div>
-            </div>
-
-            {/* Weight (if equipment required) */}
-            {!exercise.equipment.includes('none') && (
+        {/* Dynamic Input Fields */}
+        {!isTimeBased && (
+          <Card className="glass-effect mb-6">
+            <CardContent className="p-4 space-y-4">
+              {/* Reps Input */}
               <div className="flex items-center justify-between">
-                <span className="text-sm text-foreground">Weight (lbs)</span>
-                <div className="flex items-center space-x-2">
-                  <Button
-                    variant="outline"
-                    size="sm"
-                    className="w-8 h-8 rounded-full p-0 glass-effect border-border/50"
-                    onClick={() => setWeight(Math.max(0, weight - 5))}
-                  >
-                    <Minus size={14} />
-                  </Button>
-                  <span className="w-12 text-center font-medium">{weight}</span>
-                  <Button
-                    variant="outline"
-                    size="sm"
-                    className="w-8 h-8 rounded-full p-0 glass-effect border-border/50"
-                    onClick={() => setWeight(weight + 5)}
-                  >
-                    <Plus size={14} />
-                  </Button>
-                </div>
+                <span className="text-sm text-foreground">Reps</span>
+                <input
+                  type="number"
+                  value={reps}
+                  onChange={(e) => setReps(Math.max(1, parseInt(e.target.value) || 1))}
+                  className="w-20 px-3 py-2 text-center bg-background/50 border border-border/50 rounded-lg focus:border-accent focus:outline-none text-foreground"
+                  min="1"
+                />
               </div>
-            )}
-          </CardContent>
-        </Card>
+
+              {/* Weight Input (if equipment required) */}
+              {exercise.equipment && !exercise.equipment.includes('none') && (
+                <div className="flex items-center justify-between">
+                  <span className="text-sm text-foreground">Weight (lbs)</span>
+                  <input
+                    type="number"
+                    value={weight}
+                    onChange={(e) => setWeight(Math.max(0, parseInt(e.target.value) || 0))}
+                    className="w-20 px-3 py-2 text-center bg-background/50 border border-border/50 rounded-lg focus:border-accent focus:outline-none text-foreground"
+                    min="0"
+                    step="5"
+                  />
+                </div>
+              )}
+            </CardContent>
+          </Card>
+        )}
+
+        {/* Duration Input for Time-Based Exercises */}
+        {isTimeBased && (
+          <Card className="glass-effect mb-6">
+            <CardContent className="p-4">
+              <div className="flex items-center justify-between">
+                <span className="text-sm text-foreground">Duration (seconds)</span>
+                <input
+                  type="number"
+                  value={duration}
+                  onChange={(e) => setDuration(Math.max(1, parseInt(e.target.value) || 1))}
+                  className="w-20 px-3 py-2 text-center bg-background/50 border border-border/50 rounded-lg focus:border-accent focus:outline-none text-foreground"
+                  min="1"
+                />
+              </div>
+            </CardContent>
+          </Card>
+        )}
 
         {/* Complete Set Button */}
         <Button 
           onClick={handleCompleteSet}
-          className="w-full bg-accent hover:bg-accent/90 text-accent-foreground py-4 touch-target font-medium"
+          className="w-full glass-effect bg-gradient-to-r from-accent to-primary hover:from-accent/90 hover:to-primary/90 text-white py-4 touch-target font-medium border-0"
           disabled={isLoading}
         >
-          {isLoading ? 'Completing...' : 'Complete Set'}
+          {isLoading ? 'Completing...' : isTimeBased ? 'Complete Exercise' : 'Complete Set'}
         </Button>
 
         {/* Get Coaching Tip Button */}
         <Button 
           onClick={onGetCoachingTip}
           variant="outline"
-          className="w-full mt-3 glass-effect border-border/50 touch-target"
+          className="w-full mt-3 glass-effect border-border/50 hover:bg-background/10 text-foreground touch-target"
           disabled={isLoading}
         >
           <MessageCircle size={16} className="mr-2" />
