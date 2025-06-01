@@ -1,5 +1,6 @@
 import { useState, useEffect } from 'react';
 import { useQuery } from '@tanstack/react-query';
+import { useLocation } from 'wouter';
 import { Button } from '@/components/ui/button';
 import { Card, CardContent } from '@/components/ui/card';
 import { ExerciseCard } from '@/components/exercise-card';
@@ -10,6 +11,7 @@ import type { ExerciseLog } from '@/lib/types';
 
 export default function WorkoutPage() {
   const [showExitDialog, setShowExitDialog] = useState(false);
+  const [, setLocation] = useLocation();
 
   // Get workout ID from URL parameters
   const urlParams = new URLSearchParams(window.location.search);
@@ -82,8 +84,8 @@ export default function WorkoutPage() {
   const handleNextExercise = () => {
     if (isLastExercise) {
       completeWorkout();
-      // Navigate back to home
-      window.location.href = '/';
+      // Navigate back to home using smooth routing
+      setLocation('/');
     } else {
       nextExercise();
     }
@@ -94,8 +96,8 @@ export default function WorkoutPage() {
   };
 
   const confirmExit = () => {
-    // Save partial progress and exit
-    window.location.href = '/';
+    // Save partial progress and exit using smooth routing
+    setLocation('/');
   };
 
   // Get current exercise details from the workout's exercise data

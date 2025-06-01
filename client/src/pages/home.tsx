@@ -66,8 +66,8 @@ export default function Home() {
 
   const handleStartWorkout = () => {
     if (todaysWorkout) {
-      // Navigate to workout session with workout ID
-      window.location.href = `/workout?id=${todaysWorkout.id}`;
+      // Navigate to workout session with workout ID using smooth routing
+      setLocation(`/workout?id=${todaysWorkout.id}`);
     }
   };
 
