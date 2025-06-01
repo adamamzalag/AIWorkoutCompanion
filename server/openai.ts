@@ -19,7 +19,7 @@ WORKOUT STRUCTURE PRINCIPLES:
 • Consider fatigue management and exercise sequencing
 `;
 
-const JSON_RESPONSE_RULES = "Return only valid JSON. No commentary, whitespace, or additional text. Follow the exact schema provided. No keys outside the specified structure.";
+const JSON_RESPONSE_RULES = "Return only the JSON object. No text before or after. Follow the exact schema provided. No keys outside the specified structure.";
 
 const WEEKLY_SNAPSHOT_SCHEMA = `{
   "coachNotes": "Brief summary of week performance (max 100 words)",
@@ -126,7 +126,7 @@ Client Data:
 - Time Per Session: ${request.timePerWorkout} minutes  
 - Weekly Frequency: ${request.workoutsPerWeek} workouts
 - Training Goal: ${JSON.stringify(request.goals)}
-- Available Equipment: ${JSON.stringify(request.equipment.join(', '))}
+- Available Equipment: ${JSON.stringify(request.equipment)}
 - Plan Duration: ${request.duration} weeks
 
 Think through your coaching strategy:
@@ -216,7 +216,7 @@ export async function generateWeeklyWorkouts(
   const prompt = `Generate detailed workouts for Week ${weekNumber}:
 
 Framework: ${JSON.stringify(currentWeek)}
-Available Equipment: ${JSON.stringify(framework.equipment.join(', '))}
+Available Equipment: ${JSON.stringify(framework.equipment)}
 ${progressionContext}
 
 Design ${currentWeek.workoutDays.length} intelligent workouts for ${timePerWorkout || 45} minutes each that maximize training effectiveness within the time constraints.
@@ -244,7 +244,7 @@ Return only valid JSON with this exact structure: {
         "name": "Main exercise name",
         "sets": 3,
         "reps": "8-12",
-        "weight": "moderate weight",
+        "weight": "15 lbs",
         "restTime": "60-90 seconds",
         "instructions": ["Proper form instructions"],
         "muscleGroups": ["primary muscles worked"],
@@ -576,7 +576,7 @@ export async function createWeeklySnapshot(
 Workout sessions: ${JSON.stringify(workoutSessions)}
 User goals: ${JSON.stringify(userGoals.join(", "))}
 
-Schema: ${WEEKLY_SNAPSHOT_SCHEMA}`;
+Use the weekly snapshot schema provided in the system message.`;
 
   try {
     const response = await openai.chat.completions.create({
