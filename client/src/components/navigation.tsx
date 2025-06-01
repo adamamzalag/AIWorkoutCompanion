@@ -35,9 +35,51 @@ export function BottomNavigation() {
   );
 }
 
+// Global hook to check if any plan generation is in progress
+function useGlobalGenerationStatus() {
+  const [isGenerating, setIsGenerating] = useState(false);
+  const [operationId, setOperationId] = useState<string | null>(null);
+
+  useEffect(() => {
+    // Check localStorage for any active generation
+    const storedOperationId = localStorage.getItem('activeGenerationId');
+    if (storedOperationId) {
+      setOperationId(storedOperationId);
+      setIsGenerating(true);
+      
+      // Poll for completion
+      const checkProgress = async () => {
+        try {
+          const response = await fetch(`/api/generation-progress/${storedOperationId}`);
+          const data = await response.json();
+          
+          if (data.status === 'completed' || data.status === 'failed') {
+            localStorage.removeItem('activeGenerationId');
+            setIsGenerating(false);
+            setOperationId(null);
+          }
+        } catch (error) {
+          // If operation doesn't exist, clear it
+          localStorage.removeItem('activeGenerationId');
+          setIsGenerating(false);
+          setOperationId(null);
+        }
+      };
+
+      const interval = setInterval(checkProgress, 5000);
+      checkProgress(); // Check immediately
+
+      return () => clearInterval(interval);
+    }
+  }, []);
+
+  return { isGenerating, operationId };
+}
+
 export function TopNavigation() {
   const [isVisible, setIsVisible] = useState(true);
   const [lastScrollY, setLastScrollY] = useState(0);
+  const { isGenerating, operationId } = useGlobalGenerationStatus();
 
   useEffect(() => {
     const handleScroll = () => {
@@ -69,11 +111,36 @@ export function TopNavigation() {
           </div>
           <span className="font-poppins font-semibold text-lg text-foreground">AI Fitness</span>
         </div>
-        <Link href="/profile">
-          <button className="w-10 h-10 glass-effect rounded-full flex items-center justify-center touch-target hover:bg-card/60 transition-colors">
-            <Settings className="w-5 h-5 text-foreground" />
-          </button>
-        </Link>
+        
+        <div className="flex items-center space-x-2">
+          {/* Generation Status Indicator */}
+          {isGenerating && (
+            <Popover>
+              <PopoverTrigger asChild>
+                <Button variant="ghost" size="sm" className="w-10 h-10 glass-effect rounded-full flex items-center justify-center touch-target hover:bg-card/60 transition-colors">
+                  <Loader2 className="w-5 h-5 text-blue-500 animate-spin" />
+                </Button>
+              </PopoverTrigger>
+              <PopoverContent className="w-64 p-3">
+                <div className="text-center space-y-2">
+                  <div className="flex items-center justify-center gap-2">
+                    <Loader2 className="w-4 h-4 animate-spin text-blue-500" />
+                    <span className="font-medium text-sm">Plan Generation in Progress</span>
+                  </div>
+                  <p className="text-xs text-muted-foreground">
+                    Your AI workout plan is being created in the background. You'll be notified when it's ready!
+                  </p>
+                </div>
+              </PopoverContent>
+            </Popover>
+          )}
+          
+          <Link href="/profile">
+            <button className="w-10 h-10 glass-effect rounded-full flex items-center justify-center touch-target hover:bg-card/60 transition-colors">
+              <Settings className="w-5 h-5 text-foreground" />
+            </button>
+          </Link>
+        </div>
       </div>
     </nav>
   );

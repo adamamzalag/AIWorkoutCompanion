@@ -85,6 +85,7 @@ export default function WorkoutsPage() {
     },
     onSuccess: (data) => {
       if (data.operationId) {
+        localStorage.setItem('activeGenerationId', data.operationId); // Store for global tracking
         setShowGenerateDialog(false); // Close the form dialog
         setGenerationState({ isGenerating: true, operationId: data.operationId }); // Show progress dialog
       } else {

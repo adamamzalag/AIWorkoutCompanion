@@ -37,6 +37,7 @@ export function GenerationProgress({ operationId, onComplete }: GenerationProgre
           if (data.status === 'completed') {
             if (interval) clearInterval(interval);
             isActive = false;
+            localStorage.removeItem('activeGenerationId'); // Clear global tracking
             
             // Show browser notification
             if (Notification.permission === 'granted') {
