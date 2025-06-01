@@ -4,22 +4,28 @@
 @tailwind components;
 @tailwind utilities;
 
-/* Fix scrollbar layout shift - more aggressive approach */
+/* Fix scrollbar layout shift - force consistent viewport */
 html {
   overflow-y: scroll !important;
-  width: 100vw;
-  max-width: 100vw;
 }
 
 body {
-  width: 100%;
-  max-width: calc(100vw - (100vw - 100%));
+  width: calc(100vw - 6px); /* Reserve exact scrollbar width */
+  max-width: calc(100vw - 6px);
   overflow-x: hidden;
 }
 
 /* Ensure consistent width calculation */
 * {
   box-sizing: border-box;
+}
+
+/* Fallback for different scrollbar widths */
+@supports (width: calc(100vw - (100vw - 100%))) {
+  body {
+    width: calc(100vw - (100vw - 100%));
+    max-width: calc(100vw - (100vw - 100%));
+  }
 }
 
 :root {
