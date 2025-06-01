@@ -14,11 +14,28 @@ body {
   font-display: swap;
 }
 
-/* Smooth transitions to minimize jarring effects */
-* {
+/* Disable only layout-shifting animations */
+.slide-in,
+.fade-in,
+.exercise-card {
   transition: none !important;
-  animation-duration: 0s !important;
-  animation-delay: 0s !important;
+  animation: none !important;
+}
+
+/* Keep essential animations */
+.animate-spin,
+button:focus-visible,
+a:focus-visible,
+input:focus-visible,
+textarea:focus-visible,
+[data-state="open"],
+[data-state="closed"] {
+  transition: all 0.2s ease-in-out;
+}
+
+/* Keep loading animations */
+.animate-pulse {
+  animation: pulse 2s cubic-bezier(0.4, 0, 0.6, 1) infinite;
 }
 
 :root {
