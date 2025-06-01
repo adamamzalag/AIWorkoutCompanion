@@ -115,9 +115,18 @@ export default function WorkoutPage() {
   // Auto-start workout if we have exercise logs and aren't already active
   useEffect(() => {
     if (exerciseLogs.length > 0 && !isActive && !isStarting) {
+      console.log('Starting workout with exercises:', exerciseLogs);
       startWorkout(exerciseLogs);
     }
   }, [exerciseLogs.length, isActive, isStarting, startWorkout, exerciseLogs]);
+
+  console.log('Workout state:', { 
+    exerciseLogsCount: exerciseLogs.length, 
+    isActive, 
+    isStarting, 
+    currentExercise: currentExercise?.name,
+    currentExerciseIndex 
+  });
 
   const handleCompleteSet = (setData: { reps: number; weight?: number; duration?: number }) => {
     if (currentExercise) {
