@@ -21,6 +21,22 @@ WORKOUT STRUCTURE PRINCIPLES:
 
 const JSON_RESPONSE_RULES = "Return only the JSON object. No text before or after. Follow the exact schema provided. No keys outside the specified structure.";
 
+// Helper function for JSON parsing with retry logic
+async function parseJSONWithRetry(content: string, openaiCall: () => Promise<any>): Promise<any> {
+  try {
+    return JSON.parse(content);
+  } catch (error) {
+    console.log("JSON parsing failed, attempting retry with correction prompt");
+    try {
+      const retryResponse = await openaiCall();
+      return JSON.parse(retryResponse.choices[0].message.content || "{}");
+    } catch (retryError) {
+      console.error("Retry also failed:", retryError);
+      throw new Error("Failed to parse valid JSON after retry");
+    }
+  }
+}
+
 const WEEKLY_SNAPSHOT_SCHEMA = `{
   "coachNotes": "Brief summary of week performance (max 100 words)",
   "adherencePercent": 85,
@@ -35,6 +51,43 @@ const WEEKLY_SNAPSHOT_SCHEMA = `{
     "userPreferences": ["shorter_rest_periods", "prefers_morning_workouts"]
   }
 }`;
+
+const WORKOUT_GENERATION_SCHEMA = {
+  type: "object",
+  properties: {
+    workouts: {
+      type: "array",
+      items: {
+        type: "object",
+        properties: {
+          title: { type: "string" },
+          description: { type: "string" },
+          estimatedDuration: { type: "number" },
+          exercises: {
+            type: "array",
+            items: {
+              type: "object",
+              properties: {
+                section: { type: "string", enum: ["warm-up", "main", "cardio", "cool-down"] },
+                name: { type: "string" },
+                sets: { type: "number" },
+                reps: { type: "string" },
+                weight: { type: ["string", "null"] },
+                restTime: { type: "string" },
+                instructions: { type: "array", items: { type: "string" } },
+                muscleGroups: { type: "array", items: { type: "string" } },
+                equipment: { type: "array", items: { type: "string" } }
+              },
+              required: ["section", "name", "sets", "reps", "weight", "restTime", "instructions", "muscleGroups", "equipment"]
+            }
+          }
+        },
+        required: ["title", "description", "estimatedDuration", "exercises"]
+      }
+    }
+  },
+  required: ["workouts"]
+};
 
 const PLAN_COMPLETION_SCHEMA = `{
   "coachNotes": "Overall plan assessment and key learnings (max 150 words)",
@@ -187,7 +240,10 @@ Return only valid JSON with this exact structure: {
       { role: "system", content: UNIFIED_COACH_SYSTEM_PROMPT + " " + JSON_RESPONSE_RULES },
       { role: "user", content: prompt }
     ],
-    response_format: { type: "json_object" },
+    response_format: { 
+      type: "json_object",
+      schema: WORKOUT_GENERATION_SCHEMA
+    },
     temperature: 0.3,
   });
 
@@ -221,61 +277,7 @@ ${progressionContext}
 
 Design ${currentWeek.workoutDays.length} intelligent workouts for ${timePerWorkout || 45} minutes each that maximize training effectiveness within the time constraints.
 
-Return only valid JSON with this exact structure: {
-  "workouts": [
-  {
-    "title": "Workout day title",
-    "description": "Workout focus",
-    "estimatedDuration": ${timePerWorkout || 45},
-    "exercises": [
-      {
-        "section": "warm-up",
-        "name": "Specific warm-up movement name",
-        "sets": 1,
-        "reps": "10-15 each side",
-        "weight": null,
-        "restTime": "30 seconds",
-        "instructions": ["Detailed movement instructions"],
-        "muscleGroups": ["muscles being warmed up"],
-        "equipment": ["equipment needed or none"]
-      },
-      {
-        "section": "main",
-        "name": "Main exercise name",
-        "sets": 3,
-        "reps": "8-12",
-        "weight": "15 lbs",
-        "restTime": "60-90 seconds",
-        "instructions": ["Proper form instructions"],
-        "muscleGroups": ["primary muscles worked"],
-        "equipment": ["required equipment"]
-      },
-      {
-        "section": "cardio",
-        "name": "Specific cardio exercise",
-        "sets": 1,
-        "reps": "10-15 minutes or intervals",
-        "weight": null,
-        "restTime": "none",
-        "instructions": ["Cardio exercise instructions"],
-        "muscleGroups": ["cardiovascular"],
-        "equipment": ["cardio equipment needed"]
-      },
-      {
-        "section": "cool-down",
-        "name": "Specific stretch name",
-        "sets": 1,
-        "reps": "hold 20-30 seconds",
-        "weight": null,
-        "restTime": "none",
-        "instructions": ["Stretching instructions"],
-        "muscleGroups": ["muscles being stretched"],
-        "equipment": ["none or equipment needed"]
-      }
-    ]
-  }
-  ]
-}`;
+Structure: warm-up → main exercises → cardio → cool-down. Use null for bodyweight exercises, specific weights for loaded exercises.`;
 
   console.log("🔍 WEEKLY WORKOUT GENERATION - Prompt:", prompt);
 
@@ -584,7 +586,7 @@ Use the weekly snapshot schema provided in the system message.`;
       messages: [
         {
           role: "system",
-          content: UNIFIED_COACH_SYSTEM_PROMPT
+          content: UNIFIED_COACH_SYSTEM_PROMPT + " " + JSON_RESPONSE_RULES + "\n\n###REFERENCE SCHEMA###\n" + WEEKLY_SNAPSHOT_SCHEMA
         },
         {
           role: "user",
