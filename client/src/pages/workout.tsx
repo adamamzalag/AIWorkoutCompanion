@@ -59,8 +59,14 @@ export default function WorkoutPage() {
     // Add warm-up exercises
     if (warmUp.activities) {
       warmUp.activities.forEach((activity: any, index: number) => {
+        // Try to find the real exercise in the database by name
+        const realExercise = exercises?.find(ex => 
+          ex.name.toLowerCase().includes(activity.exercise.toLowerCase()) ||
+          activity.exercise.toLowerCase().includes(ex.name.toLowerCase())
+        );
+        
         exerciseLogs.push({
-          exerciseId: `warmup-${index}`,
+          exerciseId: realExercise ? realExercise.id : `warmup-${index}`, // Use real ID if found
           name: activity.exercise,
           sets: [{ reps: 0, completed: false }], // Time-based exercise
           restTime: '30 seconds',
@@ -96,8 +102,14 @@ export default function WorkoutPage() {
     // Add cool-down exercises
     if (coolDown.activities) {
       coolDown.activities.forEach((activity: any, index: number) => {
+        // Try to find the real exercise in the database by name
+        const realExercise = exercises?.find(ex => 
+          ex.name.toLowerCase().includes(activity.exercise.toLowerCase()) ||
+          activity.exercise.toLowerCase().includes(ex.name.toLowerCase())
+        );
+        
         exerciseLogs.push({
-          exerciseId: `cooldown-${index}`,
+          exerciseId: realExercise ? realExercise.id : `cooldown-${index}`, // Use real ID if found
           name: activity.exercise,
           sets: [{ reps: 0, completed: false }], // Time-based exercise
           restTime: '30 seconds',
