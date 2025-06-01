@@ -24,47 +24,47 @@ export function YouTubeVideo({ videoId, thumbnailUrl, exerciseName, className = 
   };
 
   if (!videoId || !displayThumbnail) {
-    // Generate exercise-specific Unsplash search terms
+    // Generate exercise-specific Unsplash search terms with proper API format
     const getExerciseImageQuery = (name: string) => {
       const lowerName = name.toLowerCase();
       
-      // Map exercise types to specific image search terms
+      // Map exercise types to specific, working Unsplash image IDs
       if (lowerName.includes('treadmill') || lowerName.includes('jogging') || lowerName.includes('running')) {
-        return 'person-running-treadmill-gym';
+        return 'photo-1544367567-0f2fcb009e0b?auto=format&fit=crop&w=800&h=600&q=80'; // Person running on treadmill
       }
-      if (lowerName.includes('stretch') || lowerName.includes('chest opener')) {
-        return 'person-stretching-yoga-flexibility';
+      if (lowerName.includes('stretch') || lowerName.includes('chest opener') || lowerName.includes('chest stretch')) {
+        return 'photo-1506629905607-683b2b53b7dc?auto=format&fit=crop&w=800&h=600&q=80'; // Person stretching
       }
-      if (lowerName.includes('circle') || lowerName.includes('roll')) {
-        return 'person-warming-up-shoulder-mobility';
+      if (lowerName.includes('circle') || lowerName.includes('arm circle')) {
+        return 'photo-1571019613454-1cb2f99b2d8b?auto=format&fit=crop&w=800&h=600&q=80'; // Person doing arm exercises
       }
       if (lowerName.includes('breath') || lowerName.includes('breathing')) {
-        return 'meditation-breathing-relaxation';
+        return 'photo-1506126613408-eca07ce68773?auto=format&fit=crop&w=800&h=600&q=80'; // Meditation/breathing
       }
       if (lowerName.includes('bench press')) {
-        return 'person-bench-press-gym-weights';
+        return 'photo-1583454110551-21f2fa2afe61?auto=format&fit=crop&w=800&h=600&q=80'; // Person bench pressing
       }
-      if (lowerName.includes('shoulder press') || lowerName.includes('dumbbells')) {
-        return 'person-dumbbell-shoulder-exercise';
+      if (lowerName.includes('shoulder press') || lowerName.includes('dumbbell')) {
+        return 'photo-1571019613454-1cb2f99b2d8b?auto=format&fit=crop&w=800&h=600&q=80'; // Person with dumbbells
       }
       if (lowerName.includes('tricep')) {
-        return 'person-tricep-exercise-gym';
+        return 'photo-1571019613454-1cb2f99b2d8b?auto=format&fit=crop&w=800&h=600&q=80'; // Person doing tricep exercise
       }
       
       // Default to general fitness
-      return 'fitness-exercise-gym-workout';
+      return 'photo-1571019613454-1cb2f99b2d8b?auto=format&fit=crop&w=800&h=600&q=80';
     };
 
-    const imageQuery = getExerciseImageQuery(exerciseName);
+    const imageId = getExerciseImageQuery(exerciseName);
     
     return (
       <div className={`relative ${className}`}>
         <img
-          src={`https://images.unsplash.com/800x600/?${imageQuery}`}
+          src={`https://images.unsplash.com/${imageId}`}
           alt={`${exerciseName} exercise`}
           className="w-full h-full object-cover rounded-2xl"
           onError={(e) => {
-            // Fallback to a generic fitness image if specific search fails
+            // Fallback to a reliable generic fitness image
             const target = e.target as HTMLImageElement;
             target.src = 'https://images.unsplash.com/photo-1571019613454-1cb2f99b2d8b?auto=format&fit=crop&w=800&h=600&q=80';
           }}

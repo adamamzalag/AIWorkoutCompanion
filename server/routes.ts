@@ -18,7 +18,7 @@ import {
   createPlanCompletionSnapshot,
   type WorkoutPlanRequest 
 } from "./openai";
-import { updateExerciseVideos } from "./youtube";
+import { updateAllExerciseTypes, searchExerciseVideo } from "./youtube";
 
 export async function registerRoutes(app: Express): Promise<Server> {
   // Setup authentication
