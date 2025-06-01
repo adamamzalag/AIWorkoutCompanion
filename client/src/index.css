@@ -4,19 +4,22 @@
 @tailwind components;
 @tailwind utilities;
 
-/* Fix scrollbar layout shift */
+/* Fix scrollbar layout shift - more aggressive approach */
 html {
-  scrollbar-gutter: stable;
-  /* Fallback for browsers that don't support scrollbar-gutter */
-  overflow-y: scroll;
+  overflow-y: scroll !important;
+  width: 100vw;
+  max-width: 100vw;
 }
 
-/* Modern browsers */
-@supports (scrollbar-gutter: stable) {
-  html {
-    overflow-y: auto;
-    scrollbar-gutter: stable;
-  }
+body {
+  width: 100%;
+  max-width: calc(100vw - (100vw - 100%));
+  overflow-x: hidden;
+}
+
+/* Ensure consistent width calculation */
+* {
+  box-sizing: border-box;
 }
 
 :root {
