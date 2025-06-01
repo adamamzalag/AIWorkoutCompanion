@@ -477,6 +477,9 @@ export async function registerRoutes(app: Express): Promise<Server> {
               muscle_groups: aiExercise.muscleGroups,
               instructions: aiExercise.instructions,
               equipment: aiExercise.equipment,
+              tempo: aiExercise.tempo,
+              modifications: aiExercise.modifications || [],
+              progressions: aiExercise.progressions || [],
               youtubeId: null
             });
             exerciseId = newExercise.id;
@@ -505,6 +508,8 @@ export async function registerRoutes(app: Express): Promise<Server> {
           description: workout.description || workout.goal || `Training session ${i + 1}`,
           estimatedDuration: workout.estimatedDuration || req.body.timePerWorkout,
           exercises: processedExercises,
+          warmUp: workout.warmUp,
+          coolDown: workout.coolDown,
           orderIndex: i
         });
         console.log(`✅ Workout created with ID: ${createdWorkout.id}`);
