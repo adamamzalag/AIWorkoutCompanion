@@ -59,9 +59,13 @@ export default function WorkoutsPage() {
   const queryClient = useQueryClient();
   const { user } = useAuth();
 
+  const { data: userProfile } = useQuery<User>({
+    queryKey: ["/api/profile"],
+  });
+
   const { data: workoutPlans, isLoading: plansLoading } = useQuery<WorkoutPlan[]>({
-    queryKey: ['/api/workout-plans', user?.id],
-    enabled: !!user?.id,
+    queryKey: ['/api/workout-plans', (userProfile as any)?.id],
+    enabled: !!(userProfile as any)?.id,
   });
 
   const { data: selectedPlanWorkouts, isLoading: workoutsLoading } = useQuery<Workout[]>({
@@ -84,7 +88,7 @@ export default function WorkoutsPage() {
         setShowGenerateDialog(false); // Close the form dialog
         setGenerationState({ isGenerating: true, operationId: data.operationId }); // Show progress dialog
       } else {
-        queryClient.invalidateQueries({ queryKey: ['/api/workout-plans', user?.id] });
+        queryClient.invalidateQueries({ queryKey: ['/api/workout-plans', userProfile?.id] });
         setShowGenerateDialog(false);
         toast({
           title: "Workout Plan Generated!",
@@ -105,7 +109,7 @@ export default function WorkoutsPage() {
     setGenerationState({ isGenerating: false, operationId: null });
     
     if (success) {
-      queryClient.invalidateQueries({ queryKey: ['/api/workout-plans', MOCK_USER_ID] });
+      queryClient.invalidateQueries({ queryKey: ['/api/workout-plans', userProfile?.id] });
       setShowGenerateDialog(false);
       toast({
         title: "Workout Plan Generated!",
@@ -119,10 +123,6 @@ export default function WorkoutsPage() {
       });
     }
   };
-
-  const { data: userProfile } = useQuery<User>({
-    queryKey: ["/api/profile"],
-  });
 
   const form = useForm<z.infer<typeof generatePlanSchema>>({
     resolver: zodResolver(generatePlanSchema),
@@ -146,10 +146,10 @@ export default function WorkoutsPage() {
 
     const planRequest = {
       ...values,
-      userId: MOCK_USER_ID,
+      userId: userProfile.id,
       fitnessLevel: (userProfile.fitnessLevel as 'beginner' | 'intermediate' | 'advanced') || 'beginner',
       equipment: userProfile.equipment || [],
-      goals: userProfile.goals || []
+      goals: userProfile.goals || 'general_fitness'
     };
     generatePlanMutation.mutate(planRequest);
   };
