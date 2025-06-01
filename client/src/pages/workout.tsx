@@ -24,7 +24,7 @@ export default function WorkoutPage() {
   });
 
   const { data: workout } = useQuery<Workout>({
-    queryKey: ['/api/workout', workoutId],
+    queryKey: [`/api/workout/${workoutId}`],
     enabled: !!workoutId,
   });
 
