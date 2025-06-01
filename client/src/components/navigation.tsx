@@ -132,7 +132,7 @@ export function TopNavigation() {
                   <Loader2 className="w-5 h-5 text-blue-500 animate-spin" />
                 </Button>
               </PopoverTrigger>
-              <PopoverContent className="w-64 p-3">
+              <PopoverContent className="w-64 p-3 mr-4" align="end">
                 <div className="text-center space-y-2">
                   <div className="flex items-center justify-center gap-2">
                     <Loader2 className="w-4 h-4 animate-spin text-blue-500" />
