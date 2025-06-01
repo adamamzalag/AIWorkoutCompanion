@@ -163,11 +163,11 @@ export async function generateWorkoutFramework(request: WorkoutPlanRequest): Pro
   const prompt = `Create a strategic workout framework for this client:
 
 Client Data:
-- Fitness Level: ${JSON.stringify(request.fitnessLevel)}
+- Fitness Level: ${request.fitnessLevel}
 - Time Per Session: ${request.timePerWorkout} minutes  
 - Weekly Frequency: ${request.workoutsPerWeek} workouts
-- Training Goal: ${JSON.stringify(request.goals)}
-- Available Equipment: ${JSON.stringify(request.equipment)}
+- Training Goal: ${request.goals}
+- Available Equipment: ${request.equipment.join(", ")}
 - Plan Duration: ${request.duration} weeks
 
 Think through your coaching strategy:
@@ -181,7 +181,7 @@ Return only valid JSON with this exact structure: {
   "description": "Plan overview", 
   "duration": ${request.duration},
   "totalWorkouts": ${request.workoutsPerWeek * request.duration},
-  "difficulty": ${JSON.stringify(request.fitnessLevel)},
+  "difficulty": "${request.fitnessLevel}",
   "equipment": ${JSON.stringify(request.equipment)},
   "weeklyStructure": [
     {
@@ -257,7 +257,7 @@ export async function generateWeeklyWorkouts(
   const prompt = `Generate detailed workouts for Week ${weekNumber}:
 
 Framework: ${JSON.stringify(currentWeek)}
-Available Equipment: ${JSON.stringify(framework.equipment)}
+Available Equipment: ${framework.equipment.join(", ")}
 ${progressionContext}
 
 Design ${currentWeek.workoutDays.length} intelligent workouts for ${timePerWorkout || 45} minutes each that maximize training effectiveness within the time constraints.
