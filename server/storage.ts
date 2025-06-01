@@ -375,6 +375,7 @@ export class MemStorage implements IStorage {
   private initializeExercises() {
     const sampleExercises: InsertExercise[] = [
       {
+        slug: "push-ups",
         name: "Push-ups",
         description: "Classic bodyweight chest exercise",
         muscle_groups: ["chest", "shoulders", "triceps"],
@@ -387,6 +388,7 @@ export class MemStorage implements IStorage {
           "Keep your core tight throughout the movement"
         ],
         youtubeId: "IODxDxX7oi4",
+        thumbnailUrl: "https://img.youtube.com/vi/IODxDxX7oi4/maxresdefault.jpg",
         imageUrl: "https://images.unsplash.com/photo-1571019613454-1cb2f99b2d8b?ixlib=rb-4.0.3&auto=format&fit=crop&w=800&h=600"
       },
       {
@@ -402,6 +404,7 @@ export class MemStorage implements IStorage {
           "Return to starting position"
         ],
         youtubeId: "aclHkVaku9U",
+        thumbnailUrl: "https://img.youtube.com/vi/aclHkVaku9U/maxresdefault.jpg",
         imageUrl: "https://images.unsplash.com/photo-1566241142559-40e1dab266c6?ixlib=rb-4.0.3&auto=format&fit=crop&w=800&h=600"
       },
       {
