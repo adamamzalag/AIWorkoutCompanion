@@ -4,11 +4,11 @@ import { Button } from '@/components/ui/button';
 import { Card, CardContent } from '@/components/ui/card';
 import { Badge } from '@/components/ui/badge';
 import { Skeleton } from '@/components/ui/skeleton';
-import { Dialog, DialogContent, DialogHeader, DialogTitle, DialogTrigger } from '@/components/ui/dialog';
 import { ChevronLeft, Clock, Target, Play, Calendar, Dumbbell, X } from 'lucide-react';
 import { Link, useRoute } from 'wouter';
 import { apiRequest, queryClient } from '@/lib/queryClient';
 import { useBodyScrollLock } from '@/lib/scrollbar-utils';
+import { WorkoutPreviewModal } from '@/components/workout-preview-modal';
 import type { WorkoutPlan, Workout, User } from '@shared/schema';
 
 export default function PlanDetailPage() {
