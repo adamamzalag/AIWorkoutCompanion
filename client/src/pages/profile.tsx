@@ -42,6 +42,7 @@ export default function ProfilePage() {
   const { toast } = useToast();
   const queryClient = useQueryClient();
   const [customEquipment, setCustomEquipment] = useState("");
+  const [showEquipmentModal, setShowEquipmentModal] = useState(false);
 
   const { data: profile, isLoading } = useQuery<User>({
     queryKey: ["/api/profile"],
@@ -188,97 +189,88 @@ export default function ProfilePage() {
                 )}
               />
 
-              {/* Equipment */}
+              {/* Equipment - Compact Display */}
               <FormField
                 control={form.control}
                 name="equipment"
-                render={() => (
+                render={({ field }) => (
                   <FormItem>
-                    <FormLabel className="text-foreground">Available Equipment</FormLabel>
-                    <div className="space-y-3">
-                      <div className="grid grid-cols-1 gap-2 max-h-60 overflow-y-auto">
-                        {equipmentOptions.map((item) => (
-                          <FormField
-                            key={item}
-                            control={form.control}
-                            name="equipment"
-                            render={({ field }) => {
-                              return (
-                                <FormItem>
-                                  <FormControl>
-                                    <label className="flex items-center space-x-3 glass-effect rounded-lg p-2.5 cursor-pointer hover:bg-card/60 focus-within:bg-card/60 transition-colors touch-target">
-                                      <Checkbox
-                                        checked={field.value?.includes(item)}
-                                        className="data-[state=checked]:bg-primary data-[state=checked]:border-primary"
-                                        onCheckedChange={(checked) => {
-                                          return checked
-                                            ? field.onChange([...field.value, item])
-                                            : field.onChange(
-                                                field.value?.filter((value) => value !== item)
-                                              )
-                                        }}
-                                      />
-                                      <span className="text-sm text-foreground font-medium capitalize flex-1">
-                                        {item.replace('_', ' ')}
-                                      </span>
-                                    </label>
-                                  </FormControl>
-                                </FormItem>
-                              )
-                            }}
-                          />
-                        ))}
-                      </div>
-                      
-                      {/* Custom Equipment Input */}
-                      <div className="space-y-2">
-                        <div className="flex gap-2">
-                          <Input
-                            placeholder="Add custom equipment..."
-                            value={customEquipment}
-                            onChange={(e) => setCustomEquipment(e.target.value)}
-                            className="glass-effect border-border/50 flex-1"
-                            onKeyDown={(e) => {
-                              if (e.key === 'Enter') {
-                                e.preventDefault();
-                                addCustomEquipment();
-                              }
-                            }}
-                          />
-                          <Button
-                            type="button"
-                            size="sm"
-                            onClick={addCustomEquipment}
-                            className="bg-primary hover:bg-primary/90 px-3"
-                          >
-                            <Plus size={16} />
+                    <div className="flex items-center justify-between">
+                      <FormLabel className="text-foreground">Available Equipment</FormLabel>
+                      <Dialog open={showEquipmentModal} onOpenChange={setShowEquipmentModal}>
+                        <DialogTrigger asChild>
+                          <Button variant="outline" size="sm" className="text-xs">
+                            <Edit3 size={14} className="mr-1" />
+                            Change Equipment
                           </Button>
-                        </div>
-                        
-                        {/* Selected Equipment Tags */}
-                        {form.watch("equipment").length > 0 && (
-                          <div className="space-y-2">
-                            <p className="text-xs text-muted-foreground">Selected equipment:</p>
-                            <div className="flex flex-wrap gap-1">
-                              {form.watch("equipment").map((item) => (
-                                <div
-                                  key={item}
-                                  className="flex items-center gap-1 bg-primary/10 text-primary px-2 py-1 rounded-md text-xs"
-                                >
-                                  <span className="capitalize">{item.replace('_', ' ')}</span>
-                                  <button
-                                    type="button"
-                                    onClick={() => removeEquipment(item)}
-                                    className="hover:bg-primary/20 rounded-full p-0.5"
-                                  >
-                                    <X size={12} />
-                                  </button>
-                                </div>
+                        </DialogTrigger>
+                        <DialogContent className="glass-effect border-border/50 max-w-md max-h-[80vh] overflow-y-auto">
+                          <DialogHeader>
+                            <DialogTitle>Available Equipment</DialogTitle>
+                          </DialogHeader>
+                          <div className="space-y-4">
+                            <div className="grid grid-cols-1 gap-2 max-h-60 overflow-y-auto">
+                              {equipmentOptions.map((item) => (
+                                <label key={item} className="flex items-center space-x-3 glass-effect rounded-lg p-2.5 cursor-pointer hover:bg-card/60 focus-within:bg-card/60 transition-colors touch-target">
+                                  <Checkbox
+                                    checked={field.value?.includes(item)}
+                                    className="data-[state=checked]:bg-primary data-[state=checked]:border-primary"
+                                    onCheckedChange={(checked) => {
+                                      return checked
+                                        ? field.onChange([...field.value, item])
+                                        : field.onChange(
+                                            field.value?.filter((value) => value !== item)
+                                          )
+                                    }}
+                                  />
+                                  <span className="text-sm text-foreground font-medium capitalize flex-1">
+                                    {item.replace('_', ' ')}
+                                  </span>
+                                </label>
                               ))}
                             </div>
+
+                            {/* Custom Equipment Input */}
+                            <div className="flex items-center space-x-2">
+                              <Input
+                                placeholder="Add custom equipment..."
+                                value={customEquipment}
+                                onChange={(e) => setCustomEquipment(e.target.value)}
+                                className="flex-1"
+                                onKeyDown={(e) => {
+                                  if (e.key === 'Enter') {
+                                    e.preventDefault();
+                                    addCustomEquipment();
+                                  }
+                                }}
+                              />
+                              <Button
+                                type="button"
+                                size="sm"
+                                onClick={addCustomEquipment}
+                                className="bg-accent hover:bg-accent/90"
+                              >
+                                <Plus size={16} />
+                              </Button>
+                            </div>
                           </div>
-                        )}
-                      </div>
+                        </DialogContent>
+                      </Dialog>
+                    </div>
+                    
+                    {/* Equipment Summary */}
+                    <div className="glass-effect rounded-lg p-3">
+                      {field.value?.length > 0 ? (
+                        <div className="flex flex-wrap gap-2">
+                          {field.value.map((item) => (
+                            <Badge key={item} variant="secondary" className="bg-primary/20 text-primary border-primary/30">
+                              {item.replace('_', ' ')}
+                            </Badge>
+                          ))}
+                        </div>
+                      ) : (
+                        <p className="text-sm text-muted-foreground">No equipment selected</p>
+                      )}
                     </div>
                     <FormMessage />
                   </FormItem>
