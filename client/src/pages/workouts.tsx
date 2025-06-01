@@ -54,6 +54,7 @@ export default function WorkoutsPage() {
   const [selectedPlan, setSelectedPlan] = useState<WorkoutPlan | null>(null);
   const [searchQuery, setSearchQuery] = useState('');
   const [filterDifficulty, setFilterDifficulty] = useState<string>('all');
+  const [location, setLocation] = useLocation();
   
   const { toast } = useToast();
   const queryClient = useQueryClient();
@@ -77,6 +78,16 @@ export default function WorkoutsPage() {
     isGenerating: boolean;
     operationId: string | null;
   }>({ isGenerating: false, operationId: null });
+
+  // Auto-open generate modal when coming from home page
+  useEffect(() => {
+    const urlParams = new URLSearchParams(window.location.search);
+    if (urlParams.get('generate') === 'true') {
+      setShowGenerateDialog(true);
+      // Clean up the URL parameter
+      setLocation('/workouts');
+    }
+  }, [setLocation]);
 
   const generatePlanMutation = useMutation({
     mutationFn: async (data: WorkoutPlanRequest) => {
