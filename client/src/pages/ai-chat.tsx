@@ -6,10 +6,8 @@ import { Card, CardContent } from '@/components/ui/card';
 import { Skeleton } from '@/components/ui/skeleton';
 import { MessageCircle, Send, TrendingUp, Dumbbell, Target } from 'lucide-react';
 import { apiRequest } from '@/lib/queryClient';
-import type { ChatMessage } from '@shared/schema';
-
-// Mock user ID
-const MOCK_USER_ID = 1;
+import type { ChatMessage, User } from '@shared/schema';
+import { useAuth } from '@/hooks/useAuth';
 
 export default function AIChatPage() {
   const [message, setMessage] = useState('');

@@ -7,24 +7,31 @@ import { Skeleton } from '@/components/ui/skeleton';
 import { WorkoutCard } from '@/components/workout-card';
 import { ProgressRing } from '@/components/progress-ring';
 import { Clock, Target, TrendingUp, Sparkles, MessageCircle } from 'lucide-react';
-import type { UserStats, ProgressAnalysis, WorkoutPlan, Workout, WorkoutSession } from '@shared/schema';
-
-// Mock user ID - in a real app this would come from auth
-const MOCK_USER_ID = 1;
+import type { UserStats, ProgressAnalysis, WorkoutPlan, Workout, WorkoutSession, User } from '@shared/schema';
+import { useAuth } from '@/hooks/useAuth';
 
 export default function Home() {
-  const [userName] = useState("Alex"); // This would come from user context
+  const { user } = useAuth();
+  
+  const { data: userProfile } = useQuery<User>({
+    queryKey: ["/api/profile"],
+  });
+
+  const userName = userProfile?.email?.split('@')[0] || 'User';
 
   const { data: stats, isLoading: statsLoading } = useQuery<UserStats>({
-    queryKey: ['/api/stats', MOCK_USER_ID],
+    queryKey: ['/api/stats', (userProfile as any)?.id],
+    enabled: !!(userProfile as any)?.id,
   });
 
   const { data: workoutPlans, isLoading: plansLoading } = useQuery<WorkoutPlan[]>({
-    queryKey: ['/api/workout-plans', MOCK_USER_ID],
+    queryKey: ['/api/workout-plans', (userProfile as any)?.id],
+    enabled: !!(userProfile as any)?.id,
   });
 
   const { data: recentSessions, isLoading: sessionsLoading } = useQuery<WorkoutSession[]>({
-    queryKey: ['/api/recent-sessions', MOCK_USER_ID, 5],
+    queryKey: ['/api/recent-sessions', (userProfile as any)?.id, 5],
+    enabled: !!(userProfile as any)?.id,
   });
 
   // Mock today's workout - in reality this would be calculated based on the plan
