@@ -3,6 +3,7 @@ import { Card, CardContent } from '@/components/ui/card';
 import { Button } from '@/components/ui/button';
 import { Dialog, DialogContent, DialogTrigger, DialogTitle } from '@/components/ui/dialog';
 import { Play, Pause, RotateCcw, MessageCircle } from 'lucide-react';
+import { YouTubeVideo } from '@/components/youtube-video';
 import type { Exercise } from '@shared/schema';
 import type { ExerciseLog } from '@/lib/types';
 
@@ -122,36 +123,12 @@ export function ExerciseCard({
     <div className="space-y-6">
       {/* Exercise Video/Image */}
       <div className="relative rounded-3xl overflow-hidden h-64">
-        <img 
-          src={exercise.imageUrl || "https://images.unsplash.com/photo-1571019613454-1cb2f99b2d8b?ixlib=rb-4.0.3&auto=format&fit=crop&w=800&h=600"} 
-          alt={`${exercise.name} demonstration`} 
-          className="w-full h-full object-cover" 
+        <YouTubeVideo
+          videoId={exercise.youtubeId}
+          thumbnailUrl={exercise.thumbnailUrl}
+          exerciseName={exercise.name}
+          className="w-full h-full"
         />
-        <div className="absolute inset-0 bg-gradient-to-t from-black/40 to-transparent"></div>
-        
-        <Dialog open={showTutorial} onOpenChange={setShowTutorial}>
-          <DialogTrigger asChild>
-            <button 
-              onClick={onShowTutorial}
-              className="absolute top-4 right-4 w-12 h-12 bg-white/20 backdrop-blur-sm rounded-full flex items-center justify-center touch-target hover:bg-white/30 transition-colors"
-            >
-              <Play className="text-white ml-0.5" size={16} />
-            </button>
-          </DialogTrigger>
-          <DialogContent className="youtube-modal">
-            <DialogTitle className="sr-only">{exercise.name} Tutorial Video</DialogTitle>
-            {exercise.youtubeId && (
-              <iframe
-                className="youtube-iframe"
-                src={`https://www.youtube.com/embed/${exercise.youtubeId}?autoplay=1`}
-                title={`${exercise.name} tutorial`}
-                frameBorder="0"
-                allow="accelerometer; autoplay; clipboard-write; encrypted-media; gyroscope; picture-in-picture"
-                allowFullScreen
-              />
-            )}
-          </DialogContent>
-        </Dialog>
       </div>
 
       {/* Exercise Details */}
