@@ -232,7 +232,17 @@ Return only valid JSON with this exact structure: {
     temperature: 0.3,
   });
 
-  return JSON.parse(response.choices[0].message.content || "{}");
+  return await parseJSONWithRetry(response.choices[0].message.content || "{}", async () => {
+    return await openai.chat.completions.create({
+      model: "gpt-4.1-mini",
+      messages: [
+        { role: "system", content: UNIFIED_COACH_SYSTEM_PROMPT + " " + JSON_RESPONSE_RULES + " Please return valid JSON only." },
+        { role: "user", content: prompt }
+      ],
+      response_format: { type: "json_object" },
+      temperature: 0.3,
+    });
+  });
 }
 
 // Generate detailed workouts for a specific week
@@ -318,7 +328,17 @@ Use null for weight on bodyweight exercises, specific weights for loaded exercis
     temperature: 0.3,
   });
 
-  const result = JSON.parse(response.choices[0].message.content || "{}");
+  const result = await parseJSONWithRetry(response.choices[0].message.content || "{}", async () => {
+    return await openai.chat.completions.create({
+      model: "gpt-4.1-mini",
+      messages: [
+        { role: "system", content: UNIFIED_COACH_SYSTEM_PROMPT + " " + WORKOUT_STRUCTURE_RULES + " " + JSON_RESPONSE_RULES + " Please return valid JSON only." },
+        { role: "user", content: prompt }
+      ],
+      response_format: { type: "json_object" },
+      temperature: 0.3,
+    });
+  });
   return result.workouts || [];
 }
 
@@ -677,7 +697,23 @@ Use the weekly snapshot schema provided in the system message.`;
       temperature: 0.3,
     });
 
-    const result = JSON.parse(response.choices[0].message.content || "{}");
+    const result = await parseJSONWithRetry(response.choices[0].message.content || "{}", async () => {
+      return await openai.chat.completions.create({
+        model: "gpt-4.1-mini",
+        messages: [
+          {
+            role: "system",
+            content: UNIFIED_COACH_SYSTEM_PROMPT + " " + JSON_RESPONSE_RULES + "\n\n###REFERENCE SCHEMA###\n" + WEEKLY_SNAPSHOT_SCHEMA + " Please return valid JSON only."
+          },
+          {
+            role: "user",
+            content: prompt
+          }
+        ],
+        response_format: { type: "json_object" },
+        temperature: 0.3,
+      });
+    });
     return {
       coachNotes: result.coachNotes || "Good progress this week!",
       jsonSnapshot: result.jsonSnapshot || {},
@@ -760,7 +796,23 @@ No keys outside this schema. Only include insights that would help generate bett
       temperature: 0.3,
     });
 
-    const result = JSON.parse(response.choices[0].message.content || "{}");
+    const result = await parseJSONWithRetry(response.choices[0].message.content || "{}", async () => {
+      return await openai.chat.completions.create({
+        model: "gpt-4.1-mini",
+        messages: [
+          {
+            role: "system",
+            content: UNIFIED_COACH_SYSTEM_PROMPT + " Please return valid JSON only."
+          },
+          {
+            role: "user",
+            content: prompt
+          }
+        ],
+        response_format: { type: "json_object" },
+        temperature: 0.3,
+      });
+    });
     return {
       coachNotes: result.coachNotes || "Plan completed successfully with good progress!",
       jsonSnapshot: result.jsonSnapshot || {},
@@ -823,7 +875,23 @@ Calculate strength improvement as a percentage and provide actionable recommenda
       temperature: 0.3,
     });
 
-    const result = JSON.parse(response.choices[0].message.content || "{}");
+    const result = await parseJSONWithRetry(response.choices[0].message.content || "{}", async () => {
+      return await openai.chat.completions.create({
+        model: "gpt-4.1-mini",
+        messages: [
+          {
+            role: "system",
+            content: UNIFIED_COACH_SYSTEM_PROMPT + " Please return valid JSON only."
+          },
+          {
+            role: "user",
+            content: prompt
+          }
+        ],
+        response_format: { type: "json_object" },
+        temperature: 0.3,
+      });
+    });
     return {
       progressSummary: result.progressSummary || "Making good progress!",
       recommendations: result.recommendations || ["Keep up the great work!", "Stay consistent with your routine"],
