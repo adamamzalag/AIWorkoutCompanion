@@ -17,24 +17,28 @@ import {
   Activity,
   Zap
 } from 'lucide-react';
-import type { UserStats, WorkoutSession, ProgressAnalysis } from '@shared/schema';
-
-// Mock user ID
-const MOCK_USER_ID = 1;
+import type { UserStats, WorkoutSession, ProgressAnalysis, User } from '@shared/schema';
 
 export default function ProgressPage() {
   const [selectedPeriod, setSelectedPeriod] = useState<'week' | 'month' | 'year'>('month');
 
+  const { data: userProfile } = useQuery<User>({
+    queryKey: ["/api/auth/user"],
+  });
+
   const { data: stats, isLoading: statsLoading } = useQuery<UserStats>({
-    queryKey: ['/api/stats', MOCK_USER_ID],
+    queryKey: ['/api/stats', userProfile?.id],
+    enabled: !!userProfile?.id,
   });
 
   const { data: workoutSessions, isLoading: sessionsLoading } = useQuery<WorkoutSession[]>({
-    queryKey: ['/api/workout-sessions', MOCK_USER_ID],
+    queryKey: ['/api/workout-sessions', userProfile?.id],
+    enabled: !!userProfile?.id,
   });
 
   const { data: progressAnalysis, isLoading: analysisLoading } = useQuery<ProgressAnalysis>({
-    queryKey: ['/api/progress-analysis', MOCK_USER_ID],
+    queryKey: ['/api/progress-analysis', userProfile?.id],
+    enabled: !!userProfile?.id,
   });
 
   const formatDate = (date: Date) => {

@@ -5,15 +5,18 @@ import { Card, CardContent } from '@/components/ui/card';
 import { ExerciseCard } from '@/components/exercise-card';
 import { useWorkout } from '@/hooks/use-workout';
 import { ChevronLeft, ChevronRight, X, Pause } from 'lucide-react';
-import type { Exercise, Workout } from '@shared/schema';
+import type { Exercise, Workout, User } from '@shared/schema';
 import type { ExerciseLog } from '@/lib/types';
 
 // Mock data - in a real app this would come from route params
 const MOCK_WORKOUT_ID = 1;
-const MOCK_USER_ID = 1;
 
 export default function WorkoutPage() {
   const [showExitDialog, setShowExitDialog] = useState(false);
+
+  const { data: userProfile } = useQuery<User>({
+    queryKey: ["/api/auth/user"],
+  });
 
   const { data: workout } = useQuery<Workout>({
     queryKey: ['/api/workout', MOCK_WORKOUT_ID],
@@ -39,7 +42,7 @@ export default function WorkoutPage() {
     isUpdating,
     isGettingTip,
     coachingTip
-  } = useWorkout(MOCK_WORKOUT_ID, MOCK_USER_ID);
+  } = useWorkout(MOCK_WORKOUT_ID, userProfile?.id || 0);
 
   // Mock exercise logs based on available exercises
   const exerciseLogs: ExerciseLog[] = exercises?.slice(0, 8).map((exercise, index) => ({

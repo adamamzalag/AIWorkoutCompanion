@@ -199,7 +199,7 @@ export default function ProfilePage() {
                       <FormLabel className="text-foreground">Available Equipment</FormLabel>
                       <Dialog open={showEquipmentModal} onOpenChange={setShowEquipmentModal}>
                         <DialogTrigger asChild>
-                          <Button variant="outline" size="sm" className="text-xs">
+                          <Button variant="secondary" size="sm" className="text-xs glass-effect border-border/50 hover:bg-card/60">
                             <Edit3 size={14} className="mr-1" />
                             Change Equipment
                           </Button>
