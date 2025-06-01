@@ -4,11 +4,11 @@ import { Button } from '@/components/ui/button';
 import { Card, CardContent } from '@/components/ui/card';
 import { Badge } from '@/components/ui/badge';
 import { Skeleton } from '@/components/ui/skeleton';
+import { Dialog, DialogContent, DialogHeader, DialogTitle, DialogTrigger } from '@/components/ui/dialog';
 import { ChevronLeft, Clock, Target, Play, Calendar, Dumbbell, X } from 'lucide-react';
 import { Link, useRoute } from 'wouter';
 import { apiRequest, queryClient } from '@/lib/queryClient';
 import { useBodyScrollLock } from '@/lib/scrollbar-utils';
-import { WorkoutPreviewModal } from '@/components/workout-preview-modal';
 import type { WorkoutPlan, Workout, User } from '@shared/schema';
 
 export default function PlanDetailPage() {
@@ -259,15 +259,16 @@ export default function PlanDetailPage() {
                         
                         {/* Action buttons */}
                         <div className="flex space-x-2 pt-2">
-                          <WorkoutPreviewModal workout={workout} workoutIndex={index + 1}>
-                            <Button
-                              variant="outline"
-                              className={`${plan?.isActive ? 'flex-1' : 'w-full'} h-9 glass-effect bg-slate-800/90 hover:bg-slate-700/90 border-2 border-cyan-400 hover:border-cyan-300 text-slate-100 hover:text-white transition-all duration-200 shadow-lg hover:shadow-xl font-medium`}
-                              style={{ borderColor: '#60a5fa' }}
-                            >
-                              Quick View
-                            </Button>
-                          </WorkoutPreviewModal>
+                          <Dialog>
+                            <DialogTrigger asChild>
+                              <Button
+                                variant="outline"
+                                className={`${plan?.isActive ? 'flex-1' : 'w-full'} h-9 glass-effect bg-slate-800/90 hover:bg-slate-700/90 border-2 border-cyan-400 hover:border-cyan-300 text-slate-100 hover:text-white transition-all duration-200 shadow-lg hover:shadow-xl font-medium`}
+                                style={{ borderColor: '#60a5fa' }}
+                              >
+                                Quick View
+                              </Button>
+                            </DialogTrigger>
                             <DialogContent className="max-w-4xl max-h-[90vh] overflow-y-auto glass-effect border-border/50 dialog-fade">
                               <DialogHeader className="border-b border-border/20 pb-4">
                                 <DialogTitle className="flex items-center space-x-3 text-xl">
