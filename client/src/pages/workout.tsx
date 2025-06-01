@@ -48,18 +48,65 @@ export default function WorkoutPage() {
     coachingTip
   } = useWorkout(workoutId, userProfile?.id || 0);
 
-  // Create exercise logs from the workout's exercises
-  const exerciseLogs: ExerciseLog[] = workout?.exercises ? 
-    (typeof workout.exercises === 'string' ? JSON.parse(workout.exercises) : workout.exercises).map((exercise: any) => ({
-      exerciseId: exercise.exerciseId,
-      name: exercise.name,
-      sets: Array.from({ length: exercise.sets }, () => ({
-        reps: parseInt(exercise.reps.split('-')[0]) || 12, // Use lower bound of rep range
-        weight: exercise.weight ? 0 : undefined, // User will input actual weight
-        completed: false
-      })),
-      restTime: exercise.restTime || '60 seconds'
-    })) : [];
+  // Create exercise logs from the complete workout flow (warm-up + main + cool-down)
+  const exerciseLogs: ExerciseLog[] = [];
+  
+  if (workout) {
+    // Parse warm-up activities
+    const warmUp = workout.warmUp ? 
+      (typeof workout.warmUp === 'string' ? JSON.parse(workout.warmUp) : workout.warmUp) : {};
+    
+    // Add warm-up exercises
+    if (warmUp.activities) {
+      warmUp.activities.forEach((activity: any, index: number) => {
+        exerciseLogs.push({
+          exerciseId: `warmup-${index}`,
+          name: activity.exercise,
+          sets: [{ reps: 0, completed: false }], // Time-based exercise
+          restTime: '30 seconds',
+          isWarmup: true,
+          duration: activity.durationSeconds
+        });
+      });
+    }
+    
+    // Add main exercises
+    const mainExercises = workout.exercises ? 
+      (typeof workout.exercises === 'string' ? JSON.parse(workout.exercises) : workout.exercises) : [];
+    
+    mainExercises.forEach((exercise: any) => {
+      exerciseLogs.push({
+        exerciseId: exercise.exerciseId || exercise.name, // Use exerciseId if available, fallback to name
+        name: exercise.name,
+        sets: Array.from({ length: exercise.sets }, () => ({
+          reps: parseInt(exercise.reps.split('-')[0]) || 12,
+          weight: exercise.weight ? 0 : undefined,
+          completed: false
+        })),
+        restTime: exercise.restTime || '60 seconds'
+      });
+    });
+    
+    // TODO: Add cardio exercises if available (will implement after testing warm-up flow)
+    
+    // Parse cool-down activities
+    const coolDown = workout.coolDown ? 
+      (typeof workout.coolDown === 'string' ? JSON.parse(workout.coolDown) : workout.coolDown) : {};
+    
+    // Add cool-down exercises
+    if (coolDown.activities) {
+      coolDown.activities.forEach((activity: any, index: number) => {
+        exerciseLogs.push({
+          exerciseId: `cooldown-${index}`,
+          name: activity.exercise,
+          sets: [{ reps: 0, completed: false }], // Time-based exercise
+          restTime: '30 seconds',
+          isCooldown: true,
+          duration: activity.durationSeconds
+        });
+      });
+    }
+  }
 
   const handleStartWorkout = () => {
     startWorkout(exerciseLogs);

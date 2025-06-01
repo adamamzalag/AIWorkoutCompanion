@@ -9,7 +9,7 @@ export interface WorkoutPlanRequest {
 }
 
 export interface ExerciseLog {
-  exerciseId: number; // Now required since all exercises are normalized
+  exerciseId: number | string; // Support both numeric IDs and string IDs for warm-up/cool-down
   name: string;
   sets: Array<{
     reps: number;
@@ -20,6 +20,10 @@ export interface ExerciseLog {
   }>;
   restTime: string;
   notes?: string;
+  isWarmup?: boolean; // Identifies warm-up exercises
+  isCardio?: boolean; // Identifies cardio exercises
+  isCooldown?: boolean; // Identifies cool-down exercises
+  duration?: number; // Duration in seconds for time-based exercises
 }
 
 export interface WorkoutSession {
