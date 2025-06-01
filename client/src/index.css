@@ -130,6 +130,13 @@ textarea:focus-visible,
   /* Override default dialog animations to prevent layout shifts */
   [data-radix-dialog-content] {
     animation: dialogFadeIn 0.2s ease-out !important;
+    transform: none !important;
+  }
+  
+  /* Remove all transform animations from dialog */
+  [data-state="open"][data-radix-dialog-content] {
+    animation: dialogFadeIn 0.2s ease-out !important;
+    transform: translate(-50%, -50%) !important;
   }
 
   .progress-ring {

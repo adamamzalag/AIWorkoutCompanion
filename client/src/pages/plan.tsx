@@ -96,14 +96,23 @@ export default function PlanDetailPage() {
                 <span className="px-3 py-1 bg-gradient-to-r from-purple-500/10 to-purple-600/10 text-purple-600 dark:text-purple-400 border border-purple-200 dark:border-purple-700 rounded-full font-medium text-xs shadow-sm">
                   {plan.difficulty}
                 </span>
-                {plan.isActive && (
-                  <span className="px-3 py-1 bg-gradient-to-r from-green-500/10 to-green-600/10 text-green-600 dark:text-green-400 border border-green-200 dark:border-green-700 rounded-full font-medium text-xs shadow-sm">
-                    Active
-                  </span>
-                )}
+                <span className={`px-3 py-1 rounded-full font-medium text-xs shadow-sm ${
+                  plan.isActive 
+                    ? 'bg-gradient-to-r from-green-500/10 to-green-600/10 text-green-600 dark:text-green-400 border border-green-200 dark:border-green-700'
+                    : 'bg-gradient-to-r from-gray-500/10 to-gray-600/10 text-gray-600 dark:text-gray-400 border border-gray-200 dark:border-gray-700'
+                }`}>
+                  {plan.isActive ? 'Active' : 'Inactive'}
+                </span>
               </div>
               <h2 className="font-poppins font-semibold text-lg text-foreground mb-2">{plan.title}</h2>
             </div>
+            <button
+              onClick={() => togglePlanStatus(plan.id, !plan.isActive)}
+              disabled={updatePlanMutation.isPending}
+              className="glass-effect px-4 py-2 bg-primary/10 hover:bg-primary/20 border border-primary/30 hover:border-primary/50 text-primary rounded-lg transition-all duration-200 shadow-sm hover:shadow-md text-sm font-medium disabled:opacity-50"
+            >
+              {updatePlanMutation.isPending ? 'Updating...' : (plan.isActive ? 'Set Inactive' : 'Set Active')}
+            </button>
           </div>
           
           {plan.description && (
@@ -223,7 +232,7 @@ export default function PlanDetailPage() {
                             <DialogTrigger asChild>
                               <Button
                                 variant="outline"
-                                className={`${plan?.isActive ? 'flex-1' : 'w-full'} h-9 glass-effect bg-slate-600/80 hover:bg-slate-500/80 border border-slate-400/50 hover:border-slate-300 text-white transition-all duration-200 shadow-lg hover:shadow-xl`}
+                                className={`${plan?.isActive ? 'flex-1' : 'w-full'} h-9 bg-white/90 hover:bg-white border border-gray-300 hover:border-gray-400 text-gray-800 hover:text-gray-900 transition-all duration-200 shadow-md hover:shadow-lg font-medium`}
                               >
                                 Quick View
                               </Button>
