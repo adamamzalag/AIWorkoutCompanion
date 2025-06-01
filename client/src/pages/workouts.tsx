@@ -446,12 +446,12 @@ export default function WorkoutsPage() {
                         <div className="mb-3">
                           <div className="flex flex-wrap gap-1">
                             {plan.equipment.slice(0, 3).map((eq) => (
-                              <span key={eq} className="px-2 py-1 text-xs bg-blue-50 dark:bg-blue-950/30 text-blue-700 dark:text-blue-300 rounded border border-blue-200 dark:border-blue-800">
+                              <span key={eq} className="px-2 py-1 text-xs bg-muted text-muted-foreground rounded border border-border">
                                 {eq.replace('_', ' ')}
                               </span>
                             ))}
                             {plan.equipment.length > 3 && (
-                              <span className="px-2 py-1 text-xs bg-blue-50 dark:bg-blue-950/30 text-blue-700 dark:text-blue-300 rounded border border-blue-200 dark:border-blue-800">
+                              <span className="px-2 py-1 text-xs bg-muted text-muted-foreground rounded border border-border">
                                 +{plan.equipment.length - 3}
                               </span>
                             )}
@@ -515,12 +515,12 @@ export default function WorkoutsPage() {
                         <div className="mb-3">
                           <div className="flex flex-wrap gap-1">
                             {plan.equipment.slice(0, 3).map((eq) => (
-                              <span key={eq} className="px-2 py-1 text-xs bg-blue-50 dark:bg-blue-950/30 text-blue-700 dark:text-blue-300 rounded border border-blue-200 dark:border-blue-800">
+                              <span key={eq} className="px-2 py-1 text-xs bg-muted text-muted-foreground rounded border border-border">
                                 {eq.replace('_', ' ')}
                               </span>
                             ))}
                             {plan.equipment.length > 3 && (
-                              <span className="px-2 py-1 text-xs bg-blue-50 dark:bg-blue-950/30 text-blue-700 dark:text-blue-300 rounded border border-blue-200 dark:border-blue-800">
+                              <span className="px-2 py-1 text-xs bg-muted text-muted-foreground rounded border border-border">
                                 +{plan.equipment.length - 3}
                               </span>
                             )}
@@ -531,7 +531,7 @@ export default function WorkoutsPage() {
                           <Button
                             variant="outline"
                             size="sm"
-                            className="w-full glass-effect border-border/50"
+                            className="w-full border-2 border-border hover:border-primary hover:bg-primary/10"
                           >
                             View Plan
                           </Button>

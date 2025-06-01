@@ -103,7 +103,7 @@ export default function PlanDetailPage() {
           
           <div className="flex flex-wrap gap-2">
             {plan.equipment.map((eq) => (
-              <span key={eq} className="px-2 py-1 text-xs bg-blue-50 dark:bg-blue-950/30 text-blue-700 dark:text-blue-300 rounded border border-blue-200 dark:border-blue-800">
+              <span key={eq} className="px-2 py-1 text-xs bg-muted text-muted-foreground rounded border border-border">
                 {eq.replace('_', ' ')}
               </span>
             ))}
@@ -180,7 +180,7 @@ export default function PlanDetailPage() {
                         <div className="flex items-center justify-between">
                           <div className="flex flex-wrap gap-1">
                             {muscleGroups.map((muscle) => (
-                              <span key={muscle} className="px-2 py-1 text-xs bg-blue-50 dark:bg-blue-950/30 text-blue-700 dark:text-blue-300 rounded border border-blue-200 dark:border-blue-800">
+                              <span key={muscle} className="px-2 py-1 text-xs bg-muted text-muted-foreground rounded border border-border">
                                 {muscle}
                               </span>
                             ))}
