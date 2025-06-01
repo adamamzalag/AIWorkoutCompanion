@@ -72,12 +72,12 @@ export default function Home() {
         {/* AI Coach Quick Message */}
         <Card className="glass-effect border-primary/20">
           <CardContent className="p-4">
-            <div className="flex items-start space-x-3">
-              <div className="w-8 h-8 bg-gradient-to-r from-accent to-primary rounded-full flex items-center justify-center flex-shrink-0">
+            <div className="flex items-start space-x-3 min-h-[72px]">
+              <div className="w-8 h-8 bg-gradient-to-r from-accent to-primary rounded-full flex items-center justify-center flex-shrink-0 mt-0.5">
                 <MessageCircle className="text-white" size={14} />
               </div>
-              <div className="flex-1">
-                <p className="text-sm text-foreground/90 mb-2">
+              <div className="flex-1 min-w-0">
+                <p className="text-sm text-foreground/90 mb-2 leading-relaxed">
                   Based on your last workout, I've adjusted today's plan to focus more on your upper body. Ready to get started?
                 </p>
                 <Link href="/ai-chat">
