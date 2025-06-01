@@ -185,17 +185,17 @@ export default function WorkoutsPage() {
   return (
     <div className="px-4 pb-24 pt-20 space-y-6 fade-in">
       {/* Header */}
-      <div className="flex items-center justify-center relative">
-        <div className="text-center">
+      <div className="text-center space-y-4">
+        <div>
           <h1 className="font-poppins font-bold text-2xl text-foreground">Workouts</h1>
           <p className="text-muted-foreground">Manage your workout plans and sessions</p>
         </div>
         
         <Dialog open={showGenerateDialog} onOpenChange={setShowGenerateDialog}>
           <DialogTrigger asChild>
-            <Button className="bg-gradient-to-r from-primary to-secondary hover:from-primary/90 hover:to-secondary/90 text-white touch-target absolute right-0">
-              <Sparkles size={16} className="mr-2" />
-              Generate
+            <Button size="lg" className="bg-gradient-to-r from-primary to-secondary hover:from-primary/90 hover:to-secondary/90 text-white touch-target px-8 py-3">
+              <Sparkles size={20} className="mr-2" />
+              Generate AI Workout Plan
             </Button>
           </DialogTrigger>
           <DialogContent className="glass-effect border-border/50 max-w-md mx-auto max-h-[90vh] overflow-y-auto">
@@ -331,13 +331,15 @@ export default function WorkoutsPage() {
             setGenerationState({ isGenerating: false, operationId: null });
           }
         }}>
-          <DialogContent className="glass-effect border-border/50 max-w-md">
-            {generationState.operationId && (
-              <GenerationProgress 
-                operationId={generationState.operationId}
-                onComplete={handleGenerationComplete}
-              />
-            )}
+          <DialogContent className="glass-effect border-border/50 max-w-md mx-auto">
+            <div className="flex justify-center">
+              {generationState.operationId && (
+                <GenerationProgress 
+                  operationId={generationState.operationId}
+                  onComplete={handleGenerationComplete}
+                />
+              )}
+            </div>
           </DialogContent>
         </Dialog>
       </div>

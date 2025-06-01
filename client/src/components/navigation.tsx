@@ -57,6 +57,17 @@ function useGlobalGenerationStatus() {
         // Poll for completion
         try {
           const response = await fetch(`/api/generation-progress/${storedOperationId}`);
+          
+          if (!response.ok) {
+            // Operation doesn't exist (404) - clear it
+            console.log('Clearing non-existent operation:', storedOperationId);
+            localStorage.removeItem('activeGenerationId');
+            setIsGenerating(false);
+            setIsCompleted(false);
+            setOperationId(null);
+            return;
+          }
+          
           const data = await response.json();
           
           if (data.status === 'completed') {
@@ -70,11 +81,8 @@ function useGlobalGenerationStatus() {
             setOperationId(null);
           }
         } catch (error) {
-          // If operation doesn't exist, clear it
-          localStorage.removeItem('activeGenerationId');
-          setIsGenerating(false);
-          setIsCompleted(false);
-          setOperationId(null);
+          // Network error or other issues
+          console.log('Error checking progress:', error);
         }
       } else if (isGenerating || isCompleted) {
         // No stored operation but we think we're generating/completed - clear state

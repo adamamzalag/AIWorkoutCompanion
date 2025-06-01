@@ -293,7 +293,10 @@ export async function registerRoutes(app: Express): Promise<Server> {
   app.get("/api/generation-progress/:operationId", async (req, res) => {
     const { getProgress } = await import("./progress-tracker.js");
     const progress = getProgress(req.params.operationId);
-    res.json(progress || { progress: 0, status: 'not_found' });
+    if (!progress) {
+      return res.status(404).json({ error: 'Operation not found' });
+    }
+    res.json(progress);
   });
 
   // AI-powered routes

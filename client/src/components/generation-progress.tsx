@@ -1,5 +1,6 @@
 import { useState, useEffect } from 'react';
-import { Card, CardContent, CardDescription, CardHeader, CardTitle } from '@/components/ui/card';
+import { useLocation } from 'wouter';
+import { Button } from '@/components/ui/button';
 import { Loader2, CheckCircle, XCircle } from 'lucide-react';
 
 interface GenerationProgressProps {
@@ -78,27 +79,29 @@ export function GenerationProgress({ operationId, onComplete }: GenerationProgre
   }, [operationId, onComplete]);
 
   return (
-    <Card className="w-full max-w-md mx-auto">
-      <CardHeader className="text-center">
-        <CardTitle className="flex items-center justify-center gap-2">
-          {error ? (
-            <XCircle className="h-5 w-5 text-red-500" />
-          ) : status === 'completed' ? (
-            <CheckCircle className="h-5 w-5 text-green-500" />
-          ) : (
-            <Loader2 className="h-5 w-5 animate-spin text-blue-500" />
-          )}
-          {error ? 'Generation Failed' : status === 'completed' ? 'Complete!' : 'Generating Workout Plan'}
-        </CardTitle>
-        <CardDescription>
-          {error ? error : currentStep}
-        </CardDescription>
-      </CardHeader>
-      <CardContent>
-        <div className="space-y-4">
+    <div className="w-full text-center">
+      <div className="inline-block">
+        <div className="flex flex-col items-center gap-4 p-6">
+          <div className="flex items-center gap-3">
+            {error ? (
+              <XCircle className="h-6 w-6 text-red-500" />
+            ) : status === 'completed' ? (
+              <CheckCircle className="h-6 w-6 text-green-500" />
+            ) : (
+              <Loader2 className="h-6 w-6 animate-spin text-primary" />
+            )}
+            <h3 className="font-poppins font-semibold text-lg text-foreground">
+              {error ? 'Generation Failed' : status === 'completed' ? 'Plan Ready!' : 'Generating Workout Plan'}
+            </h3>
+          </div>
+          
+          <p className="text-muted-foreground max-w-sm">
+            {error ? error : status === 'completed' ? 'Your personalized workout plan is ready!' : currentStep}
+          </p>
+          
           {!error && status !== 'completed' && (
-            <div className="text-center">
-              <div className="text-lg font-medium text-blue-600 mb-2">
+            <div className="text-center space-y-2">
+              <div className="text-primary font-medium">
                 AI Coach is designing your workout plan...
               </div>
               <div className="text-sm text-muted-foreground">
@@ -106,13 +109,20 @@ export function GenerationProgress({ operationId, onComplete }: GenerationProgre
               </div>
             </div>
           )}
+          
           {status === 'completed' && (
-            <div className="text-center text-green-600 font-medium">
-              Your workout plan is ready!
-            </div>
+            <Button 
+              onClick={() => {
+                setLocation('/workouts');
+                onComplete(true);
+              }}
+              className="bg-gradient-to-r from-primary to-secondary hover:from-primary/90 hover:to-secondary/90 text-white"
+            >
+              View Plans
+            </Button>
           )}
         </div>
-      </CardContent>
-    </Card>
+      </div>
+    </div>
   );
 }
