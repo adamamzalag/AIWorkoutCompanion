@@ -134,11 +134,12 @@ export default function PlanDetailPage() {
             <button
               onClick={() => togglePlanStatus(plan.id, !plan.isActive)}
               disabled={updatePlanMutation.isPending}
-              className={`glass-effect px-4 py-2 rounded-lg transition-all duration-200 shadow-lg hover:shadow-xl text-sm font-medium disabled:opacity-50 ${
+              className={`glass-effect px-4 py-2 rounded-lg transition-all duration-200 shadow-lg hover:shadow-xl text-sm font-medium disabled:opacity-50 border-2 text-white ${
                 plan.isActive 
-                  ? 'bg-red-600/90 hover:bg-red-500/90 border-2 border-yellow-400 hover:border-yellow-300 text-white'
-                  : 'bg-green-600/90 hover:bg-green-500/90 border-2 border-yellow-400 hover:border-yellow-300 text-white'
+                  ? 'bg-red-600/90 hover:bg-red-500/90'
+                  : 'bg-green-600/90 hover:bg-green-500/90'
               }`}
+              style={{ borderColor: '#facc15' }}
             >
               {updatePlanMutation.isPending ? 'Updating...' : (plan.isActive ? 'Set Inactive' : 'Set Active')}
             </button>
@@ -262,6 +263,7 @@ export default function PlanDetailPage() {
                               <Button
                                 variant="outline"
                                 className={`${plan?.isActive ? 'flex-1' : 'w-full'} h-9 glass-effect bg-slate-800/90 hover:bg-slate-700/90 border-2 border-cyan-400 hover:border-cyan-300 text-slate-100 hover:text-white transition-all duration-200 shadow-lg hover:shadow-xl font-medium`}
+                                style={{ borderColor: '#60a5fa' }}
                               >
                                 Quick View
                               </Button>
