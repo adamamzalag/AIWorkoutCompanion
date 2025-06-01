@@ -201,15 +201,17 @@ export default function PlanDetailPage() {
                         <div className="flex space-x-2 pt-2">
                           <Button
                             variant="outline"
-                            size="sm"
-                            className={`${plan?.isActive ? 'flex-1' : 'w-full'} border-2 border-border hover:border-primary hover:bg-primary/5`}
-                            onClick={() => {/* TODO: Open quick view modal */}}
+                            className={`${plan?.isActive ? 'flex-1' : 'w-full'} h-9 border-2 border-border hover:border-primary hover:bg-primary/5`}
+                            onClick={() => {
+                              // Simple alert for now - can be enhanced with a modal later
+                              alert(`${workout.title}\n\nDuration: ${workout.estimatedDuration} minutes\nExercises: ${exercises.length}\n\nKey Exercises:\n${keyExercises.join(', ')}\n\nMuscle Groups:\n${muscleGroups.join(', ')}`);
+                            }}
                           >
                             Quick View
                           </Button>
                           {plan?.isActive && (
                             <Link href={`/workout?id=${workout.id}`} className="flex-1">
-                              <Button size="sm" className="w-full bg-accent hover:bg-accent/90 text-accent-foreground">
+                              <Button className="w-full h-9 bg-accent hover:bg-accent/90 text-accent-foreground">
                                 <Play size={14} className="mr-1" />
                                 Start Workout
                               </Button>
