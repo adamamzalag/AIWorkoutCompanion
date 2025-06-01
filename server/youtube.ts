@@ -49,11 +49,13 @@ const PREFERRED_CHANNELS = [
   'MadFit'
 ];
 
-export async function searchExerciseVideo(exerciseName: string): Promise<YouTubeVideo | null> {
+export async function searchExerciseVideo(exerciseName: string): Promise<{ id: string; thumbnailUrl: string } | null> {
   if (!YOUTUBE_API_KEY) {
     console.error('YouTube API key not configured');
     return null;
   }
+
+  console.log(`🔍 Searching YouTube for: "${exerciseName}"`);
 
   // Try different search patterns optimized for short, focused tutorials
   const searchQueries = [
@@ -64,18 +66,39 @@ export async function searchExerciseVideo(exerciseName: string): Promise<YouTube
     `${exerciseName} how to perform`
   ];
 
-  for (const query of searchQueries) {
+  for (let i = 0; i < searchQueries.length; i++) {
+    const query = searchQueries[i];
+    console.log(`  📝 Trying search ${i + 1}/${searchQueries.length}: "${query}"`);
+    
     try {
       const video = await searchVideos(query);
       if (video) {
-        return video;
+        console.log(`  ✅ Found video: "${video.title}" by ${video.channelTitle} (${video.duration})`);
+        
+        // Verify the video is accessible by checking thumbnail
+        try {
+          const thumbnailResponse = await fetch(video.thumbnailUrl, { method: 'HEAD' });
+          if (thumbnailResponse.ok) {
+            console.log(`  ✅ Video verified accessible`);
+            return { id: video.id, thumbnailUrl: video.thumbnailUrl };
+          } else {
+            console.log(`  ⚠️ Video thumbnail not accessible (${thumbnailResponse.status}), trying next search`);
+            continue;
+          }
+        } catch (thumbnailError) {
+          console.log(`  ⚠️ Video accessibility check failed, trying next search`);
+          continue;
+        }
+      } else {
+        console.log(`  ❌ No suitable video found for this search`);
       }
     } catch (error) {
-      console.error(`Error searching for "${query}":`, error);
+      console.error(`  ❌ Error searching for "${query}":`, error);
       continue;
     }
   }
 
+  console.log(`❌ No accessible YouTube videos found for: ${exerciseName}`);
   return null;
 }
 
