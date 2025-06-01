@@ -74,18 +74,18 @@ export async function generateWorkoutFramework(request: WorkoutPlanRequest): Pro
   const prompt = `You are an experienced personal trainer with expertise in exercise physiology, periodization, and program design. Think strategically about this client's needs and create an intelligent workout framework.
 
 Client Analysis:
-- Fitness Level: ${request.fitnessLevel}
+- Fitness Level: ${JSON.stringify(request.fitnessLevel)}
 - Time Per Session: ${request.timePerWorkout} minutes
 - Weekly Frequency: ${request.workoutsPerWeek} workouts
-- Training Goal: ${request.goals}
-- Available Equipment: ${request.equipment.join(', ')}
+- Training Goal: ${JSON.stringify(request.goals)}
+- Available Equipment: ${JSON.stringify(request.equipment.join(', '))}
 - Plan Duration: ${request.duration} weeks
 
 As an expert trainer, consider these principles:
 • Progressive Overload: How will you systematically increase training demands?
-• Specificity: How does each workout serve the stated goal of ${request.goals}?
+• Specificity: How does each workout serve the stated goal of ${JSON.stringify(request.goals)}?
 • Recovery & Adaptation: How will you balance training stress with recovery?
-• Individual Needs: How does ${request.fitnessLevel} level affect workout complexity?
+• Individual Needs: How does ${JSON.stringify(request.fitnessLevel)} level affect workout complexity?
 • Time Efficiency: How can ${request.timePerWorkout} minutes be optimally utilized?
 
 Think through your coaching strategy:
@@ -97,12 +97,12 @@ Think through your coaching strategy:
 Create a strategic framework that demonstrates your expertise:
 Each workout structure: Warm-up → Main Training → Cardio Component → Cool-down
 
-Respond with JSON: {
+Return only valid JSON with this exact structure: {
   "title": "Plan name",
-  "description": "Plan overview",
+  "description": "Plan overview", 
   "duration": ${request.duration},
   "totalWorkouts": ${request.workoutsPerWeek * request.duration},
-  "difficulty": "${request.fitnessLevel}",
+  "difficulty": ${JSON.stringify(request.fitnessLevel)},
   "equipment": ${JSON.stringify(request.equipment)},
   "weeklyStructure": [
     {
@@ -178,7 +178,7 @@ export async function generateWeeklyWorkouts(
   const prompt = `Generate detailed workouts for Week ${weekNumber} of this fitness plan.
 
 Framework: ${JSON.stringify(currentWeek)}
-Available Equipment (use what's appropriate for each workout): ${framework.equipment.join(', ')}
+Available Equipment (use what's appropriate for each workout): ${JSON.stringify(framework.equipment.join(', '))}
 ${progressionContext}
 
 As an expert trainer, design ${currentWeek.workoutDays.length} intelligent workouts that maximize training effectiveness within the time constraints:
@@ -204,7 +204,8 @@ MAIN TRAINING: Intelligently selected exercises that serve the workout's purpose
 CARDIO COMPONENT: Appropriate cardiovascular work for the day's goals
 COOL-DOWN (5-8 minutes): Targeted recovery addressing muscles worked
 
-Respond with JSON array of workouts: [
+Return only valid JSON with this exact structure: {
+  "workouts": [
   {
     "title": "Workout day title",
     "description": "Workout focus",
@@ -256,7 +257,8 @@ Respond with JSON array of workouts: [
       }
     ]
   }
-]`;
+  ]
+}`;
 
   console.log("🔍 WEEKLY WORKOUT GENERATION - Prompt:", prompt);
 
@@ -397,7 +399,7 @@ export async function generateCoachingTip(
   userPerformance: any,
   workoutHistory: any[]
 ): Promise<string> {
-  const prompt = `As an AI fitness coach, provide a helpful tip for the user who is performing "${exercise}".
+  const prompt = `As an AI fitness coach, provide a helpful tip for the user who is performing ${JSON.stringify(exercise)}.
 
 Recent performance: ${JSON.stringify(userPerformance)}
 Workout history: ${JSON.stringify(workoutHistory.slice(-5))}

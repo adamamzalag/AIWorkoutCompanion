@@ -1,0 +1,71 @@
+Below is a pass-through of every prompt in OpenAI.ts, calling out what each one does well and the quick wins I’d consider for tightening or future-proofing it.
+(Because we’re focused only on the prompts, I’m ignoring how the data flows in and out of the functions.)
+
+generateWorkoutFramework
+System prompt – clear persona (“workout program architect”) and required JSON output.
+Improvement: Add a one-liner that nothing outside JSON should be returned; GPT-4 often adds leading whitespace or commentary.
+
+User prompt – strongly structured, embeds an example JSON.
+Improvements:
+• Example JSON contains comments (// …) and trailing commas in the TypeScript template; large models will ignore them, but JSON.parse in strict mode will not. Safer to show a minified schema or use the new “function-calling” / “json_schema” format.
+• Put dynamic inserts (e.g. ${request.equipment.join(', ')}) inside JSON.stringify() to auto-escape quotation marks.
+
+generateWeeklyWorkouts
+System prompt – stakes the role (“fitness trainer”) and JSON requirement.
+
+User prompt – gives explicit counts (e.g., “EXACTLY 4–5 exercises”) and a template.
+Improvements:
+• The prompt is long enough that truncation risk rises on small models; consider splitting the warm-up / main / cardio / cool-down instructions into a bullet list outside the JSON example, then finish with “Return the array exactly in JSON.”
+• You change response_format to {type:'json_object'} but then ask for an array. GPT-4 will wrap the array in an object unless you force the model with the (beta) “json_mode”. Either switch to an object wrapper ({ "workouts":[…] }) — which you already parse — or accept native arrays and adjust parsing.
+
+generateWorkoutPlan
+System prompt – excellent guardrails: exercise schema, casing rules, progressive overload, etc.
+
+User prompt – covers dynamic inserts AND repeats most rules.
+Improvements:
+• The repetition makes the prompt ~1.5-2× longer than needed; keep the detailed rules in the system message only, then in the user prompt just provide the variables.
+• Highlight critical numeric constraints with ALL-CAPS or emojis sparingly; e.g. “🚨 EXACTLY 24 WORKOUTS”. Visual cues help the model obey counts.
+• Progressive vs. independent mode logic is solid, but wrap progressContext in <progress_context>…</progress_context> style tags so it’s easy for the model to find.
+
+generateCoachingTip
+Short system persona + short user prompt → good.
+Improvement: Very small risk of the tip exceeding 2 sentences. Add: “Do NOT exceed two sentences” to the system prompt.
+
+generateChatResponse
+Context prompt is verbose but works.
+Improvements:
+• Strip the full chat history to the messages array as separate role:"assistant" / role:"user" pairs; giving it in JSON text form forces the model to re-parse its own history.
+• Add a line in the system prompt: “If the user asks a purely nutritional question, keep advice general and encourage consulting a professional.”
+
+findSimilarExercise
+Nice “matching expert” frame and YES/NO JSON answer.
+Improvements:
+• Add an example of a positive and negative result to reduce ambiguous outputs.
+• Guard against the model inventing an exerciseId that’s not in the list: state “exerciseId must be one of the IDs provided above.”
+
+createWeeklySnapshot & createPlanCompletionSnapshot
+Both use the same JSON schema idea.
+Improvements:
+• Tell the model “No keys outside this schema.” Otherwise it sometimes adds "additionalNotes": "".
+• Consider splitting coachNotes into positives and focusAreas arrays for more structured downstream use.
+
+analyzeWorkoutProgress
+Straightforward; schema covers summary + recommendations.
+Improvements:
+• Ask for exactly 3 recommendations so the UI can render a predictable bullet list.
+• Rename strengthImprovement to strengthImprovementPercent to self-document units.
+
+Cross-cutting suggestions
+Function calling / json_schema – All modern OpenAI models support it. Define one master JSON schema and pass it in response_format:{type:'json_object', schema:…} to guarantee well-formed results.
+
+Consistent key order – If downstream code depends on property order, add “maintain this exact key order” into the system prompt.
+
+Token efficiency – Move invariant rules to system prompts; keep user prompts to the variable data only. Reduces latency and cost.
+
+Escape dynamic strings – Always wrap user-provided text with JSON.stringify() to avoid breaking JSON (e.g., goals with quotes).
+
+Model choice – gpt-4.1-nano is cheap but may hallucinate schema; if JSON errors become common, switch generation endpoints to a “json mode” capable model (gpt-4o-mini or higher).
+
+Guardrails on counts – Where you need “EXACTLY N”, nudge with capitalized “EXACTLY” and an inline reminder like (critical, do not break). It measurably improves compliance.
+
+Testing harness – Add unit tests that feed edge-case requests (funny equipment names, quotes, emojis) and assert JSON.parse succeeds. Catch issues early.
