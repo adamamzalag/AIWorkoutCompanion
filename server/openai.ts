@@ -21,6 +21,39 @@ WORKOUT STRUCTURE PRINCIPLES:
 
 const JSON_RESPONSE_RULES = "Return only valid JSON. No commentary, whitespace, or additional text. Follow the exact schema provided. No keys outside the specified structure.";
 
+const WEEKLY_SNAPSHOT_SCHEMA = `{
+  "coachNotes": "Brief summary of week performance (max 100 words)",
+  "adherencePercent": 85,
+  "subjectiveFatigue": "moderate",
+  "strengthPRs": [{"exercise": "Bench Press", "weight": "135 lbs", "reps": 8}],
+  "volumePerMuscle": {"chest": 12, "legs": 16, "back": 10},
+  "flags": ["missed_friday_workout", "weight_not_progressing_squats"],
+  "jsonSnapshot": {
+    "weekSummary": "Key insights for future plan generation",
+    "avgWeight": {"bench": "125 lbs", "squat": "155 lbs"},
+    "completionRate": 85,
+    "userPreferences": ["shorter_rest_periods", "prefers_morning_workouts"]
+  }
+}`;
+
+const PLAN_COMPLETION_SCHEMA = `{
+  "coachNotes": "Overall plan assessment and key learnings (max 150 words)",
+  "adherencePercent": 85,
+  "subjectiveFatigue": "moderate",
+  "strengthPRs": [{"exercise": "Bench Press", "improvement": "20 lbs gained"}],
+  "volumePerMuscle": {"chest": "responded well to high volume", "legs": "needs more frequency"},
+  "flags": ["tends_to_skip_leg_days", "excels_at_upper_body"],
+  "jsonSnapshot": {
+    "planOutcome": "successful",
+    "keyStrengths": ["consistency", "progressive_overload"],
+    "areasForImprovement": ["leg_training", "cardio"],
+    "preferredExercises": ["bench_press", "pull_ups"],
+    "optimal_training_frequency": 4,
+    "progression_response": "responds_well_to_linear_progression",
+    "equipment_effectiveness": {"dumbbells": "highly_effective", "machines": "less_preferred"}
+  }
+}`;
+
 export interface WorkoutPlanRequest {
   fitnessLevel: string;
   equipment: string[];
@@ -521,12 +554,12 @@ export async function createWeeklySnapshot(
   volumePerMuscle: any;
   flags: any[];
 }> {
-  const prompt = `Analyze Week ${weekNumber} performance and create weekly progress snapshot:
+  const prompt = `Analyze Week ${weekNumber} performance:
 
 Workout sessions: ${JSON.stringify(workoutSessions)}
 User goals: ${JSON.stringify(userGoals.join(", "))}
 
-Focus on insights useful for future plan generation.`;
+Schema: ${WEEKLY_SNAPSHOT_SCHEMA}`;
 
   try {
     const response = await openai.chat.completions.create({
