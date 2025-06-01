@@ -501,9 +501,9 @@ export async function registerRoutes(app: Express): Promise<Server> {
         const createdWorkout = await storage.createWorkout({
           planId: workoutPlan.id,
           userId: req.body.userId,
-          title: workout.title,
-          description: workout.description,
-          estimatedDuration: workout.estimatedDuration,
+          title: workout.title || workout.goal || `Workout ${i + 1}`,
+          description: workout.description || workout.goal || `Training session ${i + 1}`,
+          estimatedDuration: workout.estimatedDuration || req.body.timePerWorkout,
           exercises: processedExercises,
           orderIndex: i
         });

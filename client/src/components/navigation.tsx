@@ -159,7 +159,7 @@ export function TopNavigation() {
                   )}
                 </Button>
               </PopoverTrigger>
-              <PopoverContent className="w-64 p-3 mr-4" align="end">
+              <PopoverContent className="w-64 p-3" align="center">
                 <div className="text-center space-y-2">
                   {isCompleted ? (
                     <>
