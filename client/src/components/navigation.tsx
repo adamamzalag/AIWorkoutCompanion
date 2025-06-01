@@ -41,14 +41,18 @@ function useGlobalGenerationStatus() {
   const [operationId, setOperationId] = useState<string | null>(null);
 
   useEffect(() => {
-    // Check localStorage for any active generation
-    const storedOperationId = localStorage.getItem('activeGenerationId');
-    if (storedOperationId) {
-      setOperationId(storedOperationId);
-      setIsGenerating(true);
+    let interval: NodeJS.Timeout | null = null;
+
+    const checkStorageAndProgress = async () => {
+      const storedOperationId = localStorage.getItem('activeGenerationId');
       
-      // Poll for completion
-      const checkProgress = async () => {
+      if (storedOperationId) {
+        if (operationId !== storedOperationId) {
+          setOperationId(storedOperationId);
+          setIsGenerating(true);
+        }
+        
+        // Poll for completion
         try {
           const response = await fetch(`/api/generation-progress/${storedOperationId}`);
           const data = await response.json();
@@ -64,14 +68,21 @@ function useGlobalGenerationStatus() {
           setIsGenerating(false);
           setOperationId(null);
         }
-      };
+      } else if (isGenerating) {
+        // No stored operation but we think we're generating - clear state
+        setIsGenerating(false);
+        setOperationId(null);
+      }
+    };
 
-      const interval = setInterval(checkProgress, 5000);
-      checkProgress(); // Check immediately
+    // Check immediately and then every 3 seconds
+    checkStorageAndProgress();
+    interval = setInterval(checkStorageAndProgress, 3000);
 
-      return () => clearInterval(interval);
-    }
-  }, []);
+    return () => {
+      if (interval) clearInterval(interval);
+    };
+  }, [operationId, isGenerating]);
 
   return { isGenerating, operationId };
 }
