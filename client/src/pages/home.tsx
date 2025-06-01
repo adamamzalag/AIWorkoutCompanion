@@ -27,6 +27,11 @@ export default function Home() {
 
   const { data: workoutPlans, isLoading: plansLoading } = useQuery<WorkoutPlan[]>({
     queryKey: ['/api/workout-plans', (userProfile as any)?.id],
+    queryFn: async () => {
+      const response = await fetch(`/api/workout-plans/${(userProfile as any)?.id}`);
+      if (!response.ok) throw new Error('Failed to fetch workout plans');
+      return response.json();
+    },
     enabled: !!(userProfile as any)?.id,
   });
 
