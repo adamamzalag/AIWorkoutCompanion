@@ -35,6 +35,11 @@ export default function Home() {
     enabled: !!(userProfile as any)?.id,
   });
 
+  const { data: coachingTip, isLoading: tipLoading } = useQuery<{ tip: string }>({
+    queryKey: ['/api/coaching-tip', (userProfile as any)?.id],
+    enabled: !!(userProfile as any)?.id,
+  });
+
   // Mock today's workout - in reality this would be calculated based on the plan
   const activePlan = workoutPlans?.find(plan => plan.isActive);
   const todaysWorkout: Workout | undefined = undefined; // Would be fetched based on plan schedule
@@ -70,16 +75,23 @@ export default function Home() {
         </div>
         
         {/* AI Coach Quick Message */}
-        <Card className="glass-effect border-primary/20">
+        <Card className="glass-effect border-primary/20 w-full">
           <CardContent className="p-4">
-            <div className="flex items-start space-x-3 min-h-[72px]">
+            <div className="flex items-start space-x-3 min-h-[72px] w-full">
               <div className="w-8 h-8 bg-gradient-to-r from-accent to-primary rounded-full flex items-center justify-center flex-shrink-0 mt-0.5">
                 <MessageCircle className="text-white" size={14} />
               </div>
-              <div className="flex-1 min-w-0">
-                <p className="text-sm text-foreground/90 mb-2 leading-relaxed">
-                  Based on your last workout, I've adjusted today's plan to focus more on your upper body. Ready to get started?
-                </p>
+              <div className="flex-1 min-w-0 w-0">
+                {tipLoading ? (
+                  <div className="space-y-2">
+                    <div className="h-4 bg-muted rounded animate-pulse w-full"></div>
+                    <div className="h-4 bg-muted rounded animate-pulse w-3/4"></div>
+                  </div>
+                ) : (
+                  <p className="text-sm text-foreground/90 mb-2 leading-relaxed break-words hyphens-auto">
+                    {coachingTip?.tip || 'Welcome to your AI fitness coach! Ready to start your fitness journey?'}
+                  </p>
+                )}
                 <Link href="/ai-chat">
                   <Button variant="link" className="text-primary text-sm font-medium p-0 h-auto">
                     Reply to coach →

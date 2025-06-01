@@ -299,6 +299,37 @@ export async function registerRoutes(app: Express): Promise<Server> {
     res.json(progress);
   });
 
+  // Coaching tip endpoint
+  app.get("/api/coaching-tip/:userId", async (req, res) => {
+    try {
+      const userId = parseInt(req.params.userId);
+      const user = await storage.getUser(userId);
+      const recentSessions = await storage.getRecentWorkoutSessions(userId, 3);
+      const workoutPlans = await storage.getWorkoutPlans(userId);
+      
+      if (!user) {
+        return res.status(404).json({ error: "User not found" });
+      }
+
+      const userContext = {
+        fitnessLevel: user.fitnessLevel,
+        goals: user.goals,
+        equipment: user.equipment,
+        recentWorkouts: recentSessions.length,
+        hasActivePlan: workoutPlans.some(plan => plan.isActive),
+        totalPlans: workoutPlans.length
+      };
+
+      const { generateDailyCoachingTip } = await import("./openai.js");
+      const tip = await generateDailyCoachingTip(userId, userContext, recentSessions);
+      
+      res.json({ tip });
+    } catch (error) {
+      console.error('Error generating coaching tip:', error);
+      res.json({ tip: 'Welcome to your AI fitness coach! Ready to start your fitness journey?' });
+    }
+  });
+
   // AI-powered routes
   app.post("/api/generate-plan", async (req, res) => {
     const operationId = `plan_${req.body.userId}_${Date.now()}`;

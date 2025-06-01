@@ -410,6 +410,59 @@ Give a personalized, encouraging tip that helps improve form, motivation, or per
   }
 }
 
+export async function generateDailyCoachingTip(
+  userId: number,
+  userContext: any,
+  recentSessions: any[]
+): Promise<string> {
+  const timeOfDay = new Date().getHours() < 12 ? 'morning' : new Date().getHours() < 17 ? 'afternoon' : 'evening';
+  
+  const prompt = `As a personalized AI fitness coach, create a brief motivational message for this ${timeOfDay}.
+
+User Profile:
+- Fitness level: ${userContext.fitnessLevel || 'beginner'}
+- Goals: ${userContext.goals || 'general fitness'}
+- Equipment available: ${userContext.equipment?.join(', ') || 'basic equipment'}
+- Recent workout sessions: ${recentSessions.length}
+- Has active plan: ${userContext.hasActivePlan}
+- Total plans created: ${userContext.totalPlans}
+
+Recent Activity:
+${recentSessions.length > 0 ? 
+  recentSessions.map(session => `- ${session.workoutType || 'Workout'} completed ${Math.floor((Date.now() - new Date(session.startTime).getTime()) / (1000 * 60 * 60 * 24))} days ago`).join('\n') 
+  : '- No recent workout sessions'}
+
+Create a personalized, encouraging message that:
+1. Acknowledges their current fitness journey
+2. Provides specific motivation based on their recent activity
+3. Suggests next steps if appropriate
+4. Keeps an upbeat, supportive tone
+
+Keep it concise (2-3 sentences max) and personal.`;
+
+  try {
+    const response = await openai.chat.completions.create({
+      model: "gpt-4o-mini",
+      messages: [
+        {
+          role: "system",
+          content: UNIFIED_COACH_SYSTEM_PROMPT + " Keep responses to 2-3 sentences maximum. Be encouraging and specific to their situation."
+        },
+        {
+          role: "user",
+          content: prompt
+        }
+      ],
+      temperature: 0.7,
+    });
+
+    return response.choices[0].message.content || "Welcome to your fitness journey! Ready to make today count?";
+  } catch (error) {
+    console.error("Error generating daily coaching tip:", error);
+    return "Welcome to your fitness journey! Ready to make today count?";
+  }
+}
+
 export async function generateChatResponse(
   message: string,
   userContext: any,
