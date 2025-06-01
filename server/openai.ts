@@ -422,11 +422,11 @@ Return the response as a JSON object with this exact structure:
           "name": "Standard exercise name (e.g., 'Push-ups', 'Squats')",
           "sets": 3,
           "reps": "8-12 or time-based like '30 seconds'",
-          "weight": null for bodyweight or "15 lbs" for weighted,
+          "weight": null,
           "restTime": "60 seconds",
           "instructions": ["Clear step 1", "Clear step 2", "Clear step 3"],
           "muscleGroups": ["primary", "secondary"],
-          "equipment": ["none"] or ["dumbbells"]
+          "equipment": ["none"]
         }
       ]
     }
@@ -467,7 +467,34 @@ Ensure exercises progress logically throughout the plan with appropriate volume 
       temperature: 0.3,
     });
 
-    const result = JSON.parse(response.choices[0].message.content || "{}");
+    const result = await parseJSONWithRetry(response.choices[0].message.content || "{}", async () => {
+      return await openai.chat.completions.create({
+        model: "gpt-4.1-mini",
+        messages: [
+          {
+            role: "system",
+            content: `You are an expert fitness trainer and workout program designer. Create detailed, safe, and effective workout plans based on the user's specifications.
+
+CRITICAL: Follow this exact JSON structure for exercises:
+- Each exercise must have: name, sets (number), reps (string like "8-12" or "30 seconds"), weight (string or null), restTime (string like "60 seconds"), instructions (array of strings), muscleGroups (array), equipment (array)
+- Use standard exercise names (Push-ups, Squats, Plank, etc.)
+- For bodyweight exercises, set weight to null
+- Rest times should be realistic (30-120 seconds)
+- Instructions should be 3-5 clear, actionable steps
+- Muscle groups: use lowercase (chest, shoulders, triceps, quadriceps, glutes, etc.)
+- Equipment: use lowercase, match available options (none, dumbbells, barbell, etc.)
+
+Ensure exercises progress logically throughout the plan with appropriate volume and intensity increases. Respond with JSON format. Please return valid JSON only.`
+          },
+          {
+            role: "user",
+            content: prompt
+          }
+        ],
+        response_format: { type: "json_object" },
+        temperature: 0.3,
+      });
+    });
     return result as GeneratedWorkoutPlan;
   } catch (error) {
     console.error("Error generating workout plan:", error);
