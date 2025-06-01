@@ -2,6 +2,7 @@ import { useState, useEffect, useRef } from 'react';
 import { useQuery, useMutation, useQueryClient } from '@tanstack/react-query';
 import { Button } from '@/components/ui/button';
 import { Input } from '@/components/ui/input';
+import { Textarea } from '@/components/ui/textarea';
 import { Card, CardContent } from '@/components/ui/card';
 import { Skeleton } from '@/components/ui/skeleton';
 import { MessageCircle, Send, TrendingUp, Dumbbell, Target } from 'lucide-react';
@@ -168,18 +169,35 @@ export default function AIChatPage() {
 
       {/* Chat Input - Fixed at bottom */}
       <div className="fixed bottom-20 left-1/2 transform -translate-x-1/2 w-full max-w-sm px-4 z-40">
-        <form onSubmit={handleSendMessage} className="glass-effect rounded-2xl p-3 flex items-center space-x-3 bg-card/80 backdrop-blur-xl border border-border/20">
-          <Input
+        <form onSubmit={handleSendMessage} className="glass-effect rounded-2xl p-3 flex items-end space-x-3 bg-card/80 backdrop-blur-xl border border-border/20">
+          <Textarea
             value={message}
             onChange={(e) => setMessage(e.target.value)}
             placeholder="Ask your AI coach anything..."
-            className="flex-1 bg-transparent border-none text-foreground placeholder-muted-foreground focus-visible:ring-0 focus-visible:ring-offset-0 text-base"
+            className="flex-1 bg-transparent border-none text-foreground placeholder-muted-foreground focus-visible:ring-0 focus-visible:ring-offset-0 text-base resize-none min-h-[44px] max-h-[120px] leading-6 py-2.5"
             disabled={sendMessageMutation.isPending}
+            rows={1}
+            style={{
+              height: 'auto',
+              minHeight: '44px',
+              maxHeight: '120px'
+            }}
+            onKeyDown={(e) => {
+              if (e.key === 'Enter' && !e.shiftKey) {
+                e.preventDefault();
+                handleSendMessage(e);
+              }
+            }}
+            onInput={(e) => {
+              const target = e.target as HTMLTextAreaElement;
+              target.style.height = 'auto';
+              target.style.height = Math.min(target.scrollHeight, 120) + 'px';
+            }}
           />
           <Button
             type="submit"
             size="sm"
-            className="w-10 h-10 bg-primary hover:bg-primary/90 rounded-full p-0 touch-target flex items-center justify-center"
+            className="w-10 h-10 bg-primary hover:bg-primary/90 rounded-full p-0 touch-target flex items-center justify-center flex-shrink-0"
             disabled={!message.trim() || sendMessageMutation.isPending}
           >
             {sendMessageMutation.isPending ? (
