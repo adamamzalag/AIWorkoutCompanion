@@ -25,6 +25,18 @@ REQUIRED JSON STRUCTURE:
       "title": "Descriptive workout name",
       "description": "Brief workout overview",
       "estimatedDuration": 45,
+      "warmUp": {
+        "durationMinutes": 5,
+        "activities": [
+          {"exercise": "Dynamic stretching", "durationSeconds": 60}
+        ]
+      },
+      "coolDown": {
+        "durationMinutes": 5,
+        "activities": [
+          {"exercise": "Static stretching", "durationSeconds": 60}
+        ]
+      },
       "exercises": [
         {
           "name": "Exercise name",
@@ -34,7 +46,10 @@ REQUIRED JSON STRUCTURE:
           "restTime": "60 seconds",
           "instructions": ["Step 1", "Step 2", "Step 3"],
           "muscleGroups": ["chest", "triceps"],
-          "equipment": ["dumbbells"]
+          "equipment": ["dumbbells"],
+          "tempo": "2-1-2-1",
+          "modifications": ["easier variation"],
+          "progressions": ["harder variation"]
         }
       ]
     }
@@ -42,7 +57,7 @@ REQUIRED JSON STRUCTURE:
 }
 `;
 
-const JSON_RESPONSE_RULES = "Return only the JSON object. No text before or after. Follow the exact schema provided. No keys outside the specified structure.";
+const JSON_RESPONSE_RULES = "Return only the JSON object. No text before or after. Follow the exact schema provided. Optional fields like tempo, modifications, progressions are allowed but not required.";
 
 // Helper function for JSON parsing with retry logic
 async function parseJSONWithRetry(content: string, openaiCall: () => Promise<any>): Promise<any> {
