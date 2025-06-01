@@ -195,8 +195,13 @@ export function ExerciseCard({
                   </svg>
                   {/* Timer display */}
                   <div className="absolute inset-0 flex items-center justify-center">
-                    <div className="text-3xl font-bold text-primary">
-                      {formatTime(timeRemaining)}
+                    <div className="text-center">
+                      <div className="text-3xl font-bold text-primary">
+                        {formatTime(timeRemaining)}
+                      </div>
+                      <div className="text-xs text-muted-foreground mt-1">
+                        seconds
+                      </div>
                     </div>
                   </div>
                 </div>
@@ -210,7 +215,7 @@ export function ExerciseCard({
                       className="glass-effect bg-accent hover:bg-accent/90 text-white"
                     >
                       <Play size={16} className="mr-1" />
-                      Start
+                      Start Timer
                     </Button>
                   ) : (
                     <>
