@@ -244,6 +244,53 @@ export async function registerRoutes(app: Express): Promise<Server> {
     }
   });
 
+  // Dynamic video fetching - get or fetch YouTube video for an exercise
+  app.get("/api/exercise/:exerciseId/video", async (req, res) => {
+    try {
+      const exerciseId = parseInt(req.params.exerciseId);
+      const exercise = await storage.getExercise(exerciseId);
+      
+      if (!exercise) {
+        return res.status(404).json({ error: "Exercise not found" });
+      }
+
+      // If exercise already has a video, return it
+      if (exercise.youtubeId && exercise.thumbnailUrl) {
+        return res.json({
+          youtubeId: exercise.youtubeId,
+          thumbnailUrl: exercise.thumbnailUrl,
+          cached: true
+        });
+      }
+
+      // Otherwise, try to fetch a video dynamically
+      const video = await searchExerciseVideo(exercise.name);
+      
+      if (video) {
+        // Save the video to the database for future use
+        await storage.updateExercise(exerciseId, {
+          youtubeId: video.id,
+          thumbnailUrl: video.thumbnailUrl
+        });
+
+        res.json({
+          youtubeId: video.id,
+          thumbnailUrl: video.thumbnailUrl,
+          cached: false
+        });
+      } else {
+        res.json({
+          youtubeId: null,
+          thumbnailUrl: null,
+          cached: false
+        });
+      }
+    } catch (error) {
+      console.error("Error fetching exercise video:", error);
+      res.status(500).json({ error: "Internal server error" });
+    }
+  });
+
   app.get("/api/exercises/search/:query", async (req, res) => {
     try {
       const query = req.params.query;
@@ -458,11 +505,93 @@ export async function registerRoutes(app: Express): Promise<Server> {
           exercises = [];
         }
 
-        // Process each exercise to normalize and create exercise records
+        // Helper function to process and create exercise records
+        const processExercise = async (exerciseName: string, isWarmupCooldown = false) => {
+          console.log(`🏋️ Processing exercise: ${exerciseName}${isWarmupCooldown ? ' (warmup/cooldown)' : ''}`);
+          
+          // Get existing exercises for similarity matching
+          const existingExercises = await storage.getExercises();
+          
+          let exerciseId: number;
+          let finalExerciseName: string;
+          
+          // Check for existing exercise by both name and slug to avoid constraint violations
+          const targetSlug = slugify(exerciseName);
+          const existingExercise = existingExercises.find(ex => 
+            ex.name.toLowerCase() === exerciseName.toLowerCase() ||
+            ex.slug === targetSlug ||
+            // More flexible matching for warmup/cooldown activities
+            ex.name.toLowerCase().includes(exerciseName.toLowerCase()) ||
+            exerciseName.toLowerCase().includes(ex.name.toLowerCase())
+          );
+          
+          if (existingExercise) {
+            console.log(`✅ Found existing exercise: "${existingExercise.name}" (ID: ${existingExercise.id})`);
+            exerciseId = existingExercise.id;
+            finalExerciseName = existingExercise.name;
+          } else {
+            console.log(`➕ Creating new exercise: "${exerciseName}"`);
+            // Create new exercise record
+            const newExercise = await storage.createExercise({
+              slug: slugify(exerciseName),
+              name: exerciseName,
+              difficulty: "beginner", // Default for warmup/cooldown exercises
+              muscle_groups: isWarmupCooldown ? ["general"] : ["general"],
+              instructions: [`Perform ${exerciseName.toLowerCase()} as instructed`],
+              equipment: ["none"],
+              youtubeId: null
+            });
+            exerciseId = newExercise.id;
+            finalExerciseName = newExercise.name;
+            console.log(`✅ New exercise created with ID: ${exerciseId}`);
+          }
+          
+          return { exerciseId, name: finalExerciseName };
+        };
+
+        // Process warmup activities to create exercise records
+        let processedWarmUp = workout.warmUp;
+        if (workout.warmUp && workout.warmUp.activities) {
+          console.log(`🔥 Processing ${workout.warmUp.activities.length} warmup activities...`);
+          const processedActivities = [];
+          for (const activity of workout.warmUp.activities) {
+            const { exerciseId, name } = await processExercise(activity.exercise, true);
+            processedActivities.push({
+              ...activity,
+              exerciseId,
+              exercise: name // Use the final exercise name
+            });
+          }
+          processedWarmUp = {
+            ...workout.warmUp,
+            activities: processedActivities
+          };
+        }
+
+        // Process cooldown activities to create exercise records
+        let processedCoolDown = workout.coolDown;
+        if (workout.coolDown && workout.coolDown.activities) {
+          console.log(`❄️ Processing ${workout.coolDown.activities.length} cooldown activities...`);
+          const processedActivities = [];
+          for (const activity of workout.coolDown.activities) {
+            const { exerciseId, name } = await processExercise(activity.exercise, true);
+            processedActivities.push({
+              ...activity,
+              exerciseId,
+              exercise: name // Use the final exercise name
+            });
+          }
+          processedCoolDown = {
+            ...workout.coolDown,
+            activities: processedActivities
+          };
+        }
+
+        // Process main exercises
         const processedExercises = [];
         for (let j = 0; j < exercises.length; j++) {
           const aiExercise = exercises[j];
-          console.log(`🏋️ Processing exercise ${j + 1}/${exercises.length}: ${aiExercise.name}`);
+          console.log(`🏋️ Processing main exercise ${j + 1}/${exercises.length}: ${aiExercise.name}`);
           
           // Get existing exercises for similarity matching
           const existingExercises = await storage.getExercises();
@@ -523,8 +652,8 @@ export async function registerRoutes(app: Express): Promise<Server> {
           description: workout.description || workout.goal || `Training session ${i + 1}`,
           estimatedDuration: workout.estimatedDuration || req.body.timePerWorkout,
           exercises: processedExercises,
-          warmUp: workout.warmUp,
-          coolDown: workout.coolDown,
+          warmUp: processedWarmUp, // Use processed warmup with exercise IDs
+          coolDown: processedCoolDown, // Use processed cooldown with exercise IDs
           orderIndex: i
         });
         console.log(`✅ Workout created with ID: ${createdWorkout.id}`);

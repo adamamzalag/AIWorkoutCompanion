@@ -59,14 +59,18 @@ export default function WorkoutPage() {
     // Add warm-up exercises
     if (warmUp.activities) {
       warmUp.activities.forEach((activity: any, index: number) => {
-        // Try to find the real exercise in the database by name
-        const realExercise = exercises?.find(ex => 
-          ex.name.toLowerCase().includes(activity.exercise.toLowerCase()) ||
-          activity.exercise.toLowerCase().includes(ex.name.toLowerCase())
-        );
+        // Use exerciseId from processed data if available, otherwise try to find by name
+        let exerciseId = activity.exerciseId;
+        if (!exerciseId) {
+          const realExercise = exercises?.find(ex => 
+            ex.name.toLowerCase().includes(activity.exercise.toLowerCase()) ||
+            activity.exercise.toLowerCase().includes(ex.name.toLowerCase())
+          );
+          exerciseId = realExercise ? realExercise.id : `warmup-${index}`;
+        }
         
         exerciseLogs.push({
-          exerciseId: realExercise ? realExercise.id : `warmup-${index}`, // Use real ID if found
+          exerciseId,
           name: activity.exercise,
           sets: [{ reps: 0, completed: false }], // Time-based exercise
           restTime: '30 seconds',
@@ -102,14 +106,18 @@ export default function WorkoutPage() {
     // Add cool-down exercises
     if (coolDown.activities) {
       coolDown.activities.forEach((activity: any, index: number) => {
-        // Try to find the real exercise in the database by name
-        const realExercise = exercises?.find(ex => 
-          ex.name.toLowerCase().includes(activity.exercise.toLowerCase()) ||
-          activity.exercise.toLowerCase().includes(ex.name.toLowerCase())
-        );
+        // Use exerciseId from processed data if available, otherwise try to find by name
+        let exerciseId = activity.exerciseId;
+        if (!exerciseId) {
+          const realExercise = exercises?.find(ex => 
+            ex.name.toLowerCase().includes(activity.exercise.toLowerCase()) ||
+            activity.exercise.toLowerCase().includes(ex.name.toLowerCase())
+          );
+          exerciseId = realExercise ? realExercise.id : `cooldown-${index}`;
+        }
         
         exerciseLogs.push({
-          exerciseId: realExercise ? realExercise.id : `cooldown-${index}`, // Use real ID if found
+          exerciseId,
           name: activity.exercise,
           sets: [{ reps: 0, completed: false }], // Time-based exercise
           restTime: '30 seconds',
