@@ -269,6 +269,20 @@ CRITICAL: Return JSON with this EXACT structure:
       "title": "Upper Body Push",
       "description": "Focus on chest, shoulders, and triceps development",
       "estimatedDuration": ${timePerWorkout || 45},
+      "warmUp": {
+        "durationMinutes": 5,
+        "activities": [
+          {"exercise": "Arm circles", "durationSeconds": 30},
+          {"exercise": "Light cardio", "durationSeconds": 120}
+        ]
+      },
+      "coolDown": {
+        "durationMinutes": 5,
+        "activities": [
+          {"exercise": "Chest stretch", "durationSeconds": 60},
+          {"exercise": "Deep breathing", "durationSeconds": 60}
+        ]
+      },
       "exercises": [
         {
           "name": "Push-ups",
@@ -278,7 +292,10 @@ CRITICAL: Return JSON with this EXACT structure:
           "restTime": "60 seconds",
           "instructions": ["Start in plank position", "Lower chest to floor", "Push back up"],
           "muscleGroups": ["chest", "triceps", "shoulders"],
-          "equipment": ["none"]
+          "equipment": ["none"],
+          "tempo": "2-1-2-1",
+          "modifications": ["knee push-ups", "wall push-ups"],
+          "progressions": ["diamond push-ups", "weighted push-ups"]
         }
       ]
     }

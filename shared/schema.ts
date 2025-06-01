@@ -67,6 +67,9 @@ export const exercises = pgTable("exercises", {
   equipment: text("equipment").array().notNull().default([]),
   difficulty: text("difficulty").notNull(),
   instructions: text("instructions").array().notNull(),
+  tempo: text("tempo"), // e.g., "2-1-2-1" (eccentric-pause-concentric-pause)
+  modifications: text("modifications").array().default([]), // easier variations
+  progressions: text("progressions").array().default([]), // harder variations
   youtubeId: text("youtube_id"), // YouTube video ID for tutorial
   imageUrl: text("image_url"),
   createdAt: timestamp("created_at").notNull().defaultNow(),
@@ -81,6 +84,8 @@ export const workouts = pgTable("workouts", {
   description: text("description"),
   estimatedDuration: integer("estimated_duration").notNull(), // in minutes
   exercises: jsonb("exercises").notNull(), // array of exercise objects with sets/reps
+  warmUp: jsonb("warm_up"), // warm-up activities and duration
+  coolDown: jsonb("cool_down"), // cool-down activities and duration
   orderIndex: integer("order_index").notNull(),
   dayIndex: integer("day_index"), // which day of the week (1-7)
   createdAt: timestamp("created_at").notNull().defaultNow(),
