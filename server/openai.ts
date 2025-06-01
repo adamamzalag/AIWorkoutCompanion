@@ -17,6 +17,29 @@ WORKOUT STRUCTURE PRINCIPLES:
 • Cool-down (5-8 minutes): Targeted recovery addressing muscles worked
 • Prioritize movement quality and training effect over rigid exercise counts
 • Consider fatigue management and exercise sequencing
+
+REQUIRED JSON STRUCTURE:
+{
+  "workouts": [
+    {
+      "title": "Descriptive workout name",
+      "description": "Brief workout overview",
+      "estimatedDuration": 45,
+      "exercises": [
+        {
+          "name": "Exercise name",
+          "sets": 3,
+          "reps": "8-12",
+          "weight": "moderate weight",
+          "restTime": "60 seconds",
+          "instructions": ["Step 1", "Step 2", "Step 3"],
+          "muscleGroups": ["chest", "triceps"],
+          "equipment": ["dumbbells"]
+        }
+      ]
+    }
+  ]
+}
 `;
 
 const JSON_RESPONSE_RULES = "Return only the JSON object. No text before or after. Follow the exact schema provided. No keys outside the specified structure.";
@@ -239,7 +262,32 @@ ${progressionContext}
 
 Design ${currentWeek.workoutDays.length} intelligent workouts for ${timePerWorkout || 45} minutes each that maximize training effectiveness within the time constraints.
 
-Structure: warm-up → main exercises → cardio → cool-down. Use null for bodyweight exercises, specific weights for loaded exercises.`;
+CRITICAL: Return JSON with this EXACT structure:
+{
+  "workouts": [
+    {
+      "title": "Upper Body Push",
+      "description": "Focus on chest, shoulders, and triceps development",
+      "estimatedDuration": ${timePerWorkout || 45},
+      "exercises": [
+        {
+          "name": "Push-ups",
+          "sets": 3,
+          "reps": "8-12",
+          "weight": null,
+          "restTime": "60 seconds",
+          "instructions": ["Start in plank position", "Lower chest to floor", "Push back up"],
+          "muscleGroups": ["chest", "triceps", "shoulders"],
+          "equipment": ["none"]
+        }
+      ]
+    }
+  ]
+}
+
+Each workout must have: title, description, estimatedDuration, exercises array.
+Each exercise must have: name, sets, reps, weight, restTime, instructions, muscleGroups, equipment.
+Use null for weight on bodyweight exercises, specific weights for loaded exercises.`;
 
   console.log("🔍 WEEKLY WORKOUT GENERATION - Prompt:", prompt);
 
