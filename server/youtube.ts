@@ -55,12 +55,13 @@ export async function searchExerciseVideo(exerciseName: string): Promise<YouTube
     return null;
   }
 
-  // Try different search patterns
+  // Try different search patterns optimized for short, focused tutorials
   const searchQueries = [
-    `${exerciseName} tutorial`,
-    `${exerciseName} exercise how to`,
+    `how to ${exerciseName}`,
+    `${exerciseName} exercise tutorial`,
     `${exerciseName} proper form`,
-    `how to do ${exerciseName}`
+    `${exerciseName} technique tutorial`,
+    `${exerciseName} how to perform`
   ];
 
   for (const query of searchQueries) {
@@ -172,20 +173,28 @@ function calculateVideoScore(item: any, details: any): number {
     else if (details.viewCount > 10000) score += 10;
   }
   
-  // Duration preference (not too short, not too long)
+  // Duration preference (short, focused tutorials only)
   if (details?.duration) {
     const duration = parseDuration(details.duration);
-    if (duration >= 60 && duration <= 600) score += 15; // 1-10 minutes
-    else if (duration >= 30 && duration <= 1200) score += 10; // 30s-20min
-    else if (duration > 1200) score -= 20; // too long
+    if (duration >= 30 && duration <= 180) score += 25; // 30s-3min (ideal)
+    else if (duration >= 181 && duration <= 300) score += 10; // 3-5min (acceptable)
+    else if (duration > 300) score -= 30; // too long, penalize heavily
+    else if (duration < 30) score -= 15; // too short
   }
   
-  // Negative indicators
+  // Negative indicators - filter out irrelevant content
   if (title.includes('fail')) score -= 50;
   if (title.includes('funny')) score -= 30;
   if (title.includes('compilation')) score -= 25;
   if (title.includes('reaction')) score -= 40;
   if (title.includes('vs')) score -= 15;
+  if (title.includes('challenge')) score -= 20;
+  if (title.includes('review')) score -= 25;
+  if (title.includes('workout routine')) score -= 15; // too general
+  if (title.includes('full workout')) score -= 20; // too long/general
+  if (title.includes('fighting')) score -= 40; // not exercise tutorial
+  if (title.includes('combat')) score -= 40;
+  if (title.includes('martial arts')) score -= 30;
   
   return score;
 }
@@ -203,7 +212,7 @@ function parseDuration(duration: string): number {
 }
 
 export async function updateExerciseVideos(storage: any): Promise<void> {
-  console.log('Starting exercise video update process...');
+  console.log('Starting comprehensive exercise video update process...');
   
   try {
     // Get all exercises without YouTube videos
@@ -218,7 +227,7 @@ export async function updateExerciseVideos(storage: any): Promise<void> {
       const video = await searchExerciseVideo(exercise.name);
       
       if (video) {
-        console.log(`Found video for ${exercise.name}: ${video.id}`);
+        console.log(`Found video for ${exercise.name}: ${video.id} (${video.title})`);
         
         // Update exercise with video data
         await storage.updateExercise(exercise.id, {
@@ -232,12 +241,93 @@ export async function updateExerciseVideos(storage: any): Promise<void> {
       }
       
       // Add a small delay to respect YouTube API rate limits
-      await new Promise(resolve => setTimeout(resolve, 1000));
+      await new Promise(resolve => setTimeout(resolve, 1500));
     }
     
     console.log('Exercise video update process completed');
   } catch (error) {
     console.error('Error updating exercise videos:', error);
+  }
+}
+
+// Enhanced function to update videos for specific exercise types
+export async function updateAllExerciseTypes(storage: any): Promise<void> {
+  console.log('Starting comprehensive video update for all exercise types...');
+  
+  try {
+    const exercises = await storage.getExercises();
+    
+    // Categorize exercises by type for better search terms
+    const warmupKeywords = ['warm', 'circle', 'roll', 'stretch', 'mobility'];
+    const cardioKeywords = ['treadmill', 'jogging', 'running', 'jumping', 'cardio'];
+    const cooldownKeywords = ['cool', 'stretch', 'relax'];
+    
+    for (const exercise of exercises) {
+      if (exercise.youtubeId && exercise.thumbnailUrl) {
+        console.log(`Skipping ${exercise.name} - already has video`);
+        continue;
+      }
+      
+      const exerciseName = exercise.name.toLowerCase();
+      let searchTerms = [];
+      
+      // Determine exercise type and customize search terms
+      if (warmupKeywords.some(keyword => exerciseName.includes(keyword))) {
+        searchTerms = [
+          `how to ${exercise.name} warm up`,
+          `${exercise.name} warmup tutorial`,
+          `${exercise.name} mobility exercise`
+        ];
+      } else if (cardioKeywords.some(keyword => exerciseName.includes(keyword))) {
+        searchTerms = [
+          `how to ${exercise.name}`,
+          `${exercise.name} technique`,
+          `${exercise.name} form tutorial`
+        ];
+      } else if (cooldownKeywords.some(keyword => exerciseName.includes(keyword))) {
+        searchTerms = [
+          `how to ${exercise.name} stretch`,
+          `${exercise.name} cooldown tutorial`,
+          `${exercise.name} recovery exercise`
+        ];
+      } else {
+        // Regular strength exercises
+        searchTerms = [
+          `how to ${exercise.name}`,
+          `${exercise.name} exercise tutorial`,
+          `${exercise.name} proper form`
+        ];
+      }
+      
+      console.log(`Searching video for: ${exercise.name} (Type: ${warmupKeywords.some(k => exerciseName.includes(k)) ? 'warmup' : cardioKeywords.some(k => exerciseName.includes(k)) ? 'cardio' : cooldownKeywords.some(k => exerciseName.includes(k)) ? 'cooldown' : 'strength'})`);
+      
+      let video = null;
+      for (const searchTerm of searchTerms) {
+        video = await searchVideos(searchTerm);
+        if (video) break;
+        await new Promise(resolve => setTimeout(resolve, 500));
+      }
+      
+      if (video) {
+        console.log(`Found video for ${exercise.name}: ${video.id} (${video.title}) - Duration: ${video.duration}`);
+        
+        await storage.updateExercise(exercise.id, {
+          youtubeId: video.id,
+          thumbnailUrl: video.thumbnailUrl
+        });
+        
+        console.log(`Updated ${exercise.name} with video ${video.id}`);
+      } else {
+        console.log(`No suitable video found for ${exercise.name}`);
+      }
+      
+      // Respect API rate limits
+      await new Promise(resolve => setTimeout(resolve, 2000));
+    }
+    
+    console.log('Comprehensive video update process completed');
+  } catch (error) {
+    console.error('Error in comprehensive video update:', error);
   }
 }
 
