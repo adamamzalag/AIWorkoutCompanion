@@ -448,14 +448,14 @@ export default function WorkoutsPage() {
                         <div className="flex items-center justify-between">
                           <div className="flex flex-wrap gap-1">
                             {plan.equipment.slice(0, 3).map((eq) => (
-                              <Badge key={eq} variant="outline" className="text-xs border-border/50">
+                              <span key={eq} className="px-2 py-1 text-xs bg-muted/50 text-muted-foreground rounded-md border border-border/30">
                                 {eq.replace('_', ' ')}
-                              </Badge>
+                              </span>
                             ))}
                             {plan.equipment.length > 3 && (
-                              <Badge variant="outline" className="text-xs border-border/50">
+                              <span className="px-2 py-1 text-xs bg-muted/50 text-muted-foreground rounded-md border border-border/30">
                                 +{plan.equipment.length - 3}
-                              </Badge>
+                              </span>
                             )}
                           </div>
                           
@@ -519,14 +519,14 @@ export default function WorkoutsPage() {
                         <div className="flex items-center justify-between">
                           <div className="flex flex-wrap gap-1">
                             {plan.equipment.slice(0, 3).map((eq) => (
-                              <Badge key={eq} variant="outline" className="text-xs border-border/50">
+                              <span key={eq} className="px-2 py-1 text-xs bg-muted/50 text-muted-foreground rounded-md border border-border/30">
                                 {eq.replace('_', ' ')}
-                              </Badge>
+                              </span>
                             ))}
                             {plan.equipment.length > 3 && (
-                              <Badge variant="outline" className="text-xs border-border/50">
+                              <span className="px-2 py-1 text-xs bg-muted/50 text-muted-foreground rounded-md border border-border/30">
                                 +{plan.equipment.length - 3}
-                              </Badge>
+                              </span>
                             )}
                           </div>
                           

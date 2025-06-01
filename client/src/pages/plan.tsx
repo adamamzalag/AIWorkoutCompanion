@@ -103,9 +103,9 @@ export default function PlanDetailPage() {
           
           <div className="flex flex-wrap gap-2">
             {plan.equipment.map((eq) => (
-              <Badge key={eq} variant="outline" className="text-xs border-border/50">
+              <span key={eq} className="px-2 py-1 text-xs bg-muted/50 text-muted-foreground rounded-md border border-border/30">
                 {eq.replace('_', ' ')}
-              </Badge>
+              </span>
             ))}
           </div>
         </CardContent>
@@ -180,9 +180,9 @@ export default function PlanDetailPage() {
                         <div className="flex items-center justify-between">
                           <div className="flex flex-wrap gap-1">
                             {muscleGroups.map((muscle) => (
-                              <Badge key={muscle} variant="outline" className="text-xs">
+                              <span key={muscle} className="px-2 py-1 text-xs bg-muted/50 text-muted-foreground rounded-md border border-border/30">
                                 {muscle}
-                              </Badge>
+                              </span>
                             ))}
                           </div>
                           <div className="flex items-center space-x-3 text-xs text-muted-foreground">
@@ -202,17 +202,19 @@ export default function PlanDetailPage() {
                           <Button
                             variant="outline"
                             size="sm"
-                            className="flex-1 glass-effect border-border/50"
+                            className={`${plan?.isActive ? 'flex-1' : 'w-full'} glass-effect border-border/50`}
                             onClick={() => {/* TODO: Open quick view modal */}}
                           >
                             Quick View
                           </Button>
-                          <Link href={`/workout?id=${workout.id}`} className="flex-1">
-                            <Button size="sm" className="w-full bg-accent hover:bg-accent/90 text-accent-foreground">
-                              <Play size={14} className="mr-1" />
-                              Start Workout
-                            </Button>
-                          </Link>
+                          {plan?.isActive && (
+                            <Link href={`/workout?id=${workout.id}`} className="flex-1">
+                              <Button size="sm" className="w-full bg-accent hover:bg-accent/90 text-accent-foreground">
+                                <Play size={14} className="mr-1" />
+                                Start Workout
+                              </Button>
+                            </Link>
+                          )}
                         </div>
                       </div>
                     </CardContent>
