@@ -461,7 +461,7 @@ export default function WorkoutsPage() {
                         <Link href={`/plan/${plan.id}`} className="block">
                           <Button
                             size="sm"
-                            className="w-full bg-primary hover:bg-primary/90 text-primary-foreground"
+                            className="w-full bg-gradient-to-r from-primary to-secondary hover:from-primary/90 hover:to-secondary/90 text-white shadow-lg hover:shadow-xl transition-all duration-200"
                           >
                             View Plan
                           </Button>
@@ -531,7 +531,7 @@ export default function WorkoutsPage() {
                           <Button
                             variant="outline"
                             size="sm"
-                            className="w-full border-2 border-border hover:border-primary hover:bg-primary/10"
+                            className="w-full glass-effect border border-primary/20 hover:border-primary hover:bg-primary/10 transition-all duration-200 shadow-sm hover:shadow-md"
                           >
                             View Plan
                           </Button>
