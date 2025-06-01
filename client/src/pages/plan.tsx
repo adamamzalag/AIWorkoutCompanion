@@ -1,5 +1,5 @@
 import { useState } from 'react';
-import { useQuery, useMutation, queryClient } from '@tanstack/react-query';
+import { useQuery, useMutation } from '@tanstack/react-query';
 import { Button } from '@/components/ui/button';
 import { Card, CardContent } from '@/components/ui/card';
 import { Badge } from '@/components/ui/badge';
@@ -7,7 +7,7 @@ import { Skeleton } from '@/components/ui/skeleton';
 import { Dialog, DialogContent, DialogHeader, DialogTitle, DialogTrigger } from '@/components/ui/dialog';
 import { ChevronLeft, Clock, Target, Play, Calendar, Dumbbell, X } from 'lucide-react';
 import { Link, useRoute } from 'wouter';
-import { apiRequest } from '@/lib/queryClient';
+import { apiRequest, queryClient } from '@/lib/queryClient';
 import type { WorkoutPlan, Workout, User } from '@shared/schema';
 
 export default function PlanDetailPage() {
@@ -38,6 +38,22 @@ export default function PlanDetailPage() {
     },
     enabled: !!planId
   });
+
+  const updatePlanMutation = useMutation({
+    mutationFn: async ({ planId, isActive }: { planId: number; isActive: boolean }) => {
+      const response = await fetch(`/api/workout-plan/${planId}`, {
+        method: 'PUT',
+        body: JSON.stringify({ isActive }),
+        headers: { 'Content-Type': 'application/json' }
+      });
+      if (!response.ok) throw new Error('Failed to update plan');
+      return response.json();
+    }
+  });
+
+  const togglePlanStatus = (planId: number, isActive: boolean) => {
+    updatePlanMutation.mutate({ planId, isActive });
+  };
 
   const getDifficultyColor = (difficulty: string) => {
     switch (difficulty) {
