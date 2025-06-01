@@ -273,7 +273,7 @@ export default function WorkoutsPage() {
                             max="7"
                             className="glass-effect border-border/50"
                             {...field}
-                            onChange={(e) => field.onChange(parseInt(e.target.value))}
+                            onChange={(e) => field.onChange(parseInt(e.target.value) || 0)}
                           />
                         </FormControl>
                         <FormMessage />
@@ -295,7 +295,7 @@ export default function WorkoutsPage() {
                           max="180"
                           className="glass-effect border-border/50"
                           {...field}
-                          onChange={(e) => field.onChange(parseInt(e.target.value))}
+                          onChange={(e) => field.onChange(parseInt(e.target.value) || 0)}
                         />
                       </FormControl>
                       <FormMessage />

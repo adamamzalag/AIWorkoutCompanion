@@ -2,7 +2,7 @@ import { Link, useLocation } from 'wouter';
 import { Home, Dumbbell, TrendingUp, MessageCircle, Settings, Loader2, CheckCircle } from 'lucide-react';
 import { useState, useEffect } from 'react';
 import { Button } from '@/components/ui/button';
-import { Dialog, DialogContent, DialogTrigger } from '@/components/ui/dialog';
+import { Dialog, DialogContent, DialogHeader, DialogTitle, DialogDescription, DialogTrigger } from '@/components/ui/dialog';
 
 export function BottomNavigation() {
   const [location] = useLocation();
@@ -160,6 +160,12 @@ export function TopNavigation() {
                 </Button>
               </DialogTrigger>
               <DialogContent className="glass-effect border-border/50 max-w-sm mx-auto">
+                <DialogHeader className="sr-only">
+                  <DialogTitle>Workout Plan Status</DialogTitle>
+                  <DialogDescription>
+                    Current status of your workout plan generation or completion notification.
+                  </DialogDescription>
+                </DialogHeader>
                 <div className="text-center space-y-3 p-4">
                   {isCompleted ? (
                     <>
