@@ -102,9 +102,9 @@ export default function PlanDetailPage() {
             </div>
           </div>
           
-          <div className="flex flex-wrap gap-2">
+          <div className="flex flex-wrap gap-3">
             {plan.equipment.map((eq) => (
-              <span key={eq} className="px-2 py-1 text-xs bg-blue-100 dark:bg-blue-900/30 text-blue-800 dark:text-blue-200 rounded border border-blue-300 dark:border-blue-700">
+              <span key={eq} className="px-4 py-2 bg-gradient-to-r from-primary/10 to-accent/10 text-primary border border-primary/20 rounded-full font-medium text-sm shadow-sm hover:shadow-md transition-shadow">
                 {eq.replace('_', ' ')}
               </span>
             ))}
@@ -179,9 +179,9 @@ export default function PlanDetailPage() {
                         
                         {/* Muscle groups and workout info */}
                         <div className="flex items-center justify-between">
-                          <div className="flex flex-wrap gap-1">
+                          <div className="flex flex-wrap gap-2">
                             {muscleGroups.map((muscle) => (
-                              <span key={muscle} className="px-2 py-1 text-xs bg-blue-100 dark:bg-blue-900/30 text-blue-800 dark:text-blue-200 rounded border border-blue-300 dark:border-blue-700">
+                              <span key={muscle} className="px-3 py-1 bg-gradient-to-r from-primary/10 to-accent/10 text-primary border border-primary/20 rounded-full font-medium text-xs shadow-sm hover:shadow-md transition-shadow">
                                 {muscle}
                               </span>
                             ))}
