@@ -18,7 +18,7 @@ export default function Home() {
     queryKey: ["/api/profile"],
   });
 
-  const userName = userProfile?.email?.split('@')[0] || 'User';
+  const userName = userProfile?.name || userProfile?.email?.split('@')[0] || 'User';
 
   const { data: stats, isLoading: statsLoading } = useQuery<UserStats>({
     queryKey: ['/api/stats', (userProfile as any)?.id],
@@ -291,7 +291,7 @@ export default function Home() {
       </div>
 
       {/* Generate New Plan CTA */}
-      <Card className="glass-effect gradient-border">
+      <Card className="glass-effect border-border/20">
         <CardContent className="p-6 text-center">
           <div className="w-16 h-16 bg-gradient-to-r from-accent to-primary rounded-full flex items-center justify-center mx-auto mb-4">
             <Sparkles className="text-white" size={24} />
@@ -304,7 +304,10 @@ export default function Home() {
           </p>
           <Button 
             className="w-full bg-gradient-to-r from-primary to-secondary hover:from-primary/90 hover:to-secondary/90 text-white py-3 touch-target font-medium"
-            onClick={() => setLocation('/workouts?generate=true')}
+            onClick={() => {
+              console.log('Create with AI button clicked');
+              setLocation('/workouts?generate=true');
+            }}
           >
             Create with AI
           </Button>
