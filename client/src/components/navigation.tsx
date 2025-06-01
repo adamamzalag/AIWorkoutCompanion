@@ -1,6 +1,8 @@
 import { Link, useLocation } from 'wouter';
-import { Home, Dumbbell, TrendingUp, MessageCircle, Settings } from 'lucide-react';
+import { Home, Dumbbell, TrendingUp, MessageCircle, Settings, Loader2 } from 'lucide-react';
 import { useState, useEffect } from 'react';
+import { Button } from '@/components/ui/button';
+import { Popover, PopoverContent, PopoverTrigger } from '@/components/ui/popover';
 
 export function BottomNavigation() {
   const [location] = useLocation();

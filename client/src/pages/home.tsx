@@ -212,7 +212,10 @@ export default function Home() {
                   <Target className="text-muted-foreground" size={24} />
                 </div>
                 <p className="text-muted-foreground mb-4">No workout plans yet</p>
-                <Button className="bg-primary hover:bg-primary/90">
+                <Button 
+                  className="bg-primary hover:bg-primary/90"
+                  onClick={() => window.location.href = '/workouts'}
+                >
                   Create Your First Plan
                 </Button>
               </CardContent>
@@ -298,7 +301,10 @@ export default function Home() {
           <p className="text-muted-foreground mb-4">
             Let AI create a personalized workout plan based on your goals and progress
           </p>
-          <Button className="w-full bg-gradient-to-r from-primary to-secondary hover:from-primary/90 hover:to-secondary/90 text-white py-3 touch-target font-medium">
+          <Button 
+            className="w-full bg-gradient-to-r from-primary to-secondary hover:from-primary/90 hover:to-secondary/90 text-white py-3 touch-target font-medium"
+            onClick={() => window.location.href = '/workouts'}
+          >
             Create with AI
           </Button>
         </CardContent>

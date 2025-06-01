@@ -16,6 +16,7 @@ import { Settings, Save, Plus, X } from "lucide-react";
 import { useToast } from "@/hooks/use-toast";
 
 const profileSchema = z.object({
+  name: z.string().min(1, "Please enter your name"),
   fitnessLevel: z.enum(["beginner", "intermediate", "advanced"]),
   equipment: z.array(z.string()).min(1, "Please select at least one equipment option"),
   goals: z.string().min(1, "Please select a fitness goal"),
@@ -47,6 +48,7 @@ export default function ProfilePage() {
   const form = useForm<ProfileForm>({
     resolver: zodResolver(profileSchema),
     defaultValues: {
+      name: profile?.name || "",
       fitnessLevel: profile?.fitnessLevel as any || "beginner",
       equipment: profile?.equipment || [],
       goals: profile?.goals || "",
@@ -140,6 +142,25 @@ export default function ProfilePage() {
         <CardContent>
           <Form {...form}>
             <form onSubmit={form.handleSubmit(onSubmit)} className="space-y-6">
+              {/* Name */}
+              <FormField
+                control={form.control}
+                name="name"
+                render={({ field }) => (
+                  <FormItem>
+                    <FormLabel className="text-foreground">Name</FormLabel>
+                    <FormControl>
+                      <Input 
+                        {...field} 
+                        placeholder="Enter your name"
+                        className="glass-effect border-border/50"
+                      />
+                    </FormControl>
+                    <FormMessage />
+                  </FormItem>
+                )}
+              />
+
               {/* Fitness Level */}
               <FormField
                 control={form.control}
