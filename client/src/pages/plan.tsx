@@ -136,8 +136,8 @@ export default function PlanDetailPage() {
               disabled={updatePlanMutation.isPending}
               className={`glass-effect px-4 py-2 rounded-lg transition-all duration-200 shadow-lg hover:shadow-xl text-sm font-medium disabled:opacity-50 ${
                 plan.isActive 
-                  ? 'bg-red-600/90 hover:bg-red-500/90 border border-red-500/50 text-white'
-                  : 'bg-green-600/90 hover:bg-green-500/90 border border-green-500/50 text-white'
+                  ? 'bg-red-600/90 hover:bg-red-500/90 border-2 border-red-400 hover:border-red-300 text-white'
+                  : 'bg-green-600/90 hover:bg-green-500/90 border-2 border-green-400 hover:border-green-300 text-white'
               }`}
             >
               {updatePlanMutation.isPending ? 'Updating...' : (plan.isActive ? 'Set Inactive' : 'Set Active')}
@@ -261,7 +261,7 @@ export default function PlanDetailPage() {
                             <DialogTrigger asChild>
                               <Button
                                 variant="outline"
-                                className={`${plan?.isActive ? 'flex-1' : 'w-full'} h-9 glass-effect bg-slate-800/90 hover:bg-slate-700/90 border border-slate-600/50 hover:border-slate-500 text-slate-100 hover:text-white transition-all duration-200 shadow-lg hover:shadow-xl font-medium`}
+                                className={`${plan?.isActive ? 'flex-1' : 'w-full'} h-9 glass-effect bg-slate-800/90 hover:bg-slate-700/90 border-2 border-slate-400 hover:border-slate-300 text-slate-100 hover:text-white transition-all duration-200 shadow-lg hover:shadow-xl font-medium`}
                               >
                                 Quick View
                               </Button>
