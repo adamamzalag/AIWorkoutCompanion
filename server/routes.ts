@@ -408,20 +408,14 @@ export async function registerRoutes(app: Express): Promise<Server> {
           const existingExercises = await storage.getExercises();
           console.log(`📊 Checking against ${existingExercises.length} existing exercises for duplicates`);
           
-          // Map database fields to expected format
-          const mappedExercises = existingExercises.map(ex => ({
-            id: ex.id,
-            name: ex.name,
-            muscleGroups: ex.muscle_groups,
-            equipment: ex.equipment
-          }));
-          
           let exerciseId: number;
           let exerciseName: string;
           
-          // Simple name-based matching (avoiding AI calls due to JSON format issues)
-          const existingExercise = mappedExercises.find(ex => 
-            ex.name.toLowerCase() === aiExercise.name.toLowerCase()
+          // Check for existing exercise by both name and slug to avoid constraint violations
+          const targetSlug = slugify(aiExercise.name);
+          const existingExercise = existingExercises.find(ex => 
+            ex.name.toLowerCase() === aiExercise.name.toLowerCase() ||
+            ex.slug === targetSlug
           );
           
           if (existingExercise) {

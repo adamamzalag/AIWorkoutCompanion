@@ -175,10 +175,10 @@ WARM-UP (5-8 minutes total):
 - Examples: arm circles, leg swings, bodyweight squats, lunges, jumping jacks
 - Each movement should have specific instructions
 
-MAIN EXERCISES (varies by workout):
-- Include 3-5 exercises (vary the count based on workout intensity and type)
-- Strength workouts: 4-5 exercises
-- Flexibility/core workouts: 3-4 exercises
+MAIN EXERCISES (CRITICAL - Follow exact counts):
+- Strength workouts (Upper Body, Lower Body): EXACTLY 4-5 exercises
+- Core/Flexibility workouts: EXACTLY 3-4 exercises
+- NEVER use only 3 exercises for strength workouts
 - Each exercise needs sets, reps, weight guidance, rest time
 
 CARDIO (one specific exercise):
