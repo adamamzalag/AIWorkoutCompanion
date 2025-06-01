@@ -62,22 +62,28 @@ export function WorkoutPreviewModal({ workout, workoutIndex = 1, trigger }: Work
             </div>
           </div>
 
-          {/* Warm-Up */}
-          {warmUp.activities && warmUp.activities.length > 0 && (
+          {/* Description */}
+          {workout.description && (
+            <div className="glass-effect p-4 rounded-xl border border-border/20">
+              <h4 className="font-poppins font-semibold text-foreground mb-3 text-lg">Overview</h4>
+              <p className="text-muted-foreground leading-relaxed">{workout.description}</p>
+            </div>
+          )}
+
+          {/* Warmup */}
+          {warmUp && warmUp.activities && warmUp.activities.length > 0 && (
             <div className="glass-effect p-5 rounded-xl border border-border/20">
-              <h4 className="font-poppins font-semibold text-foreground mb-4 text-lg">Warm-Up</h4>
+              <h4 className="font-poppins font-semibold text-foreground mb-4 text-lg flex items-center space-x-3">
+                <span className="w-3 h-3 bg-gradient-to-r from-orange-400 to-orange-600 rounded-full shadow-sm"></span>
+                <span>Warm-up ({warmUp.durationMinutes} min)</span>
+              </h4>
               <div className="space-y-3">
                 {warmUp.activities.map((activity: any, idx: number) => (
-                  <div key={idx} className="p-3 bg-muted/10 rounded-lg border border-border/10">
-                    <div className="flex justify-between items-start">
-                      <span className="font-medium text-foreground">{activity.name}</span>
-                      <span className="text-sm text-muted-foreground">{warmUp.durationMinutes} min</span>
+                  <div key={idx} className="glass-effect gradient-border p-3 rounded-lg">
+                    <div className="flex items-center justify-between">
+                      <span className="font-medium text-foreground">{activity.exercise}</span>
+                      <span className="text-sm text-primary font-medium">{activity.durationSeconds}s</span>
                     </div>
-                    {warmUp.activities.length > 1 && (
-                      <div className="text-sm text-muted-foreground mt-1">
-                        Part of {warmUp.activities.length}-exercise warm-up sequence
-                      </div>
-                    )}
                   </div>
                 ))}
               </div>
@@ -87,64 +93,74 @@ export function WorkoutPreviewModal({ workout, workoutIndex = 1, trigger }: Work
           {/* Main Exercises */}
           {exercises.length > 0 && (
             <div className="glass-effect p-5 rounded-xl border border-border/20">
-              <h4 className="font-poppins font-semibold text-foreground mb-4 text-lg">Main Exercises</h4>
+              <h4 className="font-poppins font-semibold text-foreground mb-4 text-lg flex items-center space-x-3">
+                <span className="w-3 h-3 bg-gradient-to-r from-blue-400 to-blue-600 rounded-full shadow-sm"></span>
+                <span>Main Workout ({exercises.length} exercises)</span>
+              </h4>
               <div className="space-y-4">
                 {exercises.map((exercise: any, idx: number) => (
-                  <div key={idx} className="p-4 bg-muted/10 rounded-lg border border-border/10">
-                    <div className="flex justify-between items-start mb-3">
-                      <h5 className="font-medium text-foreground">{exercise.name}</h5>
-                      {exercise.cardio && (
-                        <span className="px-2 py-1 bg-accent/10 text-accent text-xs font-medium rounded-full border border-accent/20">
-                          Cardio
-                        </span>
+                  <div key={idx} className="glass-effect gradient-border p-4 rounded-lg hover:bg-card/50 transition-colors">
+                    <div className="space-y-3">
+                      <h5 className="font-poppins font-semibold text-foreground text-base">{exercise.name}</h5>
+                      {exercise.instructions && exercise.instructions.length > 0 && (
+                        <p className="text-sm text-muted-foreground leading-relaxed">{exercise.instructions[0]}</p>
                       )}
-                    </div>
-                    <div className="grid grid-cols-2 gap-4 text-sm text-muted-foreground mb-3">
-                      <div>Sets: {exercise.sets}</div>
-                      <div>Reps: {exercise.reps}</div>
-                      {exercise.weight && <div>Weight: {exercise.weight}</div>}
-                      {exercise.restTime && <div>Rest: {exercise.restTime}</div>}
-                    </div>
-                    {exercise.instructions && exercise.instructions.length > 0 && (
-                      <div className="text-sm text-muted-foreground">
-                        <span className="font-medium">Instructions:</span> {exercise.instructions[0]}
+                      <div className="flex flex-wrap gap-2">
+                        {exercise.sets && (
+                          <span className="px-3 py-1 bg-gradient-to-r from-blue-500/10 to-blue-600/10 text-blue-600 dark:text-blue-400 rounded-full text-xs font-medium border border-blue-200 dark:border-blue-700">
+                            {exercise.sets} sets
+                          </span>
+                        )}
+                        {exercise.reps && (
+                          <span className="px-3 py-1 bg-gradient-to-r from-green-500/10 to-green-600/10 text-green-600 dark:text-green-400 rounded-full text-xs font-medium border border-green-200 dark:border-green-700">
+                            {exercise.reps} reps
+                          </span>
+                        )}
+                        {exercise.restTime && (
+                          <span className="px-3 py-1 bg-gradient-to-r from-purple-500/10 to-purple-600/10 text-purple-600 dark:text-purple-400 rounded-full text-xs font-medium border border-purple-200 dark:border-purple-700">
+                            {exercise.restTime} rest
+                          </span>
+                        )}
                       </div>
-                    )}
+                    </div>
                   </div>
                 ))}
               </div>
             </div>
           )}
 
-          {/* Cool-Down */}
-          {coolDown.activities && coolDown.activities.length > 0 && (
+          {/* Cooldown */}
+          {coolDown && coolDown.activities && coolDown.activities.length > 0 && (
             <div className="glass-effect p-5 rounded-xl border border-border/20">
-              <h4 className="font-poppins font-semibold text-foreground mb-4 text-lg">Cool-Down</h4>
+              <h4 className="font-poppins font-semibold text-foreground mb-4 text-lg flex items-center space-x-3">
+                <span className="w-3 h-3 bg-gradient-to-r from-green-400 to-green-600 rounded-full shadow-sm"></span>
+                <span>Cool-down ({coolDown.durationMinutes} min)</span>
+              </h4>
               <div className="space-y-3">
                 {coolDown.activities.map((activity: any, idx: number) => (
-                  <div key={idx} className="p-3 bg-muted/10 rounded-lg border border-border/10">
-                    <div className="flex justify-between items-start">
-                      <span className="font-medium text-foreground">{activity.name}</span>
-                      <span className="text-sm text-muted-foreground">{coolDown.durationMinutes} min</span>
+                  <div key={idx} className="glass-effect gradient-border p-3 rounded-lg">
+                    <div className="flex items-center justify-between">
+                      <span className="font-medium text-foreground">{activity.exercise}</span>
+                      <span className="text-sm text-primary font-medium">{activity.durationSeconds}s</span>
                     </div>
-                    {coolDown.activities.length > 1 && (
-                      <div className="text-sm text-muted-foreground mt-1">
-                        Part of {coolDown.activities.length}-exercise cool-down sequence
-                      </div>
-                    )}
                   </div>
                 ))}
               </div>
             </div>
           )}
 
-          {/* Workout Notes */}
+          {/* Coach Notes */}
           {workout.notes && (
             <div className="glass-effect p-5 rounded-xl border border-border/20">
-              <h4 className="font-poppins font-semibold text-foreground mb-3 text-lg">Workout Notes</h4>
-              <p className="text-sm text-muted-foreground leading-relaxed">
-                {typeof workout.notes === 'string' ? workout.notes : JSON.stringify(workout.notes)}
-              </p>
+              <h4 className="font-poppins font-semibold text-foreground mb-4 text-lg flex items-center space-x-3">
+                <span className="w-3 h-3 bg-gradient-to-r from-yellow-400 to-yellow-600 rounded-full shadow-sm"></span>
+                <span>Coach Notes</span>
+              </h4>
+              <div className="glass-effect gradient-border p-4 rounded-lg bg-gradient-to-r from-yellow-50/50 to-amber-50/50 dark:from-yellow-900/10 dark:to-amber-900/10">
+                <p className="text-muted-foreground leading-relaxed italic">
+                  {typeof workout.notes === 'string' ? workout.notes : JSON.stringify(workout.notes)}
+                </p>
+              </div>
             </div>
           )}
 
