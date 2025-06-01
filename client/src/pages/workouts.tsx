@@ -549,7 +549,7 @@ export default function WorkoutsPage() {
                           </div>
                         </div>
                         
-                        <Link href="/workout">
+                        <Link href={`/workout?id=${workout.id}`}>
                           <Button size="sm" className="bg-accent hover:bg-accent/90 text-accent-foreground">
                             <Play size={14} />
                           </Button>

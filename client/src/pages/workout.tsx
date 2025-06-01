@@ -8,18 +8,20 @@ import { ChevronLeft, ChevronRight, X, Pause } from 'lucide-react';
 import type { Exercise, Workout, User } from '@shared/schema';
 import type { ExerciseLog } from '@/lib/types';
 
-// Mock data - in a real app this would come from route params
-const MOCK_WORKOUT_ID = 1;
-
 export default function WorkoutPage() {
   const [showExitDialog, setShowExitDialog] = useState(false);
+
+  // Get workout ID from URL parameters
+  const urlParams = new URLSearchParams(window.location.search);
+  const workoutId = parseInt(urlParams.get('id') || '1');
 
   const { data: userProfile } = useQuery<User>({
     queryKey: ["/api/auth/user"],
   });
 
   const { data: workout } = useQuery<Workout>({
-    queryKey: ['/api/workout', MOCK_WORKOUT_ID],
+    queryKey: ['/api/workout', workoutId],
+    enabled: !!workoutId,
   });
 
   const { data: exercises } = useQuery<Exercise[]>({
@@ -42,19 +44,20 @@ export default function WorkoutPage() {
     isUpdating,
     isGettingTip,
     coachingTip
-  } = useWorkout(MOCK_WORKOUT_ID, userProfile?.id || 0);
+  } = useWorkout(workoutId, userProfile?.id || 0);
 
-  // Mock exercise logs based on available exercises
-  const exerciseLogs: ExerciseLog[] = exercises?.slice(0, 8).map((exercise, index) => ({
-    exerciseId: exercise.id,
-    name: exercise.name,
-    sets: [
-      { reps: 12, weight: 15, completed: false },
-      { reps: 12, weight: 15, completed: false },
-      { reps: 12, weight: 15, completed: false }
-    ],
-    restTime: '60 seconds'
-  })) || [];
+  // Create exercise logs from the workout's exercises
+  const exerciseLogs: ExerciseLog[] = workout?.exercises ? 
+    (typeof workout.exercises === 'string' ? JSON.parse(workout.exercises) : workout.exercises).map((exercise: any) => ({
+      exerciseId: exercise.exerciseId,
+      name: exercise.name,
+      sets: Array.from({ length: exercise.sets }, () => ({
+        reps: parseInt(exercise.reps.split('-')[0]) || 12, // Use lower bound of rep range
+        weight: exercise.weight ? 0 : undefined, // User will input actual weight
+        completed: false
+      })),
+      restTime: exercise.restTime || '60 seconds'
+    })) : [];
 
   const handleStartWorkout = () => {
     startWorkout(exerciseLogs);
@@ -88,6 +91,10 @@ export default function WorkoutPage() {
     window.location.href = '/';
   };
 
+  // Get current exercise details from the workout's exercise data
+  const currentExerciseDetails = workout?.exercises && currentExercise ? 
+    (typeof workout.exercises === 'string' ? JSON.parse(workout.exercises) : workout.exercises)[currentExerciseIndex] : null;
+  
   const currentExerciseData = exercises?.find(ex => ex.id === currentExercise?.exerciseId);
   const currentSet = currentExercise?.sets.findIndex(set => !set.completed) || 0;
 
