@@ -414,15 +414,13 @@ export default function WorkoutsPage() {
                   {activePlans.map((plan) => (
                     <Card key={plan.id} className="glass-effect hover:bg-card/50 transition-colors cursor-pointer border-accent/30">
                       <CardContent className="p-4">
-                        <div className="flex items-start justify-between mb-3">
-                          <div className="flex-1">
-                            <div className="flex items-center space-x-2 mb-1">
-                              <h3 className="font-poppins font-semibold text-foreground">{plan.title}</h3>
-                              <Badge className="bg-accent text-accent-foreground text-xs">Active</Badge>
-                            </div>
+                        <div className="mb-3">
+                          <div className="flex items-center space-x-2 mb-1">
+                            <h3 className="font-poppins font-semibold text-foreground">{plan.title}</h3>
                             <Badge className={`text-xs ${getDifficultyColor(plan.difficulty)}`}>
                               {plan.difficulty}
                             </Badge>
+                            <Badge className="bg-accent text-accent-foreground text-xs">Active</Badge>
                           </div>
                         </div>
                         
@@ -445,29 +443,29 @@ export default function WorkoutsPage() {
                           </div>
                         </div>
                         
-                        <div className="flex items-center justify-between">
+                        <div className="mb-3">
                           <div className="flex flex-wrap gap-1">
                             {plan.equipment.slice(0, 3).map((eq) => (
-                              <span key={eq} className="px-2 py-1 text-xs bg-muted/50 text-muted-foreground rounded-md border border-border/30">
+                              <span key={eq} className="px-2 py-1 text-xs bg-blue-50 dark:bg-blue-950/30 text-blue-700 dark:text-blue-300 rounded border border-blue-200 dark:border-blue-800">
                                 {eq.replace('_', ' ')}
                               </span>
                             ))}
                             {plan.equipment.length > 3 && (
-                              <span className="px-2 py-1 text-xs bg-muted/50 text-muted-foreground rounded-md border border-border/30">
+                              <span className="px-2 py-1 text-xs bg-blue-50 dark:bg-blue-950/30 text-blue-700 dark:text-blue-300 rounded border border-blue-200 dark:border-blue-800">
                                 +{plan.equipment.length - 3}
                               </span>
                             )}
                           </div>
-                          
-                          <Link href={`/plan/${plan.id}`}>
-                            <Button
-                              size="sm"
-                              className="bg-primary hover:bg-primary/90 text-primary-foreground"
-                            >
-                              View Plan
-                            </Button>
-                          </Link>
                         </div>
+                        
+                        <Link href={`/plan/${plan.id}`} className="block">
+                          <Button
+                            size="sm"
+                            className="w-full bg-primary hover:bg-primary/90 text-primary-foreground"
+                          >
+                            View Plan
+                          </Button>
+                        </Link>
                       </CardContent>
                     </Card>
                   ))}
@@ -486,11 +484,9 @@ export default function WorkoutsPage() {
                   {inactivePlans.map((plan) => (
                     <Card key={plan.id} className="glass-effect hover:bg-card/50 transition-colors cursor-pointer opacity-75">
                       <CardContent className="p-4">
-                        <div className="flex items-start justify-between mb-3">
-                          <div className="flex-1">
-                            <div className="flex items-center space-x-2 mb-1">
-                              <h3 className="font-poppins font-semibold text-foreground">{plan.title}</h3>
-                            </div>
+                        <div className="mb-3">
+                          <div className="flex items-center space-x-2 mb-1">
+                            <h3 className="font-poppins font-semibold text-foreground">{plan.title}</h3>
                             <Badge className={`text-xs ${getDifficultyColor(plan.difficulty)}`}>
                               {plan.difficulty}
                             </Badge>
@@ -516,30 +512,30 @@ export default function WorkoutsPage() {
                           </div>
                         </div>
                         
-                        <div className="flex items-center justify-between">
+                        <div className="mb-3">
                           <div className="flex flex-wrap gap-1">
                             {plan.equipment.slice(0, 3).map((eq) => (
-                              <span key={eq} className="px-2 py-1 text-xs bg-muted/50 text-muted-foreground rounded-md border border-border/30">
+                              <span key={eq} className="px-2 py-1 text-xs bg-blue-50 dark:bg-blue-950/30 text-blue-700 dark:text-blue-300 rounded border border-blue-200 dark:border-blue-800">
                                 {eq.replace('_', ' ')}
                               </span>
                             ))}
                             {plan.equipment.length > 3 && (
-                              <span className="px-2 py-1 text-xs bg-muted/50 text-muted-foreground rounded-md border border-border/30">
+                              <span className="px-2 py-1 text-xs bg-blue-50 dark:bg-blue-950/30 text-blue-700 dark:text-blue-300 rounded border border-blue-200 dark:border-blue-800">
                                 +{plan.equipment.length - 3}
                               </span>
                             )}
                           </div>
-                          
-                          <Link href={`/plan/${plan.id}`}>
-                            <Button
-                              variant="outline"
-                              size="sm"
-                              className="glass-effect border-border/50"
-                            >
-                              View Plan
-                            </Button>
-                          </Link>
                         </div>
+                        
+                        <Link href={`/plan/${plan.id}`} className="block">
+                          <Button
+                            variant="outline"
+                            size="sm"
+                            className="w-full glass-effect border-border/50"
+                          >
+                            View Plan
+                          </Button>
+                        </Link>
                       </CardContent>
                     </Card>
                   ))}

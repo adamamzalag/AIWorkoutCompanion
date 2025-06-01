@@ -103,7 +103,7 @@ export default function PlanDetailPage() {
           
           <div className="flex flex-wrap gap-2">
             {plan.equipment.map((eq) => (
-              <span key={eq} className="px-2 py-1 text-xs bg-muted/50 text-muted-foreground rounded-md border border-border/30">
+              <span key={eq} className="px-2 py-1 text-xs bg-blue-50 dark:bg-blue-950/30 text-blue-700 dark:text-blue-300 rounded border border-blue-200 dark:border-blue-800">
                 {eq.replace('_', ' ')}
               </span>
             ))}
@@ -147,17 +147,17 @@ export default function PlanDetailPage() {
                 const muscleGroups = [...new Set(exercises.flatMap((ex: any) => ex.muscleGroups || []))].slice(0, 3);
                 
                 return (
-                  <Card key={workout.id} className="glass-effect hover:bg-card/50 transition-colors relative">
+                  <Card key={workout.id} className="glass-effect hover:bg-card/50 transition-colors">
                     <CardContent className="p-4">
-                      {/* Small workout number in top-left */}
-                      <div className="absolute top-3 left-3 w-6 h-6 bg-gradient-to-r from-accent to-primary rounded-md flex items-center justify-center text-white text-xs font-semibold">
-                        {index + 1}
-                      </div>
-                      
-                      <div className="pl-8 space-y-3">
-                        {/* Workout title and description */}
+                      <div className="w-full space-y-3">
+                        {/* Workout title with inline number */}
                         <div>
-                          <h4 className="font-semibold text-foreground mb-1">{workout.title}</h4>
+                          <h4 className="font-semibold text-foreground mb-1">
+                            <span className="inline-flex items-center justify-center w-6 h-6 bg-gradient-to-r from-accent to-primary rounded-md text-white text-xs font-semibold mr-2">
+                              {index + 1}
+                            </span>
+                            {workout.title}
+                          </h4>
                           {workout.description && (
                             <p className="text-sm text-muted-foreground line-clamp-2">
                               {workout.description}
@@ -180,7 +180,7 @@ export default function PlanDetailPage() {
                         <div className="flex items-center justify-between">
                           <div className="flex flex-wrap gap-1">
                             {muscleGroups.map((muscle) => (
-                              <span key={muscle} className="px-2 py-1 text-xs bg-muted/50 text-muted-foreground rounded-md border border-border/30">
+                              <span key={muscle} className="px-2 py-1 text-xs bg-blue-50 dark:bg-blue-950/30 text-blue-700 dark:text-blue-300 rounded border border-blue-200 dark:border-blue-800">
                                 {muscle}
                               </span>
                             ))}
@@ -202,7 +202,7 @@ export default function PlanDetailPage() {
                           <Button
                             variant="outline"
                             size="sm"
-                            className={`${plan?.isActive ? 'flex-1' : 'w-full'} glass-effect border-border/50`}
+                            className={`${plan?.isActive ? 'flex-1' : 'w-full'} border-2 border-border hover:border-primary hover:bg-primary/5`}
                             onClick={() => {/* TODO: Open quick view modal */}}
                           >
                             Quick View
