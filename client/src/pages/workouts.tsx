@@ -32,9 +32,7 @@ import type { WorkoutPlan, Workout, User } from '@shared/schema';
 import type { WorkoutPlanRequest } from '../../../server/openai';
 import { WorkoutCard } from '@/components/workout-card';
 import { GenerationProgress } from '@/components/generation-progress';
-
-// Mock user ID
-const MOCK_USER_ID = 1;
+import { useAuth } from '@/hooks/useAuth';
 
 const generatePlanSchema = z.object({
   duration: z.number().min(1, "Duration must be at least 1 week").max(52, "Duration cannot exceed 52 weeks"),
@@ -59,9 +57,11 @@ export default function WorkoutsPage() {
   
   const { toast } = useToast();
   const queryClient = useQueryClient();
+  const { user } = useAuth();
 
   const { data: workoutPlans, isLoading: plansLoading } = useQuery<WorkoutPlan[]>({
-    queryKey: ['/api/workout-plans', MOCK_USER_ID],
+    queryKey: ['/api/workout-plans', user?.id],
+    enabled: !!user?.id,
   });
 
   const { data: selectedPlanWorkouts, isLoading: workoutsLoading } = useQuery<Workout[]>({
@@ -84,7 +84,7 @@ export default function WorkoutsPage() {
         setShowGenerateDialog(false); // Close the form dialog
         setGenerationState({ isGenerating: true, operationId: data.operationId }); // Show progress dialog
       } else {
-        queryClient.invalidateQueries({ queryKey: ['/api/workout-plans', MOCK_USER_ID] });
+        queryClient.invalidateQueries({ queryKey: ['/api/workout-plans', user?.id] });
         setShowGenerateDialog(false);
         toast({
           title: "Workout Plan Generated!",
