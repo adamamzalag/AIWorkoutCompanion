@@ -1,6 +1,6 @@
 import { useState, useEffect } from 'react';
 import { useQuery } from '@tanstack/react-query';
-import { useLocation } from 'wouter';
+import { useLocation, useRoute } from 'wouter';
 import { Button } from '@/components/ui/button';
 import { Card, CardContent } from '@/components/ui/card';
 import { ExerciseCard } from '@/components/exercise-card';
@@ -13,9 +13,11 @@ export default function WorkoutPage() {
   const [showExitDialog, setShowExitDialog] = useState(false);
   const [, setLocation] = useLocation();
 
-  // Get workout ID from URL parameters
+  // Get workout ID from URL parameters using Wouter
   const urlParams = new URLSearchParams(window.location.search);
-  const workoutId = parseInt(urlParams.get('id') || '1');
+  const workoutId = parseInt(urlParams.get('id') || '51'); // Use a default workout ID
+
+  console.log('Workout ID from URL:', workoutId, 'Full URL:', window.location.href);
 
   const { data: userProfile } = useQuery<User>({
     queryKey: ["/api/auth/user"],
@@ -25,6 +27,8 @@ export default function WorkoutPage() {
     queryKey: ['/api/workout', workoutId],
     enabled: !!workoutId,
   });
+
+  console.log('Workout data:', workout);
 
   const { data: exercises } = useQuery<Exercise[]>({
     queryKey: ['/api/exercises'],
