@@ -1,9 +1,9 @@
 import { useState } from 'react';
 import { Card, CardContent } from '@/components/ui/card';
 import { Button } from '@/components/ui/button';
-import { Dialog, DialogContent, DialogHeader, DialogTitle, DialogTrigger } from '@/components/ui/dialog';
-import { Play, Eye, Clock, Target, Dumbbell } from 'lucide-react';
+import { Play, Eye, Clock, Target } from 'lucide-react';
 import { ProgressRing } from './progress-ring';
+import { WorkoutPreviewModal } from './workout-preview-modal';
 import type { WorkoutPlan, Workout } from '@shared/schema';
 
 interface WorkoutCardProps {
