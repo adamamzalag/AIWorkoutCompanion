@@ -1,6 +1,6 @@
 import { useState } from 'react';
 import { useQuery } from '@tanstack/react-query';
-import { Link } from 'wouter';
+import { Link, useLocation } from 'wouter';
 import { Card, CardContent } from '@/components/ui/card';
 import { Button } from '@/components/ui/button';
 import { Skeleton } from '@/components/ui/skeleton';
@@ -12,6 +12,7 @@ import { useAuth } from '@/hooks/useAuth';
 
 export default function Home() {
   const { user } = useAuth();
+  const [, setLocation] = useLocation();
   
   const { data: userProfile } = useQuery<User>({
     queryKey: ["/api/profile"],
@@ -214,7 +215,7 @@ export default function Home() {
                 <p className="text-muted-foreground mb-4">No workout plans yet</p>
                 <Button 
                   className="bg-primary hover:bg-primary/90"
-                  onClick={() => window.location.href = '/workouts'}
+                  onClick={() => setLocation('/workouts?generate=true')}
                 >
                   Create Your First Plan
                 </Button>
@@ -303,7 +304,7 @@ export default function Home() {
           </p>
           <Button 
             className="w-full bg-gradient-to-r from-primary to-secondary hover:from-primary/90 hover:to-secondary/90 text-white py-3 touch-target font-medium"
-            onClick={() => window.location.href = '/workouts'}
+            onClick={() => setLocation('/workouts?generate=true')}
           >
             Create with AI
           </Button>

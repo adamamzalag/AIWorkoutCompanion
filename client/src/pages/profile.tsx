@@ -55,6 +55,7 @@ export default function ProfilePage() {
       notes: profile?.notes || "",
     },
     values: profile ? {
+      name: profile.name || "",
       fitnessLevel: profile.fitnessLevel as any || "beginner",
       equipment: profile.equipment || [],
       goals: profile.goals || "",
