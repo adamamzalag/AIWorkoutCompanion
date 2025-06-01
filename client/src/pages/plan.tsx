@@ -204,12 +204,12 @@ export default function PlanDetailPage() {
                             <DialogTrigger asChild>
                               <Button
                                 variant="outline"
-                                className={`${plan?.isActive ? 'flex-1' : 'w-full'} h-9 border-2 border-border hover:border-primary hover:bg-primary/10`}
+                                className={`${plan?.isActive ? 'flex-1' : 'w-full'} h-9 border-2 border-primary/20 bg-background hover:border-primary hover:bg-primary/10 transition-all duration-200`}
                               >
                                 Quick View
                               </Button>
                             </DialogTrigger>
-                            <DialogContent className="max-w-2xl max-h-[80vh] overflow-y-auto">
+                            <DialogContent className="max-w-3xl max-h-[85vh] overflow-y-auto">
                               <DialogHeader>
                                 <DialogTitle className="flex items-center space-x-2">
                                   <span className="inline-flex items-center justify-center w-6 h-6 bg-gradient-to-r from-accent to-primary rounded-md text-white text-xs font-semibold">
@@ -219,9 +219,9 @@ export default function PlanDetailPage() {
                                 </DialogTitle>
                               </DialogHeader>
                               
-                              <div className="space-y-4">
+                              <div className="space-y-6">
                                 {/* Workout Overview */}
-                                <div className="flex items-center space-x-4 text-sm text-muted-foreground">
+                                <div className="flex items-center space-x-6 text-sm text-muted-foreground bg-muted/30 p-3 rounded-lg">
                                   <div className="flex items-center space-x-1">
                                     <Clock size={16} />
                                     <span>{workout.estimatedDuration} minutes</span>
@@ -234,47 +234,131 @@ export default function PlanDetailPage() {
 
                                 {/* Description */}
                                 {workout.description && (
-                                  <div>
-                                    <h4 className="font-medium text-foreground mb-2">Description</h4>
-                                    <p className="text-sm text-muted-foreground">{workout.description}</p>
+                                  <div className="animate-in slide-in-from-left-2 duration-300">
+                                    <h4 className="font-semibold text-foreground mb-2 text-lg">Overview</h4>
+                                    <p className="text-sm text-muted-foreground leading-relaxed">{workout.description}</p>
                                   </div>
                                 )}
 
-                                {/* Muscle Groups */}
-                                {muscleGroups.length > 0 && (
-                                  <div>
-                                    <h4 className="font-medium text-foreground mb-2">Target Muscle Groups</h4>
-                                    <div className="flex flex-wrap gap-1">
-                                      {muscleGroups.map((muscle) => (
-                                        <span key={muscle} className="px-2 py-1 text-xs bg-blue-100 dark:bg-blue-900/30 text-blue-800 dark:text-blue-200 rounded border border-blue-300 dark:border-blue-700">
-                                          {muscle}
-                                        </span>
+                                {/* Warmup */}
+                                {workout.warmUp && workout.warmUp.activities && workout.warmUp.activities.length > 0 && (
+                                  <div className="animate-in slide-in-from-left-2 duration-300 delay-100">
+                                    <h4 className="font-semibold text-foreground mb-3 text-lg flex items-center space-x-2">
+                                      <span className="w-2 h-2 bg-orange-500 rounded-full"></span>
+                                      <span>Warm-up ({workout.warmUp.durationMinutes} min)</span>
+                                    </h4>
+                                    <div className="space-y-2 ml-4">
+                                      {workout.warmUp.activities.map((activity: any, idx: number) => (
+                                        <div key={idx} className="flex items-center justify-between p-2 bg-orange-50 dark:bg-orange-900/20 rounded border border-orange-200 dark:border-orange-800">
+                                          <span className="text-sm font-medium">{activity.exercise}</span>
+                                          <span className="text-xs text-muted-foreground">{activity.durationSeconds}s</span>
+                                        </div>
                                       ))}
                                     </div>
                                   </div>
                                 )}
 
-                                {/* Exercises */}
+                                {/* Main Exercises */}
                                 {exercises.length > 0 && (
-                                  <div>
-                                    <h4 className="font-medium text-foreground mb-3">Exercises ({exercises.length})</h4>
-                                    <div className="space-y-3">
+                                  <div className="animate-in slide-in-from-left-2 duration-300 delay-200">
+                                    <h4 className="font-semibold text-foreground mb-3 text-lg flex items-center space-x-2">
+                                      <span className="w-2 h-2 bg-blue-500 rounded-full"></span>
+                                      <span>Main Workout ({exercises.length} exercises)</span>
+                                    </h4>
+                                    <div className="space-y-3 ml-4">
                                       {exercises.map((exercise: any, idx: number) => (
-                                        <div key={idx} className="p-3 bg-muted/30 rounded-lg border border-border">
+                                        <div key={idx} className="p-4 bg-blue-50 dark:bg-blue-900/20 rounded-lg border border-blue-200 dark:border-blue-800">
                                           <div className="flex items-start justify-between">
                                             <div className="flex-1">
-                                              <h5 className="font-medium text-foreground">{exercise.name}</h5>
+                                              <h5 className="font-semibold text-foreground text-base">{exercise.name}</h5>
                                               {exercise.instructions && exercise.instructions.length > 0 && (
-                                                <p className="text-sm text-muted-foreground mt-1">{exercise.instructions[0]}</p>
+                                                <p className="text-sm text-muted-foreground mt-2 leading-relaxed">{exercise.instructions[0]}</p>
                                               )}
-                                              <div className="flex items-center space-x-4 mt-2 text-xs text-muted-foreground">
-                                                {exercise.sets && <span>{exercise.sets} sets</span>}
-                                                {exercise.reps && <span>{exercise.reps} reps</span>}
-                                                {exercise.restTime && <span>{exercise.restTime} rest</span>}
+                                              <div className="flex items-center space-x-4 mt-3 text-sm">
+                                                {exercise.sets && (
+                                                  <span className="px-2 py-1 bg-blue-100 dark:bg-blue-800 text-blue-800 dark:text-blue-200 rounded text-xs font-medium">
+                                                    {exercise.sets} sets
+                                                  </span>
+                                                )}
+                                                {exercise.reps && (
+                                                  <span className="px-2 py-1 bg-green-100 dark:bg-green-800 text-green-800 dark:text-green-200 rounded text-xs font-medium">
+                                                    {exercise.reps} reps
+                                                  </span>
+                                                )}
+                                                {exercise.restTime && (
+                                                  <span className="px-2 py-1 bg-purple-100 dark:bg-purple-800 text-purple-800 dark:text-purple-200 rounded text-xs font-medium">
+                                                    {exercise.restTime} rest
+                                                  </span>
+                                                )}
                                               </div>
                                             </div>
                                           </div>
                                         </div>
+                                      ))}
+                                    </div>
+                                  </div>
+                                )}
+
+                                {/* Cardio Section */}
+                                {workout.cardio && workout.cardio.length > 0 && (
+                                  <div className="animate-in slide-in-from-left-2 duration-300 delay-300">
+                                    <h4 className="font-semibold text-foreground mb-3 text-lg flex items-center space-x-2">
+                                      <span className="w-2 h-2 bg-red-500 rounded-full"></span>
+                                      <span>Cardio</span>
+                                    </h4>
+                                    <div className="space-y-2 ml-4">
+                                      {workout.cardio.map((cardio: any, idx: number) => (
+                                        <div key={idx} className="p-3 bg-red-50 dark:bg-red-900/20 rounded border border-red-200 dark:border-red-800">
+                                          <div className="flex items-center justify-between">
+                                            <span className="font-medium">{cardio.exercise}</span>
+                                            <span className="text-sm text-muted-foreground">{cardio.duration}</span>
+                                          </div>
+                                        </div>
+                                      ))}
+                                    </div>
+                                  </div>
+                                )}
+
+                                {/* Cooldown */}
+                                {workout.coolDown && workout.coolDown.activities && workout.coolDown.activities.length > 0 && (
+                                  <div className="animate-in slide-in-from-left-2 duration-300 delay-400">
+                                    <h4 className="font-semibold text-foreground mb-3 text-lg flex items-center space-x-2">
+                                      <span className="w-2 h-2 bg-green-500 rounded-full"></span>
+                                      <span>Cool-down ({workout.coolDown.durationMinutes} min)</span>
+                                    </h4>
+                                    <div className="space-y-2 ml-4">
+                                      {workout.coolDown.activities.map((activity: any, idx: number) => (
+                                        <div key={idx} className="flex items-center justify-between p-2 bg-green-50 dark:bg-green-900/20 rounded border border-green-200 dark:border-green-800">
+                                          <span className="text-sm font-medium">{activity.exercise}</span>
+                                          <span className="text-xs text-muted-foreground">{activity.durationSeconds}s</span>
+                                        </div>
+                                      ))}
+                                    </div>
+                                  </div>
+                                )}
+
+                                {/* Coach Notes */}
+                                {workout.notes && (
+                                  <div className="animate-in slide-in-from-left-2 duration-300 delay-500">
+                                    <h4 className="font-semibold text-foreground mb-2 text-lg flex items-center space-x-2">
+                                      <span className="w-2 h-2 bg-yellow-500 rounded-full"></span>
+                                      <span>Coach Notes</span>
+                                    </h4>
+                                    <div className="p-3 bg-yellow-50 dark:bg-yellow-900/20 rounded border border-yellow-200 dark:border-yellow-800 ml-4">
+                                      <p className="text-sm text-muted-foreground leading-relaxed italic">{workout.notes}</p>
+                                    </div>
+                                  </div>
+                                )}
+
+                                {/* Muscle Groups */}
+                                {muscleGroups.length > 0 && (
+                                  <div className="animate-in slide-in-from-left-2 duration-300 delay-600">
+                                    <h4 className="font-semibold text-foreground mb-2 text-lg">Target Muscle Groups</h4>
+                                    <div className="flex flex-wrap gap-2 ml-4">
+                                      {muscleGroups.map((muscle) => (
+                                        <span key={muscle} className="px-3 py-1 text-sm bg-blue-100 dark:bg-blue-900/30 text-blue-800 dark:text-blue-200 rounded-full border border-blue-300 dark:border-blue-700 font-medium">
+                                          {muscle}
+                                        </span>
                                       ))}
                                     </div>
                                   </div>
