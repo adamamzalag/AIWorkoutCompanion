@@ -181,7 +181,7 @@ export default function PlanDetailPage() {
                         <div className="flex items-center justify-between">
                           <div className="flex flex-wrap gap-1">
                             {muscleGroups.map((muscle) => (
-                              <span key={muscle} className="px-2 py-1 text-xs bg-muted text-muted-foreground rounded border border-border">
+                              <span key={muscle} className="px-2 py-1 text-xs bg-blue-100 dark:bg-blue-900/30 text-blue-800 dark:text-blue-200 rounded border border-blue-300 dark:border-blue-700">
                                 {muscle}
                               </span>
                             ))}

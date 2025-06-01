@@ -446,12 +446,12 @@ export default function WorkoutsPage() {
                         <div className="mb-3">
                           <div className="flex flex-wrap gap-1">
                             {plan.equipment.slice(0, 3).map((eq) => (
-                              <span key={eq} className="px-2 py-1 text-xs bg-muted text-muted-foreground rounded border border-border">
+                              <span key={eq} className="px-2 py-1 text-xs bg-blue-100 dark:bg-blue-900/30 text-blue-800 dark:text-blue-200 rounded border border-blue-300 dark:border-blue-700">
                                 {eq.replace('_', ' ')}
                               </span>
                             ))}
                             {plan.equipment.length > 3 && (
-                              <span className="px-2 py-1 text-xs bg-muted text-muted-foreground rounded border border-border">
+                              <span className="px-2 py-1 text-xs bg-blue-100 dark:bg-blue-900/30 text-blue-800 dark:text-blue-200 rounded border border-blue-300 dark:border-blue-700">
                                 +{plan.equipment.length - 3}
                               </span>
                             )}
@@ -515,12 +515,12 @@ export default function WorkoutsPage() {
                         <div className="mb-3">
                           <div className="flex flex-wrap gap-1">
                             {plan.equipment.slice(0, 3).map((eq) => (
-                              <span key={eq} className="px-2 py-1 text-xs bg-muted text-muted-foreground rounded border border-border">
+                              <span key={eq} className="px-2 py-1 text-xs bg-blue-100 dark:bg-blue-900/30 text-blue-800 dark:text-blue-200 rounded border border-blue-300 dark:border-blue-700">
                                 {eq.replace('_', ' ')}
                               </span>
                             ))}
                             {plan.equipment.length > 3 && (
-                              <span className="px-2 py-1 text-xs bg-muted text-muted-foreground rounded border border-border">
+                              <span className="px-2 py-1 text-xs bg-blue-100 dark:bg-blue-900/30 text-blue-800 dark:text-blue-200 rounded border border-blue-300 dark:border-blue-700">
                                 +{plan.equipment.length - 3}
                               </span>
                             )}
