@@ -123,20 +123,22 @@ textarea:focus-visible,
     animation: fadeIn 0.3s ease-out;
   }
 
-  .dialog-fade {
-    animation: dialogFadeIn 0.2s ease-out !important;
-  }
-
-  /* Override default dialog animations to prevent layout shifts */
+  /* Completely disable dialog animations to prevent layout shifts */
   [data-radix-dialog-content] {
-    animation: dialogFadeIn 0.2s ease-out !important;
-    transform: none !important;
+    animation: none !important;
+    transition: none !important;
+    transform: translate(-50%, -50%) !important;
   }
   
-  /* Remove all transform animations from dialog */
   [data-state="open"][data-radix-dialog-content] {
-    animation: dialogFadeIn 0.2s ease-out !important;
+    animation: none !important;
+    transition: none !important;
     transform: translate(-50%, -50%) !important;
+  }
+  
+  [data-state="closed"][data-radix-dialog-content] {
+    animation: none !important;
+    transition: none !important;
   }
 
   .progress-ring {

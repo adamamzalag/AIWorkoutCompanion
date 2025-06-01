@@ -41,6 +41,27 @@ export default function PlanDetailPage() {
 
   const updatePlanMutation = useMutation({
     mutationFn: async ({ planId, isActive }: { planId: number; isActive: boolean }) => {
+      // If activating a plan, first deactivate all other plans for this user
+      if (isActive && userProfile) {
+        // Get all plans for the user
+        const plansResponse = await fetch(`/api/workout-plans/${userProfile.id}`);
+        if (plansResponse.ok) {
+          const allPlans = await plansResponse.json();
+          // Deactivate all currently active plans
+          const activeDeactivations = allPlans
+            .filter((p: any) => p.isActive && p.id !== planId)
+            .map((p: any) => 
+              fetch(`/api/workout-plan/${p.id}`, {
+                method: 'PUT',
+                body: JSON.stringify({ isActive: false }),
+                headers: { 'Content-Type': 'application/json' }
+              })
+            );
+          await Promise.all(activeDeactivations);
+        }
+      }
+
+      // Now update the target plan
       const response = await fetch(`/api/workout-plan/${planId}`, {
         method: 'PUT',
         body: JSON.stringify({ isActive }),
@@ -48,6 +69,10 @@ export default function PlanDetailPage() {
       });
       if (!response.ok) throw new Error('Failed to update plan');
       return response.json();
+    },
+    onSuccess: () => {
+      // Refresh both the current plan and the workout plans list
+      window.location.reload();
     }
   });
 
@@ -109,7 +134,11 @@ export default function PlanDetailPage() {
             <button
               onClick={() => togglePlanStatus(plan.id, !plan.isActive)}
               disabled={updatePlanMutation.isPending}
-              className="glass-effect px-4 py-2 bg-primary/10 hover:bg-primary/20 border border-primary/30 hover:border-primary/50 text-primary rounded-lg transition-all duration-200 shadow-sm hover:shadow-md text-sm font-medium disabled:opacity-50"
+              className={`glass-effect px-4 py-2 rounded-lg transition-all duration-200 shadow-lg hover:shadow-xl text-sm font-medium disabled:opacity-50 ${
+                plan.isActive 
+                  ? 'bg-red-600/90 hover:bg-red-500/90 border border-red-500/50 text-white'
+                  : 'bg-green-600/90 hover:bg-green-500/90 border border-green-500/50 text-white'
+              }`}
             >
               {updatePlanMutation.isPending ? 'Updating...' : (plan.isActive ? 'Set Inactive' : 'Set Active')}
             </button>
@@ -232,7 +261,7 @@ export default function PlanDetailPage() {
                             <DialogTrigger asChild>
                               <Button
                                 variant="outline"
-                                className={`${plan?.isActive ? 'flex-1' : 'w-full'} h-9 bg-white/90 hover:bg-white border border-gray-300 hover:border-gray-400 text-gray-800 hover:text-gray-900 transition-all duration-200 shadow-md hover:shadow-lg font-medium`}
+                                className={`${plan?.isActive ? 'flex-1' : 'w-full'} h-9 glass-effect bg-slate-800/90 hover:bg-slate-700/90 border border-slate-600/50 hover:border-slate-500 text-slate-100 hover:text-white transition-all duration-200 shadow-lg hover:shadow-xl font-medium`}
                               >
                                 Quick View
                               </Button>
