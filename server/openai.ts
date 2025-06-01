@@ -451,29 +451,46 @@ export async function generateChatResponse(
   userContext: any,
   chatHistory: any[]
 ): Promise<string> {
-  const contextPrompt = `User Data:
+  // Build enhanced system prompt with user context
+  const systemPromptWithContext = `${UNIFIED_COACH_SYSTEM_PROMPT}
+
+User Context:
 - Fitness level: ${JSON.stringify(userContext.fitnessLevel)}
 - Goals: ${JSON.stringify(userContext.goals?.join(", ") || "General fitness")}
 - Equipment: ${JSON.stringify(userContext.equipment?.join(", ") || "None")}
 - Recent workouts: ${JSON.stringify(userContext.recentWorkouts || "None")}
 
-Chat history: ${JSON.stringify(chatHistory.slice(-10))}
+Provide helpful advice, motivation, and answer fitness-related questions. Keep responses conversational and encouraging.`;
 
-User message: ${JSON.stringify(message)}`;
+  // Build conversation history as proper message format
+  const messages = [
+    {
+      role: "system" as const,
+      content: systemPromptWithContext
+    }
+  ];
+
+  // Add recent conversation history (last 10 exchanges = 20 messages max)
+  const recentHistory = chatHistory.slice(-20);
+  for (const historyItem of recentHistory) {
+    if (historyItem.role && historyItem.content) {
+      messages.push({
+        role: historyItem.role === 'user' ? 'user' as const : 'assistant' as const,
+        content: historyItem.content
+      });
+    }
+  }
+
+  // Add current user message
+  messages.push({
+    role: "user" as const,
+    content: message
+  });
 
   try {
     const response = await openai.chat.completions.create({
       model: "gpt-4.1-mini",
-      messages: [
-        {
-          role: "system",
-          content: UNIFIED_COACH_SYSTEM_PROMPT
-        },
-        {
-          role: "user",
-          content: contextPrompt
-        }
-      ],
+      messages: messages,
       temperature: 0.3,
     });
 
