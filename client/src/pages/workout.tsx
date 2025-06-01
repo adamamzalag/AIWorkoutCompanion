@@ -1,4 +1,4 @@
-import { useState } from 'react';
+import { useState, useEffect } from 'react';
 import { useQuery } from '@tanstack/react-query';
 import { Button } from '@/components/ui/button';
 import { Card, CardContent } from '@/components/ui/card';
@@ -62,6 +62,13 @@ export default function WorkoutPage() {
   const handleStartWorkout = () => {
     startWorkout(exerciseLogs);
   };
+
+  // Auto-start workout if we have exercise logs and aren't already active
+  useEffect(() => {
+    if (exerciseLogs.length > 0 && !isActive && !isStarting) {
+      startWorkout(exerciseLogs);
+    }
+  }, [exerciseLogs.length, isActive, isStarting, startWorkout, exerciseLogs]);
 
   const handleCompleteSet = (setData: { reps: number; weight?: number; duration?: number }) => {
     if (currentExercise) {

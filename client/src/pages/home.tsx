@@ -65,8 +65,10 @@ export default function Home() {
   const todaysWorkout = workouts && workouts.length > 0 ? workouts[0] : undefined;
 
   const handleStartWorkout = () => {
-    // Navigate to workout screen
-    window.location.href = '/workout';
+    if (todaysWorkout) {
+      // Navigate to workout session with workout ID
+      window.location.href = `/workout?id=${todaysWorkout.id}`;
+    }
   };
 
   const formatDate = (date: Date) => {
