@@ -4,7 +4,7 @@ import { Link, useLocation } from 'wouter';
 import { Card, CardContent } from '@/components/ui/card';
 import { Button } from '@/components/ui/button';
 import { Skeleton } from '@/components/ui/skeleton';
-import { WorkoutCard } from '@/components/workout-card';
+import { WorkoutCard } from '@/components/workout-card-new';
 import { ProgressRing } from '@/components/progress-ring';
 import { Clock, Target, TrendingUp, Sparkles, MessageCircle } from 'lucide-react';
 import type { UserStats, ProgressAnalysis, WorkoutPlan, Workout, WorkoutSession, User } from '@shared/schema';

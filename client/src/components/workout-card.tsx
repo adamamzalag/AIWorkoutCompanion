@@ -1,4 +1,3 @@
-import { useState } from 'react';
 import { Card, CardContent } from '@/components/ui/card';
 import { Button } from '@/components/ui/button';
 import { Play, Eye, Clock, Target } from 'lucide-react';
@@ -19,16 +18,11 @@ export function WorkoutCard({
   progress = 0, 
   onStartWorkout
 }: WorkoutCardProps) {
-  // Parse exercises for the modal
+  // Parse exercises for display
   const exercises = todaysWorkout?.exercises ? 
     (typeof todaysWorkout.exercises === 'string' ? 
       JSON.parse(todaysWorkout.exercises) : 
       todaysWorkout.exercises) : [];
-
-  // Extract muscle groups for the modal
-  const muscleGroups = Array.from(new Set(
-    exercises.flatMap((ex: any) => ex.muscleGroups || [])
-  ));
 
   return (
     <Card className="glass-effect border-border/20">
