@@ -1,5 +1,4 @@
 import { useState, useEffect } from 'react';
-import { Progress } from '@/components/ui/progress';
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from '@/components/ui/card';
 import { Loader2, CheckCircle, XCircle } from 'lucide-react';
 
@@ -9,14 +8,18 @@ interface GenerationProgressProps {
 }
 
 export function GenerationProgress({ operationId, onComplete }: GenerationProgressProps) {
-  const [progress, setProgress] = useState(0);
   const [status, setStatus] = useState('starting');
-  const [currentStep, setCurrentStep] = useState('Initializing...');
+  const [currentStep, setCurrentStep] = useState('Initializing workout plan generation...');
   const [error, setError] = useState<string | null>(null);
 
   useEffect(() => {
     let interval: NodeJS.Timeout | null = null;
     let isActive = true;
+    
+    // Request notification permission when component mounts
+    if (Notification.permission === 'default') {
+      Notification.requestPermission();
+    }
     
     const checkProgress = async () => {
       if (!isActive) return;
@@ -28,13 +31,21 @@ export function GenerationProgress({ operationId, onComplete }: GenerationProgre
         if (!isActive) return; // Component unmounted during fetch
         
         if (data.progress !== undefined) {
-          setProgress(data.progress);
-          setCurrentStep(data.currentStep || 'Processing...');
+          setCurrentStep(data.currentStep || 'Processing workout plan...');
           setStatus(data.status);
           
           if (data.status === 'completed') {
             if (interval) clearInterval(interval);
             isActive = false;
+            
+            // Show browser notification
+            if (Notification.permission === 'granted') {
+              new Notification('Workout Plan Ready!', {
+                body: 'Your personalized workout plan has been generated successfully.',
+                icon: '/favicon.ico'
+              });
+            }
+            
             onComplete(true, data.result);
             return;
           } else if (data.status === 'failed' || data.status === 'error') {
@@ -55,7 +66,7 @@ export function GenerationProgress({ operationId, onComplete }: GenerationProgre
       }
     };
 
-    // Check immediately and then every 2 seconds (reduced frequency)
+    // Check immediately and then every 2 seconds
     checkProgress();
     interval = setInterval(checkProgress, 2000);
 
@@ -84,10 +95,21 @@ export function GenerationProgress({ operationId, onComplete }: GenerationProgre
       </CardHeader>
       <CardContent>
         <div className="space-y-4">
-          <Progress value={progress} className="w-full" />
-          <div className="text-center text-sm text-muted-foreground">
-            {progress}% complete
-          </div>
+          {!error && status !== 'completed' && (
+            <div className="text-center">
+              <div className="text-lg font-medium text-blue-600 mb-2">
+                AI Coach is designing your workout plan...
+              </div>
+              <div className="text-sm text-muted-foreground">
+                You will be notified when it's ready!
+              </div>
+            </div>
+          )}
+          {status === 'completed' && (
+            <div className="text-center text-green-600 font-medium">
+              Your workout plan is ready!
+            </div>
+          )}
         </div>
       </CardContent>
     </Card>

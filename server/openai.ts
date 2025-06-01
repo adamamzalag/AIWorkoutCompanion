@@ -463,9 +463,9 @@ User Context:
 Provide helpful advice, motivation, and answer fitness-related questions. Keep responses conversational and encouraging.`;
 
   // Build conversation history as proper message format
-  const messages = [
+  const messages: Array<{role: 'system' | 'user' | 'assistant', content: string}> = [
     {
-      role: "system" as const,
+      role: "system",
       content: systemPromptWithContext
     }
   ];
@@ -475,7 +475,7 @@ Provide helpful advice, motivation, and answer fitness-related questions. Keep r
   for (const historyItem of recentHistory) {
     if (historyItem.role && historyItem.content) {
       messages.push({
-        role: historyItem.role === 'user' ? 'user' as const : 'assistant' as const,
+        role: historyItem.role === 'user' ? 'user' : 'assistant',
         content: historyItem.content
       });
     }
@@ -483,7 +483,7 @@ Provide helpful advice, motivation, and answer fitness-related questions. Keep r
 
   // Add current user message
   messages.push({
-    role: "user" as const,
+    role: "user",
     content: message
   });
 
