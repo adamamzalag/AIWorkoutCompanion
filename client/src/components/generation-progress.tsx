@@ -112,10 +112,7 @@ export function GenerationProgress({ operationId, onComplete }: GenerationProgre
           
           {status === 'completed' && (
             <Button 
-              onClick={() => {
-                setLocation('/workouts');
-                onComplete(true);
-              }}
+              onClick={() => onComplete(true)}
               className="bg-gradient-to-r from-primary to-secondary hover:from-primary/90 hover:to-secondary/90 text-white"
             >
               View Plans
