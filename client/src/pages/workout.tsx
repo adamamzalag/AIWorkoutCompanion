@@ -160,7 +160,26 @@ export default function WorkoutPage() {
   const currentExerciseDetails = workout?.exercises && currentExercise ? 
     (typeof workout.exercises === 'string' ? JSON.parse(workout.exercises) : workout.exercises)[currentExerciseIndex] : null;
   
-  const currentExerciseData = exercises?.find(ex => ex.id === currentExercise?.exerciseId);
+  // For warm-up, cardio, and cool-down exercises, create a fake exercise object
+  // For main exercises, look up in the exercise database
+  const currentExerciseData = currentExercise?.isWarmup || currentExercise?.isCardio || currentExercise?.isCooldown ? 
+    {
+      id: currentExercise.exerciseId,
+      name: currentExercise.name,
+      slug: currentExercise.name.toLowerCase().replace(/\s+/g, '-'),
+      description: currentExercise.isWarmup ? 'Warm-up exercise' : 
+                   currentExercise.isCardio ? 'Cardio exercise' : 'Cool-down exercise',
+      muscleGroups: [],
+      equipment: [],
+      difficultyLevel: 'beginner',
+      instructions: currentExercise.isWarmup ? 
+        [`Perform ${currentExercise.name} for ${currentExercise.duration} seconds`] :
+        currentExercise.isCardio ?
+        [`Perform ${currentExercise.name} for ${currentExercise.duration} seconds`] :
+        [`Hold ${currentExercise.name} for ${currentExercise.duration} seconds`],
+      createdAt: new Date()
+    } : exercises?.find(ex => ex.id === currentExercise?.exerciseId);
+  
   const currentSet = currentExercise?.sets.findIndex(set => !set.completed) || 0;
 
   // Show loading state while workout data is being fetched or starting
