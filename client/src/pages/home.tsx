@@ -51,7 +51,7 @@ export default function Home() {
       if (!response.ok) throw new Error('Failed to fetch workouts');
       return response.json();
     },
-    enabled: !!activePlan?.id,
+    enabled: !!activePlan?.id && !plansLoading,
   });
 
   // Get the first workout as today's workout

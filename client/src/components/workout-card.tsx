@@ -67,7 +67,7 @@ export function WorkoutCard({
             <div className="flex space-x-3">
               <Button 
                 onClick={onStartWorkout}
-                className="flex-1 bg-primary hover:bg-primary/90 text-primary-foreground py-3 touch-target"
+                className="flex-1 bg-gradient-to-r from-primary to-secondary hover:from-primary/90 hover:to-secondary/90 text-white py-3 touch-target font-medium"
               >
                 Start Workout
               </Button>
