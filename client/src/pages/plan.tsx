@@ -4,7 +4,8 @@ import { Button } from '@/components/ui/button';
 import { Card, CardContent } from '@/components/ui/card';
 import { Badge } from '@/components/ui/badge';
 import { Skeleton } from '@/components/ui/skeleton';
-import { ChevronLeft, Clock, Target, Play, Calendar, Dumbbell } from 'lucide-react';
+import { Dialog, DialogContent, DialogHeader, DialogTitle, DialogTrigger } from '@/components/ui/dialog';
+import { ChevronLeft, Clock, Target, Play, Calendar, Dumbbell, X } from 'lucide-react';
 import { Link, useRoute } from 'wouter';
 import type { WorkoutPlan, Workout, User } from '@shared/schema';
 
@@ -103,7 +104,7 @@ export default function PlanDetailPage() {
           
           <div className="flex flex-wrap gap-2">
             {plan.equipment.map((eq) => (
-              <span key={eq} className="px-2 py-1 text-xs bg-muted text-muted-foreground rounded border border-border">
+              <span key={eq} className="px-2 py-1 text-xs bg-blue-100 dark:bg-blue-900/30 text-blue-800 dark:text-blue-200 rounded border border-blue-300 dark:border-blue-700">
                 {eq.replace('_', ' ')}
               </span>
             ))}
@@ -199,16 +200,88 @@ export default function PlanDetailPage() {
                         
                         {/* Action buttons */}
                         <div className="flex space-x-2 pt-2">
-                          <Button
-                            variant="outline"
-                            className={`${plan?.isActive ? 'flex-1' : 'w-full'} h-9 border-2 border-border hover:border-primary hover:bg-primary/5`}
-                            onClick={() => {
-                              // Simple alert for now - can be enhanced with a modal later
-                              alert(`${workout.title}\n\nDuration: ${workout.estimatedDuration} minutes\nExercises: ${exercises.length}\n\nKey Exercises:\n${keyExercises.join(', ')}\n\nMuscle Groups:\n${muscleGroups.join(', ')}`);
-                            }}
-                          >
-                            Quick View
-                          </Button>
+                          <Dialog>
+                            <DialogTrigger asChild>
+                              <Button
+                                variant="outline"
+                                className={`${plan?.isActive ? 'flex-1' : 'w-full'} h-9 border-2 border-border hover:border-primary hover:bg-primary/10`}
+                              >
+                                Quick View
+                              </Button>
+                            </DialogTrigger>
+                            <DialogContent className="max-w-2xl max-h-[80vh] overflow-y-auto">
+                              <DialogHeader>
+                                <DialogTitle className="flex items-center space-x-2">
+                                  <span className="inline-flex items-center justify-center w-6 h-6 bg-gradient-to-r from-accent to-primary rounded-md text-white text-xs font-semibold">
+                                    {index + 1}
+                                  </span>
+                                  <span>{workout.title}</span>
+                                </DialogTitle>
+                              </DialogHeader>
+                              
+                              <div className="space-y-4">
+                                {/* Workout Overview */}
+                                <div className="flex items-center space-x-4 text-sm text-muted-foreground">
+                                  <div className="flex items-center space-x-1">
+                                    <Clock size={16} />
+                                    <span>{workout.estimatedDuration} minutes</span>
+                                  </div>
+                                  <div className="flex items-center space-x-1">
+                                    <Dumbbell size={16} />
+                                    <span>{exercises.length} exercises</span>
+                                  </div>
+                                </div>
+
+                                {/* Description */}
+                                {workout.description && (
+                                  <div>
+                                    <h4 className="font-medium text-foreground mb-2">Description</h4>
+                                    <p className="text-sm text-muted-foreground">{workout.description}</p>
+                                  </div>
+                                )}
+
+                                {/* Muscle Groups */}
+                                {muscleGroups.length > 0 && (
+                                  <div>
+                                    <h4 className="font-medium text-foreground mb-2">Target Muscle Groups</h4>
+                                    <div className="flex flex-wrap gap-1">
+                                      {muscleGroups.map((muscle) => (
+                                        <span key={muscle} className="px-2 py-1 text-xs bg-blue-100 dark:bg-blue-900/30 text-blue-800 dark:text-blue-200 rounded border border-blue-300 dark:border-blue-700">
+                                          {muscle}
+                                        </span>
+                                      ))}
+                                    </div>
+                                  </div>
+                                )}
+
+                                {/* Exercises */}
+                                {exercises.length > 0 && (
+                                  <div>
+                                    <h4 className="font-medium text-foreground mb-3">Exercises ({exercises.length})</h4>
+                                    <div className="space-y-3">
+                                      {exercises.map((exercise: any, idx: number) => (
+                                        <div key={idx} className="p-3 bg-muted/30 rounded-lg border border-border">
+                                          <div className="flex items-start justify-between">
+                                            <div className="flex-1">
+                                              <h5 className="font-medium text-foreground">{exercise.name}</h5>
+                                              {exercise.instructions && exercise.instructions.length > 0 && (
+                                                <p className="text-sm text-muted-foreground mt-1">{exercise.instructions[0]}</p>
+                                              )}
+                                              <div className="flex items-center space-x-4 mt-2 text-xs text-muted-foreground">
+                                                {exercise.sets && <span>{exercise.sets} sets</span>}
+                                                {exercise.reps && <span>{exercise.reps} reps</span>}
+                                                {exercise.restTime && <span>{exercise.restTime} rest</span>}
+                                              </div>
+                                            </div>
+                                          </div>
+                                        </div>
+                                      ))}
+                                    </div>
+                                  </div>
+                                )}
+                              </div>
+                            </DialogContent>
+                          </Dialog>
                           {plan?.isActive && (
                             <Link href={`/workout?id=${workout.id}`} className="flex-1">
                               <Button className="w-full h-9 bg-accent hover:bg-accent/90 text-accent-foreground">
