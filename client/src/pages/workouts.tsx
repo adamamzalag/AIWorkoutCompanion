@@ -5,7 +5,7 @@ import { Card, CardContent } from '@/components/ui/card';
 import { Button } from '@/components/ui/button';
 import { Badge } from '@/components/ui/badge';
 import { Skeleton } from '@/components/ui/skeleton';
-import { Dialog, DialogContent, DialogHeader, DialogTitle, DialogTrigger } from '@/components/ui/dialog';
+import { Dialog, DialogContent, DialogHeader, DialogTitle, DialogDescription, DialogTrigger } from '@/components/ui/dialog';
 import { Form, FormControl, FormField, FormItem, FormLabel, FormMessage } from '@/components/ui/form';
 import { Input } from '@/components/ui/input';
 import { Textarea } from '@/components/ui/textarea';
@@ -331,15 +331,19 @@ export default function WorkoutsPage() {
             setGenerationState({ isGenerating: false, operationId: null });
           }
         }}>
-          <DialogContent className="glass-effect border-border/50 max-w-md mx-auto">
-            <div className="flex justify-center">
-              {generationState.operationId && (
-                <GenerationProgress 
-                  operationId={generationState.operationId}
-                  onComplete={handleGenerationComplete}
-                />
-              )}
-            </div>
+          <DialogContent className="glass-effect border-border/50 max-w-md mx-auto flex flex-col items-center justify-center">
+            <DialogHeader className="sr-only">
+              <DialogTitle>Workout Plan Generation</DialogTitle>
+              <DialogDescription>
+                Your AI workout plan is being generated. Please wait while we create your personalized fitness program.
+              </DialogDescription>
+            </DialogHeader>
+            {generationState.operationId && (
+              <GenerationProgress 
+                operationId={generationState.operationId}
+                onComplete={handleGenerationComplete}
+              />
+            )}
           </DialogContent>
         </Dialog>
       </div>

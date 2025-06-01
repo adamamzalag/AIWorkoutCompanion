@@ -432,11 +432,22 @@ export async function registerRoutes(app: Express): Promise<Server> {
         const workoutProgress = 4 + (i / generatedPlan.workouts.length * 1); // Spread step 4-5 across workouts
         updateProgress(req.body.userId, operationId, workoutProgress, 'processing', `Processing workout ${i + 1}/${generatedPlan.workouts.length}...`);
         
+        // Validate workout structure and extract exercises
+        let exercises = [];
+        if (workout.exercises && Array.isArray(workout.exercises)) {
+          exercises = workout.exercises;
+        } else if (workout.mainTraining && workout.mainTraining.exercises && Array.isArray(workout.mainTraining.exercises)) {
+          exercises = workout.mainTraining.exercises;
+        } else {
+          console.log(`⚠️ Workout ${i + 1} has no valid exercises array, skipping exercise processing`);
+          exercises = [];
+        }
+
         // Process each exercise to normalize and create exercise records
         const processedExercises = [];
-        for (let j = 0; j < workout.exercises.length; j++) {
-          const aiExercise = workout.exercises[j];
-          console.log(`🏋️ Processing exercise ${j + 1}/${workout.exercises.length}: ${aiExercise.name}`);
+        for (let j = 0; j < exercises.length; j++) {
+          const aiExercise = exercises[j];
+          console.log(`🏋️ Processing exercise ${j + 1}/${exercises.length}: ${aiExercise.name}`);
           
           // Get existing exercises for similarity matching
           const existingExercises = await storage.getExercises();
