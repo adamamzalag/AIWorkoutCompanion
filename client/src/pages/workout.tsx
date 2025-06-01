@@ -120,48 +120,7 @@ export default function WorkoutPage() {
     }
   }, [exerciseLogs.length, isActive, isStarting, startWorkout, exerciseLogs]);
 
-  // Listen for bottom navigation events
-  useEffect(() => {
-    const handleWorkoutPrevious = () => {
-      if (!isFirstExercise && !isUpdating) {
-        previousExercise();
-      }
-    };
 
-    const handleWorkoutNext = () => {
-      if (!isUpdating) {
-        handleNextExercise();
-      }
-    };
-
-    const handleWorkoutCompleteSet = () => {
-      if (currentExercise && !isUpdating) {
-        // For time-based exercises (warm-up, cool-down), just complete the exercise
-        if (currentExercise.isWarmup || currentExercise.isCooldown) {
-          handleNextExercise();
-        } else {
-          // For regular exercises, complete the current set
-          handleCompleteSet({ reps: currentExercise.sets[currentSet]?.reps || 0, weight: 0 });
-        }
-      }
-    };
-
-    const handleWorkoutMenu = () => {
-      handleExitWorkout();
-    };
-
-    window.addEventListener('workout-previous', handleWorkoutPrevious);
-    window.addEventListener('workout-next', handleWorkoutNext);
-    window.addEventListener('workout-complete-set', handleWorkoutCompleteSet);
-    window.addEventListener('workout-menu', handleWorkoutMenu);
-
-    return () => {
-      window.removeEventListener('workout-previous', handleWorkoutPrevious);
-      window.removeEventListener('workout-next', handleWorkoutNext);
-      window.removeEventListener('workout-complete-set', handleWorkoutCompleteSet);
-      window.removeEventListener('workout-menu', handleWorkoutMenu);
-    };
-  }, [isFirstExercise, isUpdating, previousExercise, handleNextExercise, currentExercise, currentSet, handleCompleteSet, handleExitWorkout]);
 
   console.log('Workout state:', { 
     exerciseLogsCount: exerciseLogs.length, 
@@ -229,6 +188,49 @@ export default function WorkoutPage() {
     } : exercises?.find(ex => ex.id === currentExercise?.exerciseId);
   
   const currentSet = currentExercise?.sets.findIndex(set => !set.completed) || 0;
+
+  // Listen for bottom navigation events
+  useEffect(() => {
+    const handleWorkoutPrevious = () => {
+      if (!isFirstExercise && !isUpdating) {
+        previousExercise();
+      }
+    };
+
+    const handleWorkoutNext = () => {
+      if (!isUpdating) {
+        handleNextExercise();
+      }
+    };
+
+    const handleWorkoutCompleteSet = () => {
+      if (currentExercise && !isUpdating) {
+        // For time-based exercises (warm-up, cool-down), just complete the exercise
+        if (currentExercise.isWarmup || currentExercise.isCooldown) {
+          handleNextExercise();
+        } else {
+          // For regular exercises, complete the current set
+          handleCompleteSet({ reps: currentExercise.sets[currentSet]?.reps || 0, weight: 0 });
+        }
+      }
+    };
+
+    const handleWorkoutMenu = () => {
+      handleExitWorkout();
+    };
+
+    window.addEventListener('workout-previous', handleWorkoutPrevious);
+    window.addEventListener('workout-next', handleWorkoutNext);
+    window.addEventListener('workout-complete-set', handleWorkoutCompleteSet);
+    window.addEventListener('workout-menu', handleWorkoutMenu);
+
+    return () => {
+      window.removeEventListener('workout-previous', handleWorkoutPrevious);
+      window.removeEventListener('workout-next', handleWorkoutNext);
+      window.removeEventListener('workout-complete-set', handleWorkoutCompleteSet);
+      window.removeEventListener('workout-menu', handleWorkoutMenu);
+    };
+  }, [isFirstExercise, isUpdating, previousExercise, handleNextExercise, currentExercise, currentSet, handleCompleteSet, handleExitWorkout]);
 
   // Show loading state while workout data is being fetched or starting
   if (!workout || exerciseLogs.length === 0 || isStarting) {

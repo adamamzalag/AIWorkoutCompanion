@@ -7,27 +7,25 @@ import { Dialog, DialogContent, DialogHeader, DialogTitle, DialogDescription, Di
 // Workout-specific bottom controls
 function WorkoutBottomControls() {
   return (
-    <nav className="glass-effect fixed bottom-0 left-1/2 transform -translate-x-1/2 w-full max-w-sm z-50 px-4 py-3 rounded-t-2xl">
-      <div className="flex items-center justify-between">
+    <nav className="glass-effect fixed bottom-0 left-1/2 transform -translate-x-1/2 w-full max-w-sm z-50 px-3 py-3 rounded-t-2xl">
+      <div className="flex items-center justify-between space-x-2">
         {/* Previous Exercise */}
         <Button
           variant="outline"
           size="sm"
-          className="flex-1 mr-2 glass-effect border-border/50"
+          className="flex-1 glass-effect border-border/50 text-xs"
           onClick={() => {
-            // Will be handled by workout page logic
             window.dispatchEvent(new CustomEvent('workout-previous'));
           }}
         >
-          <ChevronLeft size={16} className="mr-1" />
+          <ChevronLeft size={14} className="mr-1" />
           Previous
         </Button>
 
-        {/* Complete Set / Next Exercise */}
+        {/* Complete Set - Main Action */}
         <Button
-          className="flex-1 mx-1 bg-accent hover:bg-accent/90 text-accent-foreground"
+          className="flex-[2] bg-accent hover:bg-accent/90 text-accent-foreground font-medium"
           onClick={() => {
-            // Will be handled by workout page logic
             window.dispatchEvent(new CustomEvent('workout-complete-set'));
           }}
         >
@@ -39,21 +37,20 @@ function WorkoutBottomControls() {
         <Button
           variant="outline"
           size="sm"
-          className="flex-1 ml-2 glass-effect border-border/50"
+          className="flex-1 glass-effect border-border/50 text-xs"
           onClick={() => {
-            // Will be handled by workout page logic
             window.dispatchEvent(new CustomEvent('workout-next'));
           }}
         >
           Next
-          <ChevronRight size={16} className="ml-1" />
+          <ChevronRight size={14} className="ml-1" />
         </Button>
 
         {/* Menu/Exit Button */}
         <Button
           variant="ghost"
           size="sm"
-          className="w-10 h-10 rounded-full p-0 ml-2"
+          className="w-9 h-9 rounded-full p-0"
           onClick={() => {
             window.dispatchEvent(new CustomEvent('workout-menu'));
           }}
