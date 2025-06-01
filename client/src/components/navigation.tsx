@@ -40,6 +40,7 @@ function useGlobalGenerationStatus() {
   const [isGenerating, setIsGenerating] = useState(false);
   const [isCompleted, setIsCompleted] = useState(false);
   const [operationId, setOperationId] = useState<string | null>(null);
+  const [operationStartTime, setOperationStartTime] = useState<number | null>(null);
 
   useEffect(() => {
     let interval: NodeJS.Timeout | null = null;
@@ -50,6 +51,7 @@ function useGlobalGenerationStatus() {
       if (storedOperationId) {
         if (operationId !== storedOperationId) {
           setOperationId(storedOperationId);
+          setOperationStartTime(Date.now());
           setIsGenerating(true);
           setIsCompleted(false);
         }
@@ -59,12 +61,16 @@ function useGlobalGenerationStatus() {
           const response = await fetch(`/api/generation-progress/${storedOperationId}`);
           
           if (!response.ok) {
-            // Operation doesn't exist (404) - clear it
-            console.log('Clearing non-existent operation:', storedOperationId);
-            localStorage.removeItem('activeGenerationId');
-            setIsGenerating(false);
-            setIsCompleted(false);
-            setOperationId(null);
+            // Give new operations a 10-second grace period before clearing
+            const timeSinceStart = operationStartTime ? Date.now() - operationStartTime : 0;
+            if (timeSinceStart > 10000) {
+              console.log('Clearing non-existent operation:', storedOperationId);
+              localStorage.removeItem('activeGenerationId');
+              setIsGenerating(false);
+              setIsCompleted(false);
+              setOperationId(null);
+              setOperationStartTime(null);
+            }
             return;
           }
           
