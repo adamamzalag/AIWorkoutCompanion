@@ -17,8 +17,6 @@ export default function WorkoutPage() {
   const urlParams = new URLSearchParams(window.location.search);
   const workoutId = parseInt(urlParams.get('id') || '51'); // Use a default workout ID
 
-  console.log('Workout ID from URL:', workoutId, 'Full URL:', window.location.href);
-
   const { data: userProfile } = useQuery<User>({
     queryKey: ["/api/auth/user"],
   });
@@ -27,8 +25,6 @@ export default function WorkoutPage() {
     queryKey: [`/api/workout/${workoutId}`],
     enabled: !!workoutId,
   });
-
-  console.log('Workout data:', workout);
 
   const { data: exercises } = useQuery<Exercise[]>({
     queryKey: ['/api/exercises'],
@@ -111,26 +107,11 @@ export default function WorkoutPage() {
   const currentExerciseData = exercises?.find(ex => ex.id === currentExercise?.exerciseId);
   const currentSet = currentExercise?.sets.findIndex(set => !set.completed) || 0;
 
-  if (!isActive && exerciseLogs.length === 0) {
+  // Show loading state while workout data is being fetched or starting
+  if (!workout || exerciseLogs.length === 0 || isStarting) {
     return (
-      <div className="min-h-screen flex items-center justify-center px-4">
-        <Card className="glass-effect w-full max-w-md">
-          <CardContent className="p-6 text-center">
-            <h2 className="font-poppins font-bold text-xl text-foreground mb-4">
-              Ready to Start?
-            </h2>
-            <p className="text-muted-foreground mb-6">
-              This workout contains {exerciseLogs.length} exercises. Are you ready to begin?
-            </p>
-            <Button 
-              onClick={handleStartWorkout}
-              disabled={isStarting}
-              className="w-full bg-primary hover:bg-primary/90 text-primary-foreground py-3 touch-target"
-            >
-              {isStarting ? 'Starting...' : 'Start Workout'}
-            </Button>
-          </CardContent>
-        </Card>
+      <div className="min-h-screen flex items-center justify-center">
+        <div className="loading-spinner" />
       </div>
     );
   }
