@@ -5,13 +5,13 @@ import { Card, CardContent } from '@/components/ui/card';
 import { Badge } from '@/components/ui/badge';
 import { Skeleton } from '@/components/ui/skeleton';
 import { ChevronLeft, Clock, Target, Play, Calendar, Dumbbell } from 'lucide-react';
-import { Link } from 'wouter';
+import { Link, useRoute } from 'wouter';
 import type { WorkoutPlan, Workout, User } from '@shared/schema';
 
 export default function PlanDetailPage() {
-  // Get plan ID from URL parameters
-  const urlParams = new URLSearchParams(window.location.search);
-  const planId = parseInt(urlParams.get('id') || '1');
+  // Get plan ID from URL route parameters
+  const [match, params] = useRoute('/plan/:id');
+  const planId = parseInt(params?.id || '1');
 
   const { data: userProfile } = useQuery<User>({
     queryKey: ["/api/profile"],

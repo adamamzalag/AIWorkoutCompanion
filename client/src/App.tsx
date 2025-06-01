@@ -8,6 +8,7 @@ import { useAuth } from "@/hooks/useAuth";
 import NotFound from "@/pages/not-found";
 import Home from "@/pages/home";
 import WorkoutsPage from "@/pages/workouts";
+import PlanDetailPage from "@/pages/plan";
 import ProgressPage from "@/pages/progress";
 import WorkoutPage from "@/pages/workout";
 import AIChatPage from "@/pages/ai-chat";
@@ -100,6 +101,7 @@ function Router() {
     <Switch>
       <Route path="/" component={Home} />
       <Route path="/workouts" component={WorkoutsPage} />
+      <Route path="/plan/:id" component={PlanDetailPage} />
       <Route path="/progress" component={ProgressPage} />
       <Route path="/workout" component={WorkoutPage} />
       <Route path="/ai-chat" component={AIChatPage} />
