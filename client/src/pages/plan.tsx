@@ -206,12 +206,12 @@ export default function PlanDetailPage() {
                             <DialogTrigger asChild>
                               <Button
                                 variant="outline"
-                                className={`${plan?.isActive ? 'flex-1' : 'w-full'} h-9 border border-primary/20 bg-background hover:border-primary hover:bg-primary/10 transition-all duration-200`}
+                                className={`${plan?.isActive ? 'flex-1' : 'w-full'} h-9 glass-effect border border-border/30 hover:border-primary/50 hover:bg-card/50 transition-all duration-200 shadow-sm hover:shadow-md`}
                               >
                                 Quick View
                               </Button>
                             </DialogTrigger>
-                            <DialogContent className="max-w-4xl max-h-[90vh] overflow-y-auto glass-effect border-border/50">
+                            <DialogContent className="max-w-4xl max-h-[90vh] overflow-y-auto glass-effect border-border/50 dialog-fade">
                               <DialogHeader className="border-b border-border/20 pb-4">
                                 <DialogTitle className="flex items-center space-x-3 text-xl">
                                   <span className="inline-flex items-center justify-center w-8 h-8 bg-gradient-to-r from-accent to-primary rounded-lg text-white text-sm font-bold shadow-lg">
@@ -223,7 +223,7 @@ export default function PlanDetailPage() {
                               
                               <div className="space-y-6 pt-6">
                                 {/* Workout Overview */}
-                                <div className="glass-effect gradient-border p-4 rounded-xl">
+                                <div className="glass-effect p-6 rounded-xl border border-border/30">
                                   <div className="flex items-center justify-center space-x-8 text-sm">
                                     <div className="flex items-center space-x-2 text-foreground">
                                       <Clock size={18} className="text-primary" />
@@ -374,7 +374,7 @@ export default function PlanDetailPage() {
                           </Dialog>
                           {plan?.isActive && (
                             <Link href={`/workout?id=${workout.id}`} className="flex-1">
-                              <Button className="w-full h-9 bg-accent hover:bg-accent/90 text-accent-foreground">
+                              <Button className="w-full h-9 glass-effect bg-gradient-to-r from-blue-500/20 to-cyan-500/20 hover:from-blue-500/30 hover:to-cyan-500/30 border border-blue-200/30 dark:border-blue-700/30 text-blue-700 dark:text-blue-300 hover:text-blue-800 dark:hover:text-blue-200 shadow-sm hover:shadow-md transition-all duration-200">
                                 <Play size={14} className="mr-1" />
                                 Start Workout
                               </Button>
