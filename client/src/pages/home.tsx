@@ -45,6 +45,12 @@ export default function Home() {
   
   const { data: workouts } = useQuery<Workout[]>({
     queryKey: ['/api/workouts', activePlan?.id],
+    queryFn: async () => {
+      if (!activePlan?.id) throw new Error('No active plan');
+      const response = await fetch(`/api/workouts/${activePlan.id}`);
+      if (!response.ok) throw new Error('Failed to fetch workouts');
+      return response.json();
+    },
     enabled: !!activePlan?.id,
   });
 
