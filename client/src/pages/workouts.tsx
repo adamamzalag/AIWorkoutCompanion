@@ -193,7 +193,7 @@ export default function WorkoutsPage() {
         
         <Dialog open={showGenerateDialog} onOpenChange={setShowGenerateDialog}>
           <DialogTrigger asChild>
-            <Button className="bg-gradient-to-r from-primary to-secondary hover:from-primary/90 hover:to-secondary/90 text-white touch-target">
+            <Button className="bg-gradient-to-r from-primary to-secondary hover:from-primary/90 hover:to-secondary/90 text-white touch-target absolute right-0">
               <Sparkles size={16} className="mr-2" />
               Generate
             </Button>
