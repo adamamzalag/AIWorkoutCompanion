@@ -1,5 +1,5 @@
 import { useState } from 'react';
-import { useQuery } from '@tanstack/react-query';
+import { useQuery, useMutation, queryClient } from '@tanstack/react-query';
 import { Button } from '@/components/ui/button';
 import { Card, CardContent } from '@/components/ui/card';
 import { Badge } from '@/components/ui/badge';
@@ -7,6 +7,7 @@ import { Skeleton } from '@/components/ui/skeleton';
 import { Dialog, DialogContent, DialogHeader, DialogTitle, DialogTrigger } from '@/components/ui/dialog';
 import { ChevronLeft, Clock, Target, Play, Calendar, Dumbbell, X } from 'lucide-react';
 import { Link, useRoute } from 'wouter';
+import { apiRequest } from '@/lib/queryClient';
 import type { WorkoutPlan, Workout, User } from '@shared/schema';
 
 export default function PlanDetailPage() {
@@ -206,7 +207,7 @@ export default function PlanDetailPage() {
                             <DialogTrigger asChild>
                               <Button
                                 variant="outline"
-                                className={`${plan?.isActive ? 'flex-1' : 'w-full'} h-9 glass-effect border border-border/30 hover:border-primary/50 hover:bg-card/50 transition-all duration-200 shadow-sm hover:shadow-md`}
+                                className={`${plan?.isActive ? 'flex-1' : 'w-full'} h-9 glass-effect bg-slate-600/80 hover:bg-slate-500/80 border border-slate-400/50 hover:border-slate-300 text-white transition-all duration-200 shadow-lg hover:shadow-xl`}
                               >
                                 Quick View
                               </Button>
@@ -374,7 +375,7 @@ export default function PlanDetailPage() {
                           </Dialog>
                           {plan?.isActive && (
                             <Link href={`/workout?id=${workout.id}`} className="flex-1">
-                              <Button className="w-full h-9 glass-effect bg-gradient-to-r from-blue-500/20 to-cyan-500/20 hover:from-blue-500/30 hover:to-cyan-500/30 border border-blue-200/30 dark:border-blue-700/30 text-blue-700 dark:text-blue-300 hover:text-blue-800 dark:hover:text-blue-200 shadow-sm hover:shadow-md transition-all duration-200">
+                              <Button className="w-full h-9 glass-effect bg-gradient-to-r from-emerald-600 to-green-600 hover:from-emerald-700 hover:to-green-700 border border-emerald-400/50 text-white shadow-lg hover:shadow-xl transition-all duration-200">
                                 <Play size={14} className="mr-1" />
                                 Start Workout
                               </Button>

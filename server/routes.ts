@@ -136,6 +136,20 @@ export async function registerRoutes(app: Express): Promise<Server> {
     }
   });
 
+  app.put("/api/workout-plan/:id", async (req, res) => {
+    try {
+      const planId = parseInt(req.params.id);
+      const updates = insertWorkoutPlanSchema.partial().parse(req.body);
+      const plan = await storage.updateWorkoutPlan(planId, updates);
+      if (!plan) {
+        return res.status(404).json({ error: "Workout plan not found" });
+      }
+      res.json(plan);
+    } catch (error) {
+      res.status(400).json({ error: "Invalid update data" });
+    }
+  });
+
   // Workouts routes
   app.get("/api/workouts/:planId", async (req, res) => {
     try {

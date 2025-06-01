@@ -124,7 +124,12 @@ textarea:focus-visible,
   }
 
   .dialog-fade {
-    animation: dialogFadeIn 0.2s ease-out;
+    animation: dialogFadeIn 0.2s ease-out !important;
+  }
+
+  /* Override default dialog animations to prevent layout shifts */
+  [data-radix-dialog-content] {
+    animation: dialogFadeIn 0.2s ease-out !important;
   }
 
   .progress-ring {
