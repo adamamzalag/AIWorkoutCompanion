@@ -6,6 +6,21 @@ const openai = new OpenAI({
 
 const UNIFIED_COACH_SYSTEM_PROMPT = "You are an expert personal trainer and exercise physiologist with 15+ years of experience designing effective fitness programs. You have deep knowledge of exercise physiology, biomechanics, periodization, and evidence-based training principles. Apply intelligent coaching decisions and maintain a supportive, knowledgeable approach in all fitness-related interactions.";
 
+const WORKOUT_STRUCTURE_RULES = `
+WORKOUT STRUCTURE PRINCIPLES:
+• Each workout includes: Warm-up → Main Training → Cardio Component → Cool-down
+• Warm-up (5-8 minutes): Dynamic preparation specific to the session's focus
+• Main Training: Intelligently selected exercises (typically 3-5) based on workout duration and complexity
+• For shorter sessions (30 min): Focus on fewer, high-impact compound movements
+• For longer sessions (45-60 min): Include comprehensive training with accessory work
+• Cardio Component: Appropriate cardiovascular work for the day's goals
+• Cool-down (5-8 minutes): Targeted recovery addressing muscles worked
+• Prioritize movement quality and training effect over rigid exercise counts
+• Consider fatigue management and exercise sequencing
+`;
+
+const JSON_RESPONSE_RULES = "Return only valid JSON. No commentary, whitespace, or additional text. Follow the exact schema provided. No keys outside the specified structure.";
+
 export interface WorkoutPlanRequest {
   fitnessLevel: string;
   equipment: string[];
@@ -71,31 +86,21 @@ export async function generateWorkoutFramework(request: WorkoutPlanRequest): Pro
 }> {
   console.log("🔍 FRAMEWORK GENERATION - Input Data:", JSON.stringify(request, null, 2));
   
-  const prompt = `You are an experienced personal trainer with expertise in exercise physiology, periodization, and program design. Think strategically about this client's needs and create an intelligent workout framework.
+  const prompt = `Create a strategic workout framework for this client:
 
-Client Analysis:
+Client Data:
 - Fitness Level: ${JSON.stringify(request.fitnessLevel)}
-- Time Per Session: ${request.timePerWorkout} minutes
+- Time Per Session: ${request.timePerWorkout} minutes  
 - Weekly Frequency: ${request.workoutsPerWeek} workouts
 - Training Goal: ${JSON.stringify(request.goals)}
 - Available Equipment: ${JSON.stringify(request.equipment.join(', '))}
 - Plan Duration: ${request.duration} weeks
-
-As an expert trainer, consider these principles:
-• Progressive Overload: How will you systematically increase training demands?
-• Specificity: How does each workout serve the stated goal of ${JSON.stringify(request.goals)}?
-• Recovery & Adaptation: How will you balance training stress with recovery?
-• Individual Needs: How does ${JSON.stringify(request.fitnessLevel)} level affect workout complexity?
-• Time Efficiency: How can ${request.timePerWorkout} minutes be optimally utilized?
 
 Think through your coaching strategy:
 1. What workout split maximizes results for this goal and schedule?
 2. How should training intensity and volume progress over ${request.duration} weeks?
 3. What equipment selection strategy best serves the training goals?
 4. How will each workout complement others in the weekly structure?
-
-Create a strategic framework that demonstrates your expertise:
-Each workout structure: Warm-up → Main Training → Cardio Component → Cool-down
 
 Return only valid JSON with this exact structure: {
   "title": "Plan name",
@@ -146,7 +151,7 @@ Return only valid JSON with this exact structure: {
   const response = await openai.chat.completions.create({
     model: "gpt-4.1-mini",
     messages: [
-      { role: "system", content: UNIFIED_COACH_SYSTEM_PROMPT },
+      { role: "system", content: UNIFIED_COACH_SYSTEM_PROMPT + " " + JSON_RESPONSE_RULES },
       { role: "user", content: prompt }
     ],
     response_format: { type: "json_object" },
@@ -175,34 +180,13 @@ export async function generateWeeklyWorkouts(
     `Previous weeks completed: ${JSON.stringify(previousWeeks)}. Apply progression rules: ${JSON.stringify(framework.progressionRules)}` : 
     'This is the first week, start with foundation movements.';
 
-  const prompt = `Generate detailed workouts for Week ${weekNumber} of this fitness plan.
+  const prompt = `Generate detailed workouts for Week ${weekNumber}:
 
 Framework: ${JSON.stringify(currentWeek)}
-Available Equipment (use what's appropriate for each workout): ${JSON.stringify(framework.equipment.join(', '))}
+Available Equipment: ${JSON.stringify(framework.equipment.join(', '))}
 ${progressionContext}
 
-As an expert trainer, design ${currentWeek.workoutDays.length} intelligent workouts that maximize training effectiveness within the time constraints:
-
-COACHING APPROACH:
-Think like an experienced trainer making smart decisions about:
-• Exercise selection based on ${timePerWorkout || 45} minutes available
-• Movement patterns that complement each other
-• Appropriate training volume for the client's level
-• Equipment utilization that serves the training goals
-• Progressive challenge while maintaining form quality
-
-INTELLIGENT EXERCISE SELECTION:
-• Choose optimal number of main exercises (typically 3-5) based on workout duration and complexity
-• For shorter sessions (30 min): Focus on fewer, high-impact compound movements
-• For longer sessions (45-60 min): Include comprehensive training with accessory work
-• Prioritize movement quality and training effect over rigid exercise counts
-• Consider fatigue management and exercise sequencing
-
-WORKOUT STRUCTURE:
-WARM-UP (5-8 minutes): Dynamic preparation specific to the session's focus
-MAIN TRAINING: Intelligently selected exercises that serve the workout's purpose
-CARDIO COMPONENT: Appropriate cardiovascular work for the day's goals
-COOL-DOWN (5-8 minutes): Targeted recovery addressing muscles worked
+Design ${currentWeek.workoutDays.length} intelligent workouts for ${timePerWorkout || 45} minutes each that maximize training effectiveness within the time constraints.
 
 Return only valid JSON with this exact structure: {
   "workouts": [
@@ -265,7 +249,7 @@ Return only valid JSON with this exact structure: {
   const response = await openai.chat.completions.create({
     model: "gpt-4.1-mini",
     messages: [
-      { role: "system", content: UNIFIED_COACH_SYSTEM_PROMPT },
+      { role: "system", content: UNIFIED_COACH_SYSTEM_PROMPT + " " + WORKOUT_STRUCTURE_RULES + " " + JSON_RESPONSE_RULES },
       { role: "user", content: prompt }
     ],
     response_format: { type: "json_object" },
@@ -434,17 +418,15 @@ export async function generateChatResponse(
   userContext: any,
   chatHistory: any[]
 ): Promise<string> {
-  const contextPrompt = `User context:
+  const contextPrompt = `User Data:
 - Fitness level: ${JSON.stringify(userContext.fitnessLevel)}
 - Goals: ${JSON.stringify(userContext.goals?.join(", ") || "General fitness")}
-- Available equipment: ${JSON.stringify(userContext.equipment?.join(", ") || "None")}
+- Equipment: ${JSON.stringify(userContext.equipment?.join(", ") || "None")}
 - Recent workouts: ${JSON.stringify(userContext.recentWorkouts || "None")}
 
 Chat history: ${JSON.stringify(chatHistory.slice(-10))}
 
-User message: ${JSON.stringify(message)}
-
-Respond as a knowledgeable, supportive AI fitness coach. Provide helpful advice, motivation, and answer fitness-related questions. Keep responses conversational and encouraging.`;
+User message: ${JSON.stringify(message)}`;
 
   try {
     const response = await openai.chat.completions.create({
@@ -539,28 +521,12 @@ export async function createWeeklySnapshot(
   volumePerMuscle: any;
   flags: any[];
 }> {
-  const prompt = `Analyze this user's Week ${weekNumber} workout performance:
+  const prompt = `Analyze Week ${weekNumber} performance and create weekly progress snapshot:
 
 Workout sessions: ${JSON.stringify(workoutSessions)}
 User goals: ${JSON.stringify(userGoals.join(", "))}
 
-Return only valid JSON with this exact structure:
-{
-  "coachNotes": "Brief summary of week performance (max 100 words)",
-  "adherencePercent": 85,
-  "subjectiveFatigue": "moderate",
-  "strengthPRs": [{"exercise": "Bench Press", "weight": "135 lbs", "reps": 8}],
-  "volumePerMuscle": {"chest": 12, "legs": 16, "back": 10},
-  "flags": ["missed_friday_workout", "weight_not_progressing_squats"],
-  "jsonSnapshot": {
-    "weekSummary": "Key insights for future plan generation",
-    "avgWeight": {"bench": "125 lbs", "squat": "155 lbs"},
-    "completionRate": 85,
-    "userPreferences": ["shorter_rest_periods", "prefers_morning_workouts"]
-  }
-}
-
-No keys outside this schema. Focus on data that would be useful for generating future workout plans.`;
+Focus on insights useful for future plan generation.`;
 
   try {
     const response = await openai.chat.completions.create({
