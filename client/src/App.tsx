@@ -122,7 +122,7 @@ function App() {
       <TooltipProvider>
         <OnboardingCheck>
           <div className="mobile-container bg-background min-h-screen">
-            {!isAIChatPage && <TopNavigation />}
+            {!isAIChatPage && !isWorkoutPage && <TopNavigation />}
             <Toaster />
             <Router />
             <BottomNavigation />

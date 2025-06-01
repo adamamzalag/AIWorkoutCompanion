@@ -1,5 +1,5 @@
 import { Link, useLocation } from 'wouter';
-import { Home, Dumbbell, TrendingUp, MessageCircle, Settings, Loader2, CheckCircle, ChevronLeft, ChevronRight, Play, Menu } from 'lucide-react';
+import { Home, Dumbbell, TrendingUp, MessageCircle, Settings, Loader2, CheckCircle, ChevronLeft, ChevronRight, Play, Menu, X } from 'lucide-react';
 import { useState, useEffect } from 'react';
 import { Button } from '@/components/ui/button';
 import { Dialog, DialogContent, DialogHeader, DialogTitle, DialogDescription, DialogTrigger } from '@/components/ui/dialog';
@@ -7,29 +7,28 @@ import { Dialog, DialogContent, DialogHeader, DialogTitle, DialogDescription, Di
 // Workout-specific bottom controls
 function WorkoutBottomControls() {
   return (
-    <nav className="glass-effect fixed bottom-0 left-1/2 transform -translate-x-1/2 w-full max-w-sm z-50 px-3 py-3 rounded-t-2xl">
-      <div className="flex items-center justify-between space-x-2">
+    <nav className="glass-effect fixed bottom-0 left-1/2 transform -translate-x-1/2 w-full max-w-sm z-50 px-2 py-3 rounded-t-2xl">
+      <div className="flex items-center space-x-1">
         {/* Previous Exercise */}
         <Button
           variant="outline"
           size="sm"
-          className="flex-1 glass-effect border-border/50 text-xs"
+          className="flex-1 glass-effect border-border/50 text-xs px-2"
           onClick={() => {
             window.dispatchEvent(new CustomEvent('workout-previous'));
           }}
         >
-          <ChevronLeft size={14} className="mr-1" />
+          <ChevronLeft size={12} className="mr-1" />
           Previous
         </Button>
 
         {/* Complete Set - Main Action */}
         <Button
-          className="flex-[2] bg-accent hover:bg-accent/90 text-accent-foreground font-medium"
+          className="flex-[2] bg-accent hover:bg-accent/90 text-accent-foreground font-medium text-sm px-3"
           onClick={() => {
             window.dispatchEvent(new CustomEvent('workout-complete-set'));
           }}
         >
-          <Play size={16} className="mr-1" />
           Complete Set
         </Button>
 
@@ -37,25 +36,25 @@ function WorkoutBottomControls() {
         <Button
           variant="outline"
           size="sm"
-          className="flex-1 glass-effect border-border/50 text-xs"
+          className="flex-1 glass-effect border-border/50 text-xs px-2"
           onClick={() => {
             window.dispatchEvent(new CustomEvent('workout-next'));
           }}
         >
           Next
-          <ChevronRight size={14} className="ml-1" />
+          <ChevronRight size={12} className="ml-1" />
         </Button>
 
-        {/* Menu/Exit Button */}
+        {/* Exit Button - More intuitive */}
         <Button
           variant="ghost"
           size="sm"
-          className="w-9 h-9 rounded-full p-0"
+          className="w-8 h-8 rounded-full p-0"
           onClick={() => {
             window.dispatchEvent(new CustomEvent('workout-menu'));
           }}
         >
-          <Menu size={16} />
+          <X size={14} />
         </Button>
       </div>
     </nav>
