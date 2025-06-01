@@ -51,7 +51,6 @@ const planTypeOptions = [
 
 export default function WorkoutsPage() {
   const [showGenerateDialog, setShowGenerateDialog] = useState(false);
-  const [selectedPlan, setSelectedPlan] = useState<WorkoutPlan | null>(null);
   const [searchQuery, setSearchQuery] = useState('');
   const [filterDifficulty, setFilterDifficulty] = useState<string>('all');
   const [location, setLocation] = useLocation();
@@ -76,10 +75,7 @@ export default function WorkoutsPage() {
     enabled: !!(userProfile as any)?.id,
   });
 
-  const { data: selectedPlanWorkouts, isLoading: workoutsLoading } = useQuery<Workout[]>({
-    queryKey: ['/api/workouts', selectedPlan?.id],
-    enabled: !!selectedPlan?.id
-  });
+
 
   const [generationState, setGenerationState] = useState<{
     isGenerating: boolean;
@@ -452,13 +448,14 @@ export default function WorkoutsPage() {
                     )}
                   </div>
                   
-                  <Button
-                    size="sm"
-                    onClick={() => setSelectedPlan(selectedPlan?.id === plan.id ? null : plan)}
-                    className="bg-primary hover:bg-primary/90 text-primary-foreground"
-                  >
-                    {selectedPlan?.id === plan.id ? 'Hide' : 'View'} Workouts
-                  </Button>
+                  <Link href={`/plan/${plan.id}`}>
+                    <Button
+                      size="sm"
+                      className="bg-primary hover:bg-primary/90 text-primary-foreground"
+                    >
+                      View Plan
+                    </Button>
+                  </Link>
                 </div>
               </CardContent>
             </Card>
@@ -492,82 +489,7 @@ export default function WorkoutsPage() {
         )}
       </div>
 
-      {/* Selected Plan Workouts */}
-      {selectedPlan && (
-        <Card className="glass-effect gradient-border">
-          <CardContent className="p-4">
-            <div className="flex items-center justify-between mb-4">
-              <h3 className="font-poppins font-semibold text-lg text-foreground">
-                {selectedPlan.title} - Workouts
-              </h3>
-              <Badge className="bg-primary text-primary-foreground">
-                {selectedPlan.totalWorkouts} total
-              </Badge>
-            </div>
-            
-            <div className="space-y-3">
-              {workoutsLoading ? (
-                Array.from({ length: 3 }).map((_, i) => (
-                  <Card key={i} className="glass-effect">
-                    <CardContent className="p-3">
-                      <div className="flex items-center justify-between">
-                        <div className="flex items-center space-x-3">
-                          <Skeleton className="w-10 h-10 rounded-xl" />
-                          <div>
-                            <Skeleton className="h-4 w-32 mb-1" />
-                            <Skeleton className="h-3 w-24" />
-                          </div>
-                        </div>
-                        <Skeleton className="h-8 w-16" />
-                      </div>
-                    </CardContent>
-                  </Card>
-                ))
-              ) : selectedPlanWorkouts && selectedPlanWorkouts.length > 0 ? (
-                selectedPlanWorkouts.map((workout, index) => (
-                  <Card key={workout.id} className="glass-effect hover:bg-card/50 transition-colors">
-                    <CardContent className="p-3">
-                      <div className="flex items-center justify-between">
-                        <div className="flex items-center space-x-3">
-                          <div className="w-10 h-10 bg-gradient-to-r from-accent to-primary rounded-xl flex items-center justify-center text-white font-medium text-sm">
-                            {index + 1}
-                          </div>
-                          <div>
-                            <h4 className="font-medium text-foreground">{workout.title}</h4>
-                            <div className="flex items-center space-x-3 text-xs text-muted-foreground">
-                              <div className="flex items-center space-x-1">
-                                <Clock size={12} />
-                                <span>{workout.estimatedDuration} min</span>
-                              </div>
-                              <div className="flex items-center space-x-1">
-                                <Target size={12} />
-                                <span>
-                                  {Array.isArray(workout.exercises) ? workout.exercises.length : 0} exercises
-                                </span>
-                              </div>
-                            </div>
-                          </div>
-                        </div>
-                        
-                        <Link href={`/workout?id=${workout.id}`}>
-                          <Button size="sm" className="bg-accent hover:bg-accent/90 text-accent-foreground">
-                            <Play size={14} />
-                          </Button>
-                        </Link>
-                      </div>
-                    </CardContent>
-                  </Card>
-                ))
-              ) : (
-                <div className="text-center py-6">
-                  <Target className="w-12 h-12 text-muted-foreground mx-auto mb-2" />
-                  <p className="text-muted-foreground">No workouts in this plan</p>
-                </div>
-              )}
-            </div>
-          </CardContent>
-        </Card>
-      )}
+
     </div>
   );
 }
