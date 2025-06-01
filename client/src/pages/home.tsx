@@ -30,6 +30,10 @@ export default function Home() {
     enabled: !!(userProfile as any)?.id,
   });
 
+  console.log('Debug - userProfile:', userProfile);
+  console.log('Debug - workoutPlans:', workoutPlans);
+  console.log('Debug - plansLoading:', plansLoading);
+
   const { data: recentSessions, isLoading: sessionsLoading } = useQuery<WorkoutSession[]>({
     queryKey: ['/api/recent-sessions', (userProfile as any)?.id, 5],
     enabled: !!(userProfile as any)?.id,
