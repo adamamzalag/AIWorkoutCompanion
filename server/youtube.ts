@@ -211,56 +211,14 @@ function parseDuration(duration: string): number {
   return hours * 3600 + minutes * 60 + seconds;
 }
 
-export async function updateExerciseVideos(storage: any): Promise<void> {
-  console.log('Starting comprehensive exercise video update process...');
-  
-  try {
-    // Get all exercises without YouTube videos
-    const exercises = await storage.getExercises();
-    const exercisesToUpdate = exercises.filter((ex: any) => !ex.youtubeId || !ex.thumbnailUrl);
-    
-    console.log(`Found ${exercisesToUpdate.length} exercises that need YouTube videos`);
-    
-    for (const exercise of exercisesToUpdate) {
-      console.log(`Searching video for: ${exercise.name}`);
-      
-      const video = await searchExerciseVideo(exercise.name);
-      
-      if (video) {
-        console.log(`Found video for ${exercise.name}: ${video.id} (${video.title})`);
-        
-        // Update exercise with video data
-        await storage.updateExercise(exercise.id, {
-          youtubeId: video.id,
-          thumbnailUrl: video.thumbnailUrl
-        });
-        
-        console.log(`Updated ${exercise.name} with video ${video.id}`);
-      } else {
-        console.log(`No suitable video found for ${exercise.name}`);
-      }
-      
-      // Add a small delay to respect YouTube API rate limits
-      await new Promise(resolve => setTimeout(resolve, 1500));
-    }
-    
-    console.log('Exercise video update process completed');
-  } catch (error) {
-    console.error('Error updating exercise videos:', error);
-  }
-}
 
-// Enhanced function to update videos for specific exercise types
+
+// Universal function to find tutorial videos for ANY exercise/movement type
 export async function updateAllExerciseTypes(storage: any): Promise<void> {
-  console.log('Starting comprehensive video update for all exercise types...');
+  console.log('Starting universal video search for all movements and exercises...');
   
   try {
     const exercises = await storage.getExercises();
-    
-    // Categorize exercises by type for better search terms
-    const warmupKeywords = ['warm', 'circle', 'roll', 'stretch', 'mobility'];
-    const cardioKeywords = ['treadmill', 'jogging', 'running', 'jumping', 'cardio'];
-    const cooldownKeywords = ['cool', 'stretch', 'relax'];
     
     for (const exercise of exercises) {
       if (exercise.youtubeId && exercise.thumbnailUrl) {
@@ -268,45 +226,10 @@ export async function updateAllExerciseTypes(storage: any): Promise<void> {
         continue;
       }
       
-      const exerciseName = exercise.name.toLowerCase();
-      let searchTerms = [];
+      console.log(`Searching video for: ${exercise.name}`);
       
-      // Determine exercise type and customize search terms
-      if (warmupKeywords.some(keyword => exerciseName.includes(keyword))) {
-        searchTerms = [
-          `how to ${exercise.name} warm up`,
-          `${exercise.name} warmup tutorial`,
-          `${exercise.name} mobility exercise`
-        ];
-      } else if (cardioKeywords.some(keyword => exerciseName.includes(keyword))) {
-        searchTerms = [
-          `how to ${exercise.name}`,
-          `${exercise.name} technique`,
-          `${exercise.name} form tutorial`
-        ];
-      } else if (cooldownKeywords.some(keyword => exerciseName.includes(keyword))) {
-        searchTerms = [
-          `how to ${exercise.name} stretch`,
-          `${exercise.name} cooldown tutorial`,
-          `${exercise.name} recovery exercise`
-        ];
-      } else {
-        // Regular strength exercises
-        searchTerms = [
-          `how to ${exercise.name}`,
-          `${exercise.name} exercise tutorial`,
-          `${exercise.name} proper form`
-        ];
-      }
-      
-      console.log(`Searching video for: ${exercise.name} (Type: ${warmupKeywords.some(k => exerciseName.includes(k)) ? 'warmup' : cardioKeywords.some(k => exerciseName.includes(k)) ? 'cardio' : cooldownKeywords.some(k => exerciseName.includes(k)) ? 'cooldown' : 'strength'})`);
-      
-      let video = null;
-      for (const searchTerm of searchTerms) {
-        video = await searchVideos(searchTerm);
-        if (video) break;
-        await new Promise(resolve => setTimeout(resolve, 500));
-      }
+      // Universal search approach - try multiple search patterns for ANY movement type
+      const video = await searchExerciseVideo(exercise.name);
       
       if (video) {
         console.log(`Found video for ${exercise.name}: ${video.id} (${video.title}) - Duration: ${video.duration}`);
@@ -325,9 +248,9 @@ export async function updateAllExerciseTypes(storage: any): Promise<void> {
       await new Promise(resolve => setTimeout(resolve, 2000));
     }
     
-    console.log('Comprehensive video update process completed');
+    console.log('Universal video update process completed');
   } catch (error) {
-    console.error('Error in comprehensive video update:', error);
+    console.error('Error in universal video update:', error);
   }
 }
 

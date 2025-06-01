@@ -24,12 +24,43 @@ export function YouTubeVideo({ videoId, thumbnailUrl, exerciseName, className = 
   };
 
   if (!videoId || !displayThumbnail) {
-    // Fallback to exercise-specific Unsplash image when no YouTube video is available
-    const searchQuery = exerciseName.toLowerCase().replace(/\s+/g, '%20');
+    // Generate exercise-specific Unsplash search terms
+    const getExerciseImageQuery = (name: string) => {
+      const lowerName = name.toLowerCase();
+      
+      // Map exercise types to specific image search terms
+      if (lowerName.includes('treadmill') || lowerName.includes('jogging') || lowerName.includes('running')) {
+        return 'person-running-treadmill-gym';
+      }
+      if (lowerName.includes('stretch') || lowerName.includes('chest opener')) {
+        return 'person-stretching-yoga-flexibility';
+      }
+      if (lowerName.includes('circle') || lowerName.includes('roll')) {
+        return 'person-warming-up-shoulder-mobility';
+      }
+      if (lowerName.includes('breath') || lowerName.includes('breathing')) {
+        return 'meditation-breathing-relaxation';
+      }
+      if (lowerName.includes('bench press')) {
+        return 'person-bench-press-gym-weights';
+      }
+      if (lowerName.includes('shoulder press') || lowerName.includes('dumbbells')) {
+        return 'person-dumbbell-shoulder-exercise';
+      }
+      if (lowerName.includes('tricep')) {
+        return 'person-tricep-exercise-gym';
+      }
+      
+      // Default to general fitness
+      return 'fitness-exercise-gym-workout';
+    };
+
+    const imageQuery = getExerciseImageQuery(exerciseName);
+    
     return (
       <div className={`relative ${className}`}>
         <img
-          src={`https://images.unsplash.com/800x600/?fitness,${searchQuery},exercise`}
+          src={`https://images.unsplash.com/800x600/?${imageQuery}`}
           alt={`${exerciseName} exercise`}
           className="w-full h-full object-cover rounded-2xl"
           onError={(e) => {
