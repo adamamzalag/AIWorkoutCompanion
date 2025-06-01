@@ -21,7 +21,7 @@ export function WorkoutCard({
   onPreviewWorkout 
 }: WorkoutCardProps) {
   return (
-    <Card className="glass-effect gradient-border">
+    <Card className="glass-effect border-border/20">
       <CardContent className="p-6">
         <div className="flex items-center justify-between mb-4">
           <h2 className="font-poppins font-semibold text-xl text-foreground">

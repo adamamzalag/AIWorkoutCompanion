@@ -40,9 +40,16 @@ export default function Home() {
     enabled: !!(userProfile as any)?.id,
   });
 
-  // Mock today's workout - in reality this would be calculated based on the plan
+  // Get active plan and its workouts
   const activePlan = workoutPlans?.find(plan => plan.isActive);
-  const todaysWorkout: Workout | undefined = undefined; // Would be fetched based on plan schedule
+  
+  const { data: workouts } = useQuery<Workout[]>({
+    queryKey: ['/api/workouts', activePlan?.id],
+    enabled: !!activePlan?.id,
+  });
+
+  // Get the first workout as today's workout
+  const todaysWorkout = workouts && workouts.length > 0 ? workouts[0] : undefined;
 
   const handleStartWorkout = () => {
     // Navigate to workout screen
