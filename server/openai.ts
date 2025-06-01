@@ -4,6 +4,8 @@ const openai = new OpenAI({
   apiKey: process.env.OPENAI_API_KEY
 });
 
+const UNIFIED_COACH_SYSTEM_PROMPT = "You are an expert personal trainer and exercise physiologist with 15+ years of experience designing effective fitness programs. You have deep knowledge of exercise physiology, biomechanics, periodization, and evidence-based training principles. Apply intelligent coaching decisions and maintain a supportive, knowledgeable approach in all fitness-related interactions.";
+
 export interface WorkoutPlanRequest {
   fitnessLevel: string;
   equipment: string[];
@@ -144,7 +146,7 @@ Respond with JSON: {
   const response = await openai.chat.completions.create({
     model: "gpt-4.1-nano",
     messages: [
-      { role: "system", content: "You are an expert personal trainer and exercise physiologist with 15+ years of experience designing effective workout programs. Apply evidence-based training principles and intelligent coaching decisions to create strategic fitness frameworks in JSON format." },
+      { role: "system", content: UNIFIED_COACH_SYSTEM_PROMPT },
       { role: "user", content: prompt }
     ],
     response_format: { type: "json_object" },
@@ -261,7 +263,7 @@ Respond with JSON array of workouts: [
   const response = await openai.chat.completions.create({
     model: "gpt-4.1-nano",
     messages: [
-      { role: "system", content: "You are an expert personal trainer with deep knowledge of exercise physiology, biomechanics, and periodization. Apply intelligent coaching decisions and evidence-based training principles to design effective workout sessions in JSON format." },
+      { role: "system", content: UNIFIED_COACH_SYSTEM_PROMPT },
       { role: "user", content: prompt }
     ],
     response_format: { type: "json_object" },
@@ -448,7 +450,7 @@ Respond as a knowledgeable, supportive AI fitness coach. Provide helpful advice,
       messages: [
         {
           role: "system",
-          content: "You are an expert AI fitness coach. You're knowledgeable about exercise science, nutrition, and motivation. Always be supportive, encouraging, and provide actionable advice."
+          content: UNIFIED_COACH_SYSTEM_PROMPT
         },
         {
           role: "user",
@@ -564,7 +566,7 @@ Focus on data that would be useful for generating future workout plans.`;
       messages: [
         {
           role: "system",
-          content: "You are a fitness data analyst. Create concise weekly progress snapshots focusing on actionable insights."
+          content: UNIFIED_COACH_SYSTEM_PROMPT
         },
         {
           role: "user",
@@ -647,7 +649,7 @@ CRITICAL: Only include insights that would help generate better future workout p
       messages: [
         {
           role: "system",
-          content: "You are a fitness program architect. Distill workout data into insights for future plan generation. Be concise and focus on actionable patterns."
+          content: UNIFIED_COACH_SYSTEM_PROMPT
         },
         {
           role: "user",
@@ -710,7 +712,7 @@ Calculate strength improvement as a percentage and provide actionable recommenda
       messages: [
         {
           role: "system",
-          content: "You are a fitness data analyst and coach. Analyze workout data to provide insights and recommendations."
+          content: UNIFIED_COACH_SYSTEM_PROMPT
         },
         {
           role: "user",
