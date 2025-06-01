@@ -15,14 +15,19 @@ export default function AIChatPage() {
   const messagesEndRef = useRef<HTMLDivElement>(null);
   const queryClient = useQueryClient();
 
+  const { data: userProfile } = useQuery<User>({
+    queryKey: ["/api/profile"],
+  });
+
   const { data: messages, isLoading } = useQuery<ChatMessage[]>({
-    queryKey: ['/api/chat', MOCK_USER_ID],
+    queryKey: ['/api/chat', (userProfile as any)?.id],
+    enabled: !!(userProfile as any)?.id,
   });
 
   const sendMessageMutation = useMutation({
     mutationFn: async (content: string) => {
       const response = await apiRequest('POST', '/api/chat', {
-        userId: MOCK_USER_ID,
+        userId: (userProfile as any)?.id,
         role: 'user',
         content
       });
@@ -32,7 +37,7 @@ export default function AIChatPage() {
       setIsTyping(true);
     },
     onSuccess: () => {
-      queryClient.invalidateQueries({ queryKey: ['/api/chat', MOCK_USER_ID] });
+      queryClient.invalidateQueries({ queryKey: ['/api/chat', (userProfile as any)?.id] });
       setMessage('');
       setIsTyping(false);
     },

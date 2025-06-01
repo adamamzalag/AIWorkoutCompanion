@@ -10,9 +10,11 @@ import { Input } from "@/components/ui/input";
 import { Textarea } from "@/components/ui/textarea";
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@/components/ui/select";
 import { Checkbox } from "@/components/ui/checkbox";
+import { Dialog, DialogContent, DialogHeader, DialogTitle, DialogTrigger } from "@/components/ui/dialog";
+import { Badge } from "@/components/ui/badge";
 import { apiRequest } from "@/lib/queryClient";
 import { User } from "@shared/schema";
-import { Settings, Save, Plus, X } from "lucide-react";
+import { Settings, Save, Plus, X, Edit3 } from "lucide-react";
 import { useToast } from "@/hooks/use-toast";
 
 const profileSchema = z.object({
