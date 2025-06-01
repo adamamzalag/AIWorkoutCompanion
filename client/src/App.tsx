@@ -115,16 +115,17 @@ function Router() {
 function App() {
   const [location] = useLocation();
   const isAIChatPage = location === '/ai-chat';
+  const isWorkoutPage = location === '/workout';
 
   return (
     <QueryClientProvider client={queryClient}>
       <TooltipProvider>
         <OnboardingCheck>
           <div className="mobile-container bg-background min-h-screen">
-            {!isAIChatPage && <TopNavigation />}
+            {!isAIChatPage && !isWorkoutPage && <TopNavigation />}
             <Toaster />
             <Router />
-            <BottomNavigation />
+            {!isWorkoutPage && <BottomNavigation />}
           </div>
         </OnboardingCheck>
       </TooltipProvider>

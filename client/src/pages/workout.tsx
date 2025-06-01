@@ -164,20 +164,25 @@ export default function WorkoutPage() {
   // For main exercises, look up in the exercise database
   const currentExerciseData = currentExercise?.isWarmup || currentExercise?.isCardio || currentExercise?.isCooldown ? 
     {
-      id: currentExercise.exerciseId,
+      id: typeof currentExercise.exerciseId === 'string' ? 0 : currentExercise.exerciseId,
       name: currentExercise.name,
       slug: currentExercise.name.toLowerCase().replace(/\s+/g, '-'),
       description: currentExercise.isWarmup ? 'Warm-up exercise' : 
                    currentExercise.isCardio ? 'Cardio exercise' : 'Cool-down exercise',
-      muscleGroups: [],
+      muscle_groups: [],
       equipment: [],
-      difficultyLevel: 'beginner',
+      difficulty: 'beginner',
       instructions: currentExercise.isWarmup ? 
         [`Perform ${currentExercise.name} for ${currentExercise.duration} seconds`] :
         currentExercise.isCardio ?
         [`Perform ${currentExercise.name} for ${currentExercise.duration} seconds`] :
         [`Hold ${currentExercise.name} for ${currentExercise.duration} seconds`],
-      createdAt: new Date()
+      createdAt: new Date(),
+      tempo: null,
+      modifications: null,
+      progressions: null,
+      youtubeId: null,
+      imageUrl: null
     } : exercises?.find(ex => ex.id === currentExercise?.exerciseId);
   
   const currentSet = currentExercise?.sets.findIndex(set => !set.completed) || 0;
@@ -200,16 +205,16 @@ export default function WorkoutPage() {
   }
 
   return (
-    <div className="min-h-screen bg-background">
-      {/* Workout Header */}
-      <div className="glass-effect px-4 py-3 flex items-center justify-between sticky top-0 z-50">
+    <div className="min-h-screen bg-background pb-4">
+      {/* Simplified Workout Header - no floating title bar */}
+      <div className="px-4 py-3 flex items-center justify-between">
         <Button
           variant="outline"
           size="sm"
           className="w-10 h-10 rounded-full p-0 glass-effect border-border/50"
-          onClick={() => {}} // Pause functionality
+          onClick={handleExitWorkout}
         >
-          <Pause size={16} />
+          <X size={16} />
         </Button>
         
         <div className="text-center">
@@ -245,8 +250,8 @@ export default function WorkoutPage() {
         />
       </div>
 
-      {/* Workout Controls */}
-      <div className="fixed bottom-0 left-0 right-0 px-4 pb-6 bg-gradient-to-t from-background to-transparent pt-6">
+      {/* Workout Controls - Positioned above bottom nav */}
+      <div className="fixed bottom-20 left-0 right-0 px-4 bg-gradient-to-t from-background via-background/90 to-transparent pt-6 pb-4">
         <div className="max-w-sm mx-auto space-y-4">
           <div className="flex space-x-3">
             <Button
