@@ -88,7 +88,7 @@ export default function WorkoutsPage() {
         setShowGenerateDialog(false); // Close the form dialog
         setGenerationState({ isGenerating: true, operationId: data.operationId }); // Show progress dialog
       } else {
-        queryClient.invalidateQueries({ queryKey: ['/api/workout-plans', userProfile?.id] });
+        queryClient.invalidateQueries({ queryKey: ['/api/workout-plans', (userProfile as any)?.id] });
         setShowGenerateDialog(false);
         toast({
           title: "Workout Plan Generated!",
@@ -109,7 +109,7 @@ export default function WorkoutsPage() {
     setGenerationState({ isGenerating: false, operationId: null });
     
     if (success) {
-      queryClient.invalidateQueries({ queryKey: ['/api/workout-plans', userProfile?.id] });
+      queryClient.invalidateQueries({ queryKey: ['/api/workout-plans', (userProfile as any)?.id] });
       setShowGenerateDialog(false);
       toast({
         title: "Workout Plan Generated!",
@@ -146,7 +146,7 @@ export default function WorkoutsPage() {
 
     const planRequest = {
       ...values,
-      userId: userProfile.id,
+      userId: (userProfile as any).id,
       fitnessLevel: (userProfile.fitnessLevel as 'beginner' | 'intermediate' | 'advanced') || 'beginner',
       equipment: userProfile.equipment || [],
       goals: userProfile.goals || 'general_fitness'
