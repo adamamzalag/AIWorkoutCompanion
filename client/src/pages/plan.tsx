@@ -137,49 +137,88 @@ export default function PlanDetailPage() {
                 </Card>
               ))
             ) : workouts && workouts.length > 0 ? (
-              workouts.map((workout, index) => (
-                <Card key={workout.id} className="glass-effect hover:bg-card/50 transition-colors">
-                  <CardContent className="p-4">
-                    <div className="flex items-center justify-between">
-                      <div className="flex items-center space-x-4">
-                        <div className="w-12 h-12 bg-gradient-to-r from-accent to-primary rounded-xl flex items-center justify-center text-white font-semibold">
-                          {index + 1}
-                        </div>
-                        <div className="flex-1">
+              workouts.map((workout, index) => {
+                const exercises = workout.exercises ? 
+                  (typeof workout.exercises === 'string' ? 
+                    JSON.parse(workout.exercises) : 
+                    workout.exercises) : [];
+                
+                const keyExercises = exercises.slice(0, 3).map((ex: any) => ex.name);
+                const muscleGroups = [...new Set(exercises.flatMap((ex: any) => ex.muscleGroups || []))].slice(0, 3);
+                
+                return (
+                  <Card key={workout.id} className="glass-effect hover:bg-card/50 transition-colors relative">
+                    <CardContent className="p-4">
+                      {/* Small workout number in top-left */}
+                      <div className="absolute top-3 left-3 w-6 h-6 bg-gradient-to-r from-accent to-primary rounded-md flex items-center justify-center text-white text-xs font-semibold">
+                        {index + 1}
+                      </div>
+                      
+                      <div className="pl-8 space-y-3">
+                        {/* Workout title and description */}
+                        <div>
                           <h4 className="font-semibold text-foreground mb-1">{workout.title}</h4>
                           {workout.description && (
-                            <p className="text-sm text-muted-foreground mb-2 line-clamp-1">
+                            <p className="text-sm text-muted-foreground line-clamp-2">
                               {workout.description}
                             </p>
                           )}
-                          <div className="flex items-center space-x-4 text-xs text-muted-foreground">
+                        </div>
+                        
+                        {/* Key exercises preview */}
+                        {keyExercises.length > 0 && (
+                          <div>
+                            <p className="text-xs text-muted-foreground mb-1">Key Exercises:</p>
+                            <p className="text-sm text-foreground">
+                              {keyExercises.join(', ')}
+                              {exercises.length > 3 && ` +${exercises.length - 3} more`}
+                            </p>
+                          </div>
+                        )}
+                        
+                        {/* Muscle groups and workout info */}
+                        <div className="flex items-center justify-between">
+                          <div className="flex flex-wrap gap-1">
+                            {muscleGroups.map((muscle) => (
+                              <Badge key={muscle} variant="outline" className="text-xs">
+                                {muscle}
+                              </Badge>
+                            ))}
+                          </div>
+                          <div className="flex items-center space-x-3 text-xs text-muted-foreground">
                             <div className="flex items-center space-x-1">
                               <Clock size={12} />
-                              <span>{workout.estimatedDuration} min</span>
+                              <span>{workout.estimatedDuration}m</span>
                             </div>
                             <div className="flex items-center space-x-1">
                               <Dumbbell size={12} />
-                              <span>
-                                {workout.exercises ? 
-                                  (typeof workout.exercises === 'string' ? 
-                                    JSON.parse(workout.exercises).length : 
-                                    workout.exercises.length) : 0} exercises
-                              </span>
+                              <span>{exercises.length}</span>
                             </div>
                           </div>
                         </div>
+                        
+                        {/* Action buttons */}
+                        <div className="flex space-x-2 pt-2">
+                          <Button
+                            variant="outline"
+                            size="sm"
+                            className="flex-1 glass-effect border-border/50"
+                            onClick={() => {/* TODO: Open quick view modal */}}
+                          >
+                            Quick View
+                          </Button>
+                          <Link href={`/workout?id=${workout.id}`} className="flex-1">
+                            <Button size="sm" className="w-full bg-accent hover:bg-accent/90 text-accent-foreground">
+                              <Play size={14} className="mr-1" />
+                              Start Workout
+                            </Button>
+                          </Link>
+                        </div>
                       </div>
-                      
-                      <Link href={`/workout?id=${workout.id}`}>
-                        <Button size="sm" className="bg-accent hover:bg-accent/90 text-accent-foreground touch-target">
-                          <Play size={14} className="mr-1" />
-                          Start
-                        </Button>
-                      </Link>
-                    </div>
-                  </CardContent>
-                </Card>
-              ))
+                    </CardContent>
+                  </Card>
+                );
+              })
             ) : (
               <div className="text-center py-8">
                 <Target className="w-16 h-16 text-muted-foreground mx-auto mb-4" />
