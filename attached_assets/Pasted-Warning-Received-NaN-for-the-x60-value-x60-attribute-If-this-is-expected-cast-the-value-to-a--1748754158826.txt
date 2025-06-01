@@ -1,0 +1,37 @@
+Warning: Received NaN for the &#x60;value&#x60; attribute. If this is expected, cast the value to a string.
+    at input
+    at _c (https://47d08856-5019-4cb3-a080-7f7f5f9f22a0-00-1eejzy90jwtae.kirk.replit.dev/src/components/ui/input.tsx:20:11)
+    at https://47d08856-5019-4cb3-a080-7f7f5f9f22a0-00-1eejzy90jwtae.kirk.replit.dev/@fs/home/runner/workspace/node_modules/.vite/deps/chunk-5S42QOQO.js?v=c065844f:79:13
+    at https://47d08856-5019-4cb3-a080-7f7f5f9f22a0-00-1eejzy90jwtae.kirk.replit.dev/@fs/home/runner/workspace/node_modules/.vite/deps/chunk-5S42QOQO.js?v=c065844f:56:13
+    at https://47d08856-5019-4cb3-a080-7f7f5f9f22a0-00-1eejzy90jwtae.kirk.replit.dev/src/components/ui/form.tsx:130:9
+    at div
+    at https://47d08856-5019-4cb3-a080-7f7f5f9f22a0-00-1eejzy90jwtae.kirk.replit.dev/src/components/ui/form.tsx:72:6
+    at Controller (https://47d08856-5019-4cb3-a080-7f7f5f9f22a0-00-1eejzy90jwtae.kirk.replit.dev/@fs/home/runner/workspace/node_modules/.vite/deps/chunk-CXJMC5RA.js?v=c065844f:298:35)
+    at FormField (https://47d08856-5019-4cb3-a080-7f7f5f9f22a0-00-1eejzy90jwtae.kirk.replit.dev/src/components/ui/form.tsx:33:6)
+    at form
+    at FormProvider (https://47d08856-5019-4cb3-a080-7f7f5f9f22a0-00-1eejzy90jwtae.kirk.replit.dev/@fs/home/runner/workspace/node_modules/.vite/deps/chunk-CXJMC5RA.js?v=c065844f:102:11)
+    at div
+    at https://47d08856-5019-4cb3-a080-7f7f5f9f22a0-00-1eejzy90jwtae.kirk.replit.dev/@fs/home/runner/workspace/node_modules/.vite/deps/chunk-GVTGVYSA.js?v=c065844f:42:13
+    at https://47d08856-5019-4cb3-a080-7f7f5f9f22a0-00-1eejzy90jwtae.kirk.replit.dev/@fs/home/runner/workspace/node_modules/.vite/deps/chunk-YO7AJBAM.js?v=c065844f:59:7
+    at https://47d08856-5019-4cb3-a080-7f7f5f9f22a0-00-1eejzy90jwtae.kirk.replit.dev/@fs/home/runner/workspace/node_modules/.vite/deps/chunk-5S42QOQO.js?v=c065844f:79:13
+    at https://47d08856-5019-4cb3-a080-7f7f5f9f22a0-00-1eejzy90jwtae.kirk.replit.dev/@fs/home/runner/workspace/node_modules/.vite/deps/chunk-5S42QOQO.js?v=c065844f:56:13
+    at https://47d08856-5019-4cb3-a080-7f7f5f9f22a0-00-1eejzy90jwtae.kirk.replit.dev/@fs/home/runner/workspace/node_modules/.vite/deps/chunk-GVTGVYSA.js?v=c065844f:42:13
+    at https://47d08856-5019-4cb3-a080-7f7f5f9f22a0-00-1eejzy90jwtae.kirk.replit.dev/@fs/home/runner/workspace/node_modules/.vite/deps/chunk-RYXGEKTW.js?v=c065844f:57:5
+    at https://47d08856-5019-4cb3-a080-7f7f5f9f22a0-00-1eejzy90jwtae.kirk.replit.dev/@fs/home/runner/workspace/node_modules/.vite/deps/@radix-ui_react-dialog.js?v=c065844f:235:13
+    at https://47d08856-5019-4cb3-a080-7f7f5f9f22a0-00-1eejzy90jwtae.kirk.replit.dev/@fs/home/runner/workspace/node_modules/.vite/deps/@radix-ui_react-dialog.js?v=c065844f:158:58
+    at Presence (https://47d08856-5019-4cb3-a080-7f7f5f9f22a0-00-1eejzy90jwtae.kirk.replit.dev/@fs/home/runner/workspace/node_modules/.vite/deps/chunk-MJS43FI5.js?v=c065844f:24:11)
+    at https://47d08856-5019-4cb3-a080-7f7f5f9f22a0-00-1eejzy90jwtae.kirk.replit.dev/@fs/home/runner/workspace/node_modules/.vite/deps/@radix-ui_react-dialog.js?v=c065844f:149:64
+    at https://47d08856-5019-4cb3-a080-7f7f5f9f22a0-00-1eejzy90jwtae.kirk.replit.dev/@fs/home/runner/workspace/node_modules/.vite/deps/chunk-5S42QOQO.js?v=c065844f:79:13
+    at https://47d08856-5019-4cb3-a080-7f7f5f9f22a0-00-1eejzy90jwtae.kirk.replit.dev/@fs/home/runner/workspace/node_modules/.vite/deps/chunk-5S42QOQO.js?v=c065844f:56:13
+    at https://47d08856-5019-4cb3-a080-7f7f5f9f22a0-00-1eejzy90jwtae.kirk.replit.dev/@fs/home/runner/workspace/node_modules/.vite/deps/chunk-GVTGVYSA.js?v=c065844f:42:13
+    at https://47d08856-5019-4cb3-a080-7f7f5f9f22a0-00-1eejzy90jwtae.kirk.replit.dev/@fs/home/runner/workspace/node_modules/.vite/deps/chunk-YO7AJBAM.js?v=c065844f:258:22
+    at Presence (https://47d08856-5019-4cb3-a080-7f7f5f9f22a0-00-1eejzy90jwtae.kirk.replit.dev/@fs/home/runner/workspace/node_modules/.vite/deps/chunk-MJS43FI5.js?v=c065844f:24:11)
+    at Provider (https://47d08856-5019-4cb3-a080-7f7f5f9f22a0-00-1eejzy90jwtae.kirk.replit.dev/@fs/home/runner/workspace/node_modules/.vite/deps/chunk-PLT6GTVM.js?v=c065844f:38:15)
+    at DialogPortal (https://47d08856-5019-4cb3-a080-7f7f5f9f22a0-00-1eejzy90jwtae.kirk.replit.dev/@fs/home/runner/workspace/node_modules/.vite/deps/@radix-ui_react-dialog.js?v=c065844f:111:11)
+    at _c3 (https://47d08856-5019-4cb3-a080-7f7f5f9f22a0-00-1eejzy90jwtae.kirk.replit.dev/src/components/ui/dialog.tsx:52:12)
+    at Provider (https://47d08856-5019-4cb3-a080-7f7f5f9f22a0-00-1eejzy90jwtae.kirk.replit.dev/@fs/home/runner/workspace/node_modules/.vite/deps/chunk-PLT6GTVM.js?v=c065844f:38:15)
+    at Dialog (https://47d08856-5019-4cb3-a080-7f7f5f9f22a0-00-1eejzy90jwtae.kirk.replit.dev/@fs/home/runner/workspace/node_modules/.vite/deps/@radix-ui_react-dialog.js?v=c065844f:52:5)
+    at div
+    at div
+    at WorkoutsPage (https://47d08856-5019-4cb3-a080-7f7f5f9f22a0-00-1eejzy90jwtae.kirk.replit.dev/src/pages/workouts.tsx:60:55)
+    at Route…

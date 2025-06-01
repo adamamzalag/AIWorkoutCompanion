@@ -2,7 +2,7 @@ import { Link, useLocation } from 'wouter';
 import { Home, Dumbbell, TrendingUp, MessageCircle, Settings, Loader2, CheckCircle } from 'lucide-react';
 import { useState, useEffect } from 'react';
 import { Button } from '@/components/ui/button';
-import { Popover, PopoverContent, PopoverTrigger } from '@/components/ui/popover';
+import { Dialog, DialogContent, DialogTrigger } from '@/components/ui/dialog';
 
 export function BottomNavigation() {
   const [location] = useLocation();
@@ -149,8 +149,8 @@ export function TopNavigation() {
         <div className="flex items-center space-x-2">
           {/* Generation Status Indicator */}
           {(isGenerating || isCompleted) && (
-            <Popover>
-              <PopoverTrigger asChild>
+            <Dialog>
+              <DialogTrigger asChild>
                 <Button variant="ghost" size="sm" className="w-10 h-10 glass-effect rounded-full flex items-center justify-center touch-target hover:bg-card/60 transition-colors">
                   {isCompleted ? (
                     <CheckCircle className="w-5 h-5 text-green-500" />
@@ -158,13 +158,13 @@ export function TopNavigation() {
                     <Loader2 className="w-5 h-5 text-blue-500 animate-spin" />
                   )}
                 </Button>
-              </PopoverTrigger>
-              <PopoverContent className="w-64 p-3" align="center">
-                <div className="text-center space-y-2">
+              </DialogTrigger>
+              <DialogContent className="glass-effect border-border/50 max-w-sm mx-auto">
+                <div className="text-center space-y-3 p-4">
                   {isCompleted ? (
                     <>
                       <div className="flex items-center justify-center gap-2">
-                        <CheckCircle className="w-4 h-4 text-green-500" />
+                        <CheckCircle className="w-5 h-5 text-green-500" />
                         <span className="font-medium text-sm">Plan Ready!</span>
                       </div>
                       <p className="text-xs text-muted-foreground mb-3">
@@ -190,8 +190,8 @@ export function TopNavigation() {
                     </>
                   )}
                 </div>
-              </PopoverContent>
-            </Popover>
+              </DialogContent>
+            </Dialog>
           )}
           
           <Link href="/profile">
