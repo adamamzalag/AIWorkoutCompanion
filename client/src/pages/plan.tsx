@@ -76,11 +76,13 @@ export default function PlanDetailPage() {
           <div className="flex items-start justify-between mb-4">
             <div className="flex-1">
               <div className="flex items-center space-x-2 mb-2">
-                <Badge className={`text-xs ${getDifficultyColor(plan.difficulty)}`}>
+                <span className="px-3 py-1 bg-gradient-to-r from-purple-500/10 to-purple-600/10 text-purple-600 dark:text-purple-400 border border-purple-200 dark:border-purple-700 rounded-full font-medium text-xs shadow-sm">
                   {plan.difficulty}
-                </Badge>
+                </span>
                 {plan.isActive && (
-                  <Badge className="bg-accent text-accent-foreground text-xs">Active</Badge>
+                  <span className="px-3 py-1 bg-gradient-to-r from-green-500/10 to-green-600/10 text-green-600 dark:text-green-400 border border-green-200 dark:border-green-700 rounded-full font-medium text-xs shadow-sm">
+                    Active
+                  </span>
                 )}
               </div>
               <h2 className="font-poppins font-semibold text-lg text-foreground mb-2">{plan.title}</h2>
@@ -102,9 +104,9 @@ export default function PlanDetailPage() {
             </div>
           </div>
           
-          <div className="flex flex-wrap gap-3">
+          <div className="flex flex-wrap gap-2">
             {plan.equipment.map((eq) => (
-              <span key={eq} className="px-4 py-2 bg-gradient-to-r from-primary/10 to-accent/10 text-primary border border-primary/20 rounded-full font-medium text-sm shadow-sm hover:shadow-md transition-shadow">
+              <span key={eq} className="px-2 py-1 bg-gradient-to-r from-primary/10 to-accent/10 text-primary border border-primary/20 rounded-full font-medium text-xs shadow-sm hover:shadow-md transition-shadow">
                 {eq.replace('_', ' ')}
               </span>
             ))}

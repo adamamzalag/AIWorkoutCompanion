@@ -408,7 +408,7 @@ export default function WorkoutsPage() {
               <div>
                 <div className="flex items-center justify-between mb-4">
                   <h3 className="font-poppins font-semibold text-lg text-foreground">Active Plan</h3>
-                  <Badge className="bg-accent text-accent-foreground">Current</Badge>
+                  <span className="px-3 py-1 bg-gradient-to-r from-green-500/10 to-green-600/10 text-green-600 dark:text-green-400 border border-green-200 dark:border-green-700 rounded-full font-medium text-xs shadow-sm">Current</span>
                 </div>
                 <div className="space-y-3">
                   {activePlans.map((plan) => (
@@ -417,10 +417,10 @@ export default function WorkoutsPage() {
                         <div className="mb-3">
                           <div className="flex items-center space-x-2 mb-1">
                             <h3 className="font-poppins font-semibold text-foreground">{plan.title}</h3>
-                            <Badge className={`text-xs ${getDifficultyColor(plan.difficulty)}`}>
+                            <span className="px-3 py-1 bg-gradient-to-r from-purple-500/10 to-purple-600/10 text-purple-600 dark:text-purple-400 border border-purple-200 dark:border-purple-700 rounded-full font-medium text-xs shadow-sm">
                               {plan.difficulty}
-                            </Badge>
-                            <Badge className="bg-accent text-accent-foreground text-xs">Active</Badge>
+                            </span>
+                            <span className="px-3 py-1 bg-gradient-to-r from-green-500/10 to-green-600/10 text-green-600 dark:text-green-400 border border-green-200 dark:border-green-700 rounded-full font-medium text-xs shadow-sm">Active</span>
                           </div>
                         </div>
                         
@@ -478,7 +478,7 @@ export default function WorkoutsPage() {
               <div>
                 <div className="flex items-center justify-between mb-4">
                   <h3 className="font-poppins font-semibold text-lg text-foreground">Previous Plans</h3>
-                  <Badge variant="outline" className="text-muted-foreground">Archive</Badge>
+                  <span className="px-3 py-1 bg-gradient-to-r from-gray-500/10 to-gray-600/10 text-gray-600 dark:text-gray-400 border border-gray-200 dark:border-gray-700 rounded-full font-medium text-xs shadow-sm">Archive</span>
                 </div>
                 <div className="space-y-3">
                   {inactivePlans.map((plan) => (
@@ -487,9 +487,9 @@ export default function WorkoutsPage() {
                         <div className="mb-3">
                           <div className="flex items-center space-x-2 mb-1">
                             <h3 className="font-poppins font-semibold text-foreground">{plan.title}</h3>
-                            <Badge className={`text-xs ${getDifficultyColor(plan.difficulty)}`}>
+                            <span className="px-3 py-1 bg-gradient-to-r from-purple-500/10 to-purple-600/10 text-purple-600 dark:text-purple-400 border border-purple-200 dark:border-purple-700 rounded-full font-medium text-xs shadow-sm">
                               {plan.difficulty}
-                            </Badge>
+                            </span>
                           </div>
                         </div>
                         
