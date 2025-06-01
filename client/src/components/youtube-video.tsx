@@ -24,14 +24,22 @@ export function YouTubeVideo({ videoId, thumbnailUrl, exerciseName, className = 
   };
 
   if (!videoId || !displayThumbnail) {
-    // Fallback to Unsplash image for exercises without videos
+    // Fallback to exercise-specific Unsplash image when no YouTube video is available
+    const searchQuery = encodeURIComponent(`${exerciseName} exercise fitness`);
     return (
       <div className={`relative ${className}`}>
         <img
-          src={`https://images.unsplash.com/photo-1571019613454-1cb2f99b2d8b?ixlib=rb-4.0.3&auto=format&fit=crop&w=800&h=600&q=${encodeURIComponent(exerciseName + ' exercise')}`}
+          src={`https://images.unsplash.com/1600x900/?${searchQuery}`}
           alt={`${exerciseName} exercise`}
           className="w-full h-full object-cover rounded-2xl"
         />
+        {/* Exercise label for fallback images */}
+        <div className="absolute bottom-3 left-3 right-3">
+          <div className="glass-effect bg-black/50 text-white text-sm px-3 py-2 rounded-lg backdrop-blur-sm">
+            <div className="font-medium">{exerciseName}</div>
+            <div className="text-xs opacity-80">Exercise demonstration</div>
+          </div>
+        </div>
       </div>
     );
   }
