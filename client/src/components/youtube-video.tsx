@@ -25,13 +25,18 @@ export function YouTubeVideo({ videoId, thumbnailUrl, exerciseName, className = 
 
   if (!videoId || !displayThumbnail) {
     // Fallback to exercise-specific Unsplash image when no YouTube video is available
-    const searchQuery = encodeURIComponent(`${exerciseName} exercise fitness`);
+    const searchQuery = exerciseName.toLowerCase().replace(/\s+/g, '%20');
     return (
       <div className={`relative ${className}`}>
         <img
-          src={`https://images.unsplash.com/1600x900/?${searchQuery}`}
+          src={`https://images.unsplash.com/800x600/?fitness,${searchQuery},exercise`}
           alt={`${exerciseName} exercise`}
           className="w-full h-full object-cover rounded-2xl"
+          onError={(e) => {
+            // Fallback to a generic fitness image if specific search fails
+            const target = e.target as HTMLImageElement;
+            target.src = 'https://images.unsplash.com/photo-1571019613454-1cb2f99b2d8b?auto=format&fit=crop&w=800&h=600&q=80';
+          }}
         />
         {/* Exercise label for fallback images */}
         <div className="absolute bottom-3 left-3 right-3">
