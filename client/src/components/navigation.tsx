@@ -1,5 +1,5 @@
 import { Link, useLocation } from 'wouter';
-import { Home, Dumbbell, TrendingUp, MessageCircle, Settings, Loader2 } from 'lucide-react';
+import { Home, Dumbbell, TrendingUp, MessageCircle, Settings, Loader2, CheckCircle } from 'lucide-react';
 import { useState, useEffect } from 'react';
 import { Button } from '@/components/ui/button';
 import { Popover, PopoverContent, PopoverTrigger } from '@/components/ui/popover';
@@ -38,6 +38,7 @@ export function BottomNavigation() {
 // Global hook to check if any plan generation is in progress
 function useGlobalGenerationStatus() {
   const [isGenerating, setIsGenerating] = useState(false);
+  const [isCompleted, setIsCompleted] = useState(false);
   const [operationId, setOperationId] = useState<string | null>(null);
 
   useEffect(() => {
@@ -50,6 +51,7 @@ function useGlobalGenerationStatus() {
         if (operationId !== storedOperationId) {
           setOperationId(storedOperationId);
           setIsGenerating(true);
+          setIsCompleted(false);
         }
         
         // Poll for completion
@@ -57,20 +59,27 @@ function useGlobalGenerationStatus() {
           const response = await fetch(`/api/generation-progress/${storedOperationId}`);
           const data = await response.json();
           
-          if (data.status === 'completed' || data.status === 'failed') {
+          if (data.status === 'completed') {
+            setIsGenerating(false);
+            setIsCompleted(true);
+            // Keep the operationId to show completion state
+          } else if (data.status === 'failed') {
             localStorage.removeItem('activeGenerationId');
             setIsGenerating(false);
+            setIsCompleted(false);
             setOperationId(null);
           }
         } catch (error) {
           // If operation doesn't exist, clear it
           localStorage.removeItem('activeGenerationId');
           setIsGenerating(false);
+          setIsCompleted(false);
           setOperationId(null);
         }
-      } else if (isGenerating) {
-        // No stored operation but we think we're generating - clear state
+      } else if (isGenerating || isCompleted) {
+        // No stored operation but we think we're generating/completed - clear state
         setIsGenerating(false);
+        setIsCompleted(false);
         setOperationId(null);
       }
     };
@@ -82,15 +91,21 @@ function useGlobalGenerationStatus() {
     return () => {
       if (interval) clearInterval(interval);
     };
-  }, [operationId, isGenerating]);
+  }, [operationId, isGenerating, isCompleted]);
 
-  return { isGenerating, operationId };
+  const dismissCompletion = () => {
+    localStorage.removeItem('activeGenerationId');
+    setIsCompleted(false);
+    setOperationId(null);
+  };
+
+  return { isGenerating, isCompleted, operationId, dismissCompletion };
 }
 
 export function TopNavigation() {
   const [isVisible, setIsVisible] = useState(true);
   const [lastScrollY, setLastScrollY] = useState(0);
-  const { isGenerating, operationId } = useGlobalGenerationStatus();
+  const { isGenerating, isCompleted, operationId, dismissCompletion } = useGlobalGenerationStatus();
 
   useEffect(() => {
     const handleScroll = () => {
@@ -125,22 +140,47 @@ export function TopNavigation() {
         
         <div className="flex items-center space-x-2">
           {/* Generation Status Indicator */}
-          {isGenerating && (
+          {(isGenerating || isCompleted) && (
             <Popover>
               <PopoverTrigger asChild>
                 <Button variant="ghost" size="sm" className="w-10 h-10 glass-effect rounded-full flex items-center justify-center touch-target hover:bg-card/60 transition-colors">
-                  <Loader2 className="w-5 h-5 text-blue-500 animate-spin" />
+                  {isCompleted ? (
+                    <CheckCircle className="w-5 h-5 text-green-500" />
+                  ) : (
+                    <Loader2 className="w-5 h-5 text-blue-500 animate-spin" />
+                  )}
                 </Button>
               </PopoverTrigger>
               <PopoverContent className="w-64 p-3 mr-4" align="end">
                 <div className="text-center space-y-2">
-                  <div className="flex items-center justify-center gap-2">
-                    <Loader2 className="w-4 h-4 animate-spin text-blue-500" />
-                    <span className="font-medium text-sm">Plan Generation in Progress</span>
-                  </div>
-                  <p className="text-xs text-muted-foreground">
-                    Your AI workout plan is being created in the background. You'll be notified when it's ready!
-                  </p>
+                  {isCompleted ? (
+                    <>
+                      <div className="flex items-center justify-center gap-2">
+                        <CheckCircle className="w-4 h-4 text-green-500" />
+                        <span className="font-medium text-sm">Plan Ready!</span>
+                      </div>
+                      <p className="text-xs text-muted-foreground mb-3">
+                        Your AI workout plan has been generated successfully.
+                      </p>
+                      <Button 
+                        size="sm" 
+                        onClick={dismissCompletion}
+                        className="w-full"
+                      >
+                        View Plans
+                      </Button>
+                    </>
+                  ) : (
+                    <>
+                      <div className="flex items-center justify-center gap-2">
+                        <Loader2 className="w-4 h-4 animate-spin text-blue-500" />
+                        <span className="font-medium text-sm">Plan Generation in Progress</span>
+                      </div>
+                      <p className="text-xs text-muted-foreground">
+                        Your AI workout plan is being created in the background. You'll be notified when it's ready!
+                      </p>
+                    </>
+                  )}
                 </div>
               </PopoverContent>
             </Popover>

@@ -185,8 +185,8 @@ export default function WorkoutsPage() {
   return (
     <div className="px-4 pb-24 pt-20 space-y-6 fade-in">
       {/* Header */}
-      <div className="flex items-center justify-between">
-        <div>
+      <div className="flex items-center justify-center relative">
+        <div className="text-center">
           <h1 className="font-poppins font-bold text-2xl text-foreground">Workouts</h1>
           <p className="text-muted-foreground">Manage your workout plans and sessions</p>
         </div>

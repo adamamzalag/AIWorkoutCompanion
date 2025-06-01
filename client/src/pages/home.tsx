@@ -62,7 +62,7 @@ export default function Home() {
     <div className="px-4 pb-24 pt-20 space-y-6 fade-in">
       {/* Welcome Section */}
       <div className="space-y-4">
-        <div>
+        <div className="text-center">
           <h1 className="font-poppins font-bold text-2xl text-foreground mb-2">
             Good morning, {userName}! 🔥
           </h1>
@@ -139,9 +139,9 @@ export default function Home() {
 
       {/* Workout Plans Section */}
       <div>
-        <div className="flex items-center justify-between mb-4">
+        <div className="flex items-center justify-center mb-4 relative">
           <h2 className="font-poppins font-semibold text-xl text-foreground">Your Plans</h2>
-          <Link href="/workouts">
+          <Link href="/workouts" className="absolute right-0">
             <Button variant="link" className="text-primary font-medium text-sm p-0 h-auto">
               View All
             </Button>
@@ -227,7 +227,7 @@ export default function Home() {
 
       {/* Recent Activity */}
       <div>
-        <h2 className="font-poppins font-semibold text-xl text-foreground mb-4">Recent Activity</h2>
+        <h2 className="font-poppins font-semibold text-xl text-foreground mb-4 text-center">Recent Activity</h2>
         
         <div className="space-y-3">
           {sessionsLoading ? (
