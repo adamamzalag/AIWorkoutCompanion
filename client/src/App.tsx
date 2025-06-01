@@ -122,10 +122,10 @@ function App() {
       <TooltipProvider>
         <OnboardingCheck>
           <div className="mobile-container bg-background min-h-screen">
-            {!isAIChatPage && !isWorkoutPage && <TopNavigation />}
+            {!isAIChatPage && <TopNavigation />}
             <Toaster />
             <Router />
-            {!isWorkoutPage && <BottomNavigation />}
+            <BottomNavigation />
           </div>
         </OnboardingCheck>
       </TooltipProvider>

@@ -120,6 +120,49 @@ export default function WorkoutPage() {
     }
   }, [exerciseLogs.length, isActive, isStarting, startWorkout, exerciseLogs]);
 
+  // Listen for bottom navigation events
+  useEffect(() => {
+    const handleWorkoutPrevious = () => {
+      if (!isFirstExercise && !isUpdating) {
+        previousExercise();
+      }
+    };
+
+    const handleWorkoutNext = () => {
+      if (!isUpdating) {
+        handleNextExercise();
+      }
+    };
+
+    const handleWorkoutCompleteSet = () => {
+      if (currentExercise && !isUpdating) {
+        // For time-based exercises (warm-up, cool-down), just complete the exercise
+        if (currentExercise.isWarmup || currentExercise.isCooldown) {
+          handleNextExercise();
+        } else {
+          // For regular exercises, complete the current set
+          handleCompleteSet({ reps: currentExercise.sets[currentSet]?.reps || 0, weight: 0 });
+        }
+      }
+    };
+
+    const handleWorkoutMenu = () => {
+      handleExitWorkout();
+    };
+
+    window.addEventListener('workout-previous', handleWorkoutPrevious);
+    window.addEventListener('workout-next', handleWorkoutNext);
+    window.addEventListener('workout-complete-set', handleWorkoutCompleteSet);
+    window.addEventListener('workout-menu', handleWorkoutMenu);
+
+    return () => {
+      window.removeEventListener('workout-previous', handleWorkoutPrevious);
+      window.removeEventListener('workout-next', handleWorkoutNext);
+      window.removeEventListener('workout-complete-set', handleWorkoutCompleteSet);
+      window.removeEventListener('workout-menu', handleWorkoutMenu);
+    };
+  }, [isFirstExercise, isUpdating, previousExercise, handleNextExercise, currentExercise, currentSet, handleCompleteSet, handleExitWorkout]);
+
   console.log('Workout state:', { 
     exerciseLogsCount: exerciseLogs.length, 
     isActive, 
@@ -250,45 +293,21 @@ export default function WorkoutPage() {
         />
       </div>
 
-      {/* Workout Controls - Now at bottom without nav interference */}
-      <div className="fixed bottom-0 left-0 right-0 px-4 bg-gradient-to-t from-background via-background/90 to-transparent pt-6 pb-6">
-        <div className="max-w-sm mx-auto space-y-4">
-          <div className="flex space-x-3">
-            <Button
-              variant="outline"
-              className="flex-1 glass-effect border-border/50 py-4 touch-target"
-              onClick={previousExercise}
-              disabled={isFirstExercise || isUpdating}
-            >
-              <ChevronLeft size={16} className="mr-2" />
-              Previous
-            </Button>
-            
-            <Button
-              className="flex-1 bg-accent hover:bg-accent/90 text-accent-foreground py-4 touch-target"
-              onClick={handleNextExercise}
-              disabled={isUpdating}
-            >
-              {isLastExercise ? 'Complete Workout' : 'Next Exercise'}
-              {!isLastExercise && <ChevronRight size={16} className="ml-2" />}
-            </Button>
-          </div>
-
-          {/* Progress Indicator */}
-          <div className="flex justify-center space-x-2">
-            {exerciseLogs.map((_, index) => (
-              <div
-                key={index}
-                className={`w-2 h-2 rounded-full transition-all duration-300 ${
-                  index === currentExerciseIndex
-                    ? 'bg-primary w-6'
-                    : index < currentExerciseIndex
-                    ? 'bg-accent'
-                    : 'bg-muted'
-                }`}
-              />
-            ))}
-          </div>
+      {/* Progress Indicator - moved to main content area */}
+      <div className="px-4 pb-20">
+        <div className="flex justify-center space-x-2">
+          {exerciseLogs.map((_, index) => (
+            <div
+              key={index}
+              className={`w-2 h-2 rounded-full transition-all duration-300 ${
+                index === currentExerciseIndex
+                  ? 'bg-primary w-6'
+                  : index < currentExerciseIndex
+                  ? 'bg-accent'
+                  : 'bg-muted'
+              }`}
+            />
+          ))}
         </div>
       </div>
 

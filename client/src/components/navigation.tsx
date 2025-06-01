@@ -1,11 +1,78 @@
 import { Link, useLocation } from 'wouter';
-import { Home, Dumbbell, TrendingUp, MessageCircle, Settings, Loader2, CheckCircle } from 'lucide-react';
+import { Home, Dumbbell, TrendingUp, MessageCircle, Settings, Loader2, CheckCircle, ChevronLeft, ChevronRight, Play, Menu } from 'lucide-react';
 import { useState, useEffect } from 'react';
 import { Button } from '@/components/ui/button';
 import { Dialog, DialogContent, DialogHeader, DialogTitle, DialogDescription, DialogTrigger } from '@/components/ui/dialog';
 
+// Workout-specific bottom controls
+function WorkoutBottomControls() {
+  return (
+    <nav className="glass-effect fixed bottom-0 left-1/2 transform -translate-x-1/2 w-full max-w-sm z-50 px-4 py-3 rounded-t-2xl">
+      <div className="flex items-center justify-between">
+        {/* Previous Exercise */}
+        <Button
+          variant="outline"
+          size="sm"
+          className="flex-1 mr-2 glass-effect border-border/50"
+          onClick={() => {
+            // Will be handled by workout page logic
+            window.dispatchEvent(new CustomEvent('workout-previous'));
+          }}
+        >
+          <ChevronLeft size={16} className="mr-1" />
+          Previous
+        </Button>
+
+        {/* Complete Set / Next Exercise */}
+        <Button
+          className="flex-1 mx-1 bg-accent hover:bg-accent/90 text-accent-foreground"
+          onClick={() => {
+            // Will be handled by workout page logic
+            window.dispatchEvent(new CustomEvent('workout-complete-set'));
+          }}
+        >
+          <Play size={16} className="mr-1" />
+          Complete Set
+        </Button>
+
+        {/* Next Exercise */}
+        <Button
+          variant="outline"
+          size="sm"
+          className="flex-1 ml-2 glass-effect border-border/50"
+          onClick={() => {
+            // Will be handled by workout page logic
+            window.dispatchEvent(new CustomEvent('workout-next'));
+          }}
+        >
+          Next
+          <ChevronRight size={16} className="ml-1" />
+        </Button>
+
+        {/* Menu/Exit Button */}
+        <Button
+          variant="ghost"
+          size="sm"
+          className="w-10 h-10 rounded-full p-0 ml-2"
+          onClick={() => {
+            window.dispatchEvent(new CustomEvent('workout-menu'));
+          }}
+        >
+          <Menu size={16} />
+        </Button>
+      </div>
+    </nav>
+  );
+}
+
 export function BottomNavigation() {
   const [location] = useLocation();
+  const isWorkoutPage = location === '/workout';
+
+  // If we're on the workout page, show workout-specific controls instead
+  if (isWorkoutPage) {
+    return <WorkoutBottomControls />;
+  }
 
   const navItems = [
     { path: '/', icon: Home, label: 'Home' },
