@@ -89,22 +89,17 @@ export function ExerciseCard({
       </div>
 
       {/* Exercise Details */}
-      <div className="text-center">
-        <h2 className="font-poppins font-bold text-2xl mb-2 text-foreground">
-          {exercise.name}
-        </h2>
-        <p className="text-muted-foreground mb-4">{exercise.description}</p>
-        
-        {/* Dynamic Exercise Info */}
+      <div className="text-center">        
+        {/* Consolidated Exercise Info */}
         <Card className="glass-effect mb-6">
           <CardContent className="p-6 text-center">
+            <h2 className="font-poppins font-bold text-xl mb-3 text-foreground">
+              {exercise.name}
+            </h2>
             {isTimeBased ? (
               <>
                 <div className="text-4xl font-bold text-primary mb-2">{exerciseLog?.duration || 30}</div>
-                <div className="text-muted-foreground mb-2">seconds</div>
-                <div className="text-sm">
-                  <span className="text-accent font-medium">{isWarmup ? 'Warm-up' : isCooldown ? 'Cool-down' : 'Cardio'}</span> exercise
-                </div>
+                <div className="text-muted-foreground">seconds</div>
               </>
             ) : (
               <>
@@ -168,23 +163,7 @@ export function ExerciseCard({
           </Card>
         )}
 
-        {/* Duration Input for Time-Based Exercises */}
-        {isTimeBased && (
-          <Card className="glass-effect mb-6">
-            <CardContent className="p-4">
-              <div className="flex items-center justify-between">
-                <span className="text-sm text-foreground">Duration (seconds)</span>
-                <input
-                  type="number"
-                  value={duration}
-                  onChange={(e) => setDuration(Math.max(1, parseInt(e.target.value) || 1))}
-                  className="w-20 px-3 py-2 text-center bg-background/50 border border-border/50 rounded-lg focus:border-accent focus:outline-none text-foreground"
-                  min="1"
-                />
-              </div>
-            </CardContent>
-          </Card>
-        )}
+
 
         {/* Complete Set Button */}
         <Button 

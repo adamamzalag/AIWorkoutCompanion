@@ -6,6 +6,20 @@ import { Dialog, DialogContent, DialogHeader, DialogTitle, DialogDescription, Di
 
 // Workout-specific bottom controls
 function WorkoutBottomControls() {
+  const [buttonText, setButtonText] = useState('Complete Set');
+
+  // Listen for button text updates from workout page
+  useEffect(() => {
+    const handleButtonTextUpdate = (event: any) => {
+      setButtonText(event.detail.text);
+    };
+
+    window.addEventListener('workout-button-text-update', handleButtonTextUpdate);
+    return () => {
+      window.removeEventListener('workout-button-text-update', handleButtonTextUpdate);
+    };
+  }, []);
+
   return (
     <nav className="glass-effect fixed bottom-0 left-1/2 transform -translate-x-1/2 w-full max-w-sm z-50 px-2 py-3 rounded-t-2xl">
       <div className="flex items-center space-x-1">
@@ -22,14 +36,14 @@ function WorkoutBottomControls() {
           Previous
         </Button>
 
-        {/* Complete Set - Main Action */}
+        {/* Complete Set/Exercise - Main Action */}
         <Button
-          className="flex-[2] bg-accent hover:bg-accent/90 text-accent-foreground font-medium text-sm px-3"
+          className="flex-[2] glass-effect bg-gradient-to-r from-accent to-primary hover:from-accent/90 hover:to-primary/90 text-white font-medium text-sm px-2 min-w-0"
           onClick={() => {
             window.dispatchEvent(new CustomEvent('workout-complete-set'));
           }}
         >
-          Complete Set
+          <span className="truncate">{buttonText}</span>
         </Button>
 
         {/* Next Exercise */}

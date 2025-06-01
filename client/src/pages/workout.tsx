@@ -189,6 +189,18 @@ export default function WorkoutPage() {
   
   const currentSet = currentExercise?.sets.findIndex(set => !set.completed) || 0;
 
+  // Update bottom navigation button text when exercise changes
+  useEffect(() => {
+    if (currentExercise) {
+      const isTimeBased = currentExercise.isWarmup || currentExercise.isCooldown || currentExercise.isCardio;
+      const buttonText = isTimeBased ? 'Complete Exercise' : 'Complete Set';
+      
+      window.dispatchEvent(new CustomEvent('workout-button-text-update', {
+        detail: { text: buttonText }
+      }));
+    }
+  }, [currentExercise]);
+
   // Listen for bottom navigation events
   useEffect(() => {
     const handleWorkoutPrevious = () => {
