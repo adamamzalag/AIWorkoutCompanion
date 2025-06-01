@@ -7,6 +7,16 @@
 /* Fix scrollbar layout shift */
 html {
   scrollbar-gutter: stable;
+  /* Fallback for browsers that don't support scrollbar-gutter */
+  overflow-y: scroll;
+}
+
+/* Modern browsers */
+@supports (scrollbar-gutter: stable) {
+  html {
+    overflow-y: auto;
+    scrollbar-gutter: stable;
+  }
 }
 
 :root {

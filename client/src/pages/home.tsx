@@ -36,7 +36,7 @@ export default function Home() {
   });
 
   const { data: coachingTip, isLoading: tipLoading } = useQuery<{ tip: string }>({
-    queryKey: ['/api/coaching-tip', (userProfile as any)?.id],
+    queryKey: [`/api/coaching-tip/${(userProfile as any)?.id}`],
     enabled: !!(userProfile as any)?.id,
   });
 
