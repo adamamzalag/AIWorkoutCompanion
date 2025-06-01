@@ -250,8 +250,8 @@ export default function WorkoutPage() {
         />
       </div>
 
-      {/* Workout Controls - Positioned above bottom nav */}
-      <div className="fixed bottom-20 left-0 right-0 px-4 bg-gradient-to-t from-background via-background/90 to-transparent pt-6 pb-4">
+      {/* Workout Controls - Now at bottom without nav interference */}
+      <div className="fixed bottom-0 left-0 right-0 px-4 bg-gradient-to-t from-background via-background/90 to-transparent pt-6 pb-6">
         <div className="max-w-sm mx-auto space-y-4">
           <div className="flex space-x-3">
             <Button
