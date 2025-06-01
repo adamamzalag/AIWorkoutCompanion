@@ -412,7 +412,7 @@ Give a personalized, encouraging tip that helps improve form, motivation, or per
       messages: [
         {
           role: "system",
-          content: "You are a supportive AI fitness coach. Provide helpful, encouraging tips that improve performance and maintain motivation."
+          content: UNIFIED_COACH_SYSTEM_PROMPT + " Do NOT exceed two sentences."
         },
         {
           role: "user",
@@ -435,14 +435,14 @@ export async function generateChatResponse(
   chatHistory: any[]
 ): Promise<string> {
   const contextPrompt = `User context:
-- Fitness level: ${userContext.fitnessLevel}
-- Goals: ${userContext.goals?.join(", ") || "General fitness"}
-- Available equipment: ${userContext.equipment?.join(", ") || "None"}
-- Recent workouts: ${userContext.recentWorkouts || "None"}
+- Fitness level: ${JSON.stringify(userContext.fitnessLevel)}
+- Goals: ${JSON.stringify(userContext.goals?.join(", ") || "General fitness")}
+- Available equipment: ${JSON.stringify(userContext.equipment?.join(", ") || "None")}
+- Recent workouts: ${JSON.stringify(userContext.recentWorkouts || "None")}
 
 Chat history: ${JSON.stringify(chatHistory.slice(-10))}
 
-User message: "${message}"
+User message: ${JSON.stringify(message)}
 
 Respond as a knowledgeable, supportive AI fitness coach. Provide helpful advice, motivation, and answer fitness-related questions. Keep responses conversational and encouraging.`;
 
@@ -542,9 +542,9 @@ export async function createWeeklySnapshot(
   const prompt = `Analyze this user's Week ${weekNumber} workout performance:
 
 Workout sessions: ${JSON.stringify(workoutSessions)}
-User goals: ${userGoals.join(", ")}
+User goals: ${JSON.stringify(userGoals.join(", "))}
 
-Create a weekly progress snapshot in JSON format:
+Return only valid JSON with this exact structure:
 {
   "coachNotes": "Brief summary of week performance (max 100 words)",
   "adherencePercent": 85,
@@ -560,7 +560,7 @@ Create a weekly progress snapshot in JSON format:
   }
 }
 
-Focus on data that would be useful for generating future workout plans.`;
+No keys outside this schema. Focus on data that would be useful for generating future workout plans.`;
 
   try {
     const response = await openai.chat.completions.create({
@@ -621,9 +621,9 @@ export async function createPlanCompletionSnapshot(
   const prompt = `Analyze this user's complete workout plan performance based on weekly snapshots:
 
 Weekly snapshots: ${JSON.stringify(weeklySnapshots)}
-User goals: ${userGoals.join(", ")}
+User goals: ${JSON.stringify(userGoals.join(", "))}
 
-Create a DISTILLED plan completion summary focusing ONLY on insights useful for future plan generation:
+Return only valid JSON with this exact structure:
 
 {
   "coachNotes": "Overall plan assessment and key learnings (max 150 words)",
@@ -643,7 +643,7 @@ Create a DISTILLED plan completion summary focusing ONLY on insights useful for 
   }
 }
 
-CRITICAL: Only include insights that would help generate better future workout plans. This summary will be used as context for AI plan generation.`;
+No keys outside this schema. Only include insights that would help generate better future workout plans.`;
 
   try {
     const response = await openai.chat.completions.create({
