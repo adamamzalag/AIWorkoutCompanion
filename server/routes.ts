@@ -367,7 +367,7 @@ export async function registerRoutes(app: Express): Promise<Server> {
       console.log("✅ Complete plan generated:", {
         title: generatedPlan.title,
         totalWorkouts: generatedPlan.totalWorkouts,
-        exerciseCount: generatedPlan.workouts.reduce((acc, w) => acc + w.exercises.length, 0)
+        exerciseCount: generatedPlan.workouts.reduce((acc, w) => acc + (w.exercises?.length || 0), 0)
       });
       
       updateProgress(req.body.userId, operationId, 3, 'processing', 'Saving workout plan...');

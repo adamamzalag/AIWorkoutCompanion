@@ -68,7 +68,7 @@ export function GenerationProgress({ operationId, onComplete }: GenerationProgre
 
     // Check immediately and then every 2 seconds
     checkProgress();
-    interval = setInterval(checkProgress, 2000);
+    interval = setInterval(checkProgress, 5000);
 
     return () => {
       isActive = false;

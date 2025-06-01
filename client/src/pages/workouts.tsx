@@ -314,7 +314,11 @@ export default function WorkoutsPage() {
         </Dialog>
 
         {/* Generation Progress Dialog */}
-        <Dialog open={generationState.isGenerating} onOpenChange={() => {}}>
+        <Dialog open={generationState.isGenerating} onOpenChange={(open) => {
+          if (!open) {
+            setGenerationState({ isGenerating: false, operationId: null });
+          }
+        }}>
           <DialogContent className="glass-effect border-border/50 max-w-md">
             {generationState.operationId && (
               <GenerationProgress 
