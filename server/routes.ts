@@ -738,6 +738,17 @@ export async function registerRoutes(app: Express): Promise<Server> {
       
       // Save the plan to storage
       console.log("💾 Saving workout plan to storage...");
+      
+      // First, deactivate any existing active plans for this user
+      console.log("🔄 Deactivating existing active plans...");
+      const existingPlans = await storage.getWorkoutPlans(req.body.userId);
+      const activePlans = existingPlans.filter(p => p.isActive);
+      
+      for (const activePlan of activePlans) {
+        await storage.updateWorkoutPlan(activePlan.id, { isActive: false });
+        console.log(`⏸️ Deactivated plan: "${activePlan.title}" (ID: ${activePlan.id})`);
+      }
+      
       const workoutPlan = await storage.createWorkoutPlan({
         userId: req.body.userId,
         title: generatedPlan.title,
