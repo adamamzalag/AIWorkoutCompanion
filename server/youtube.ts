@@ -43,7 +43,9 @@ function classifyExercise(exerciseName: string): string {
   if (name.includes('stretch') || name.includes('stretching') || 
       name.includes('breathing') || name.includes('breath') ||
       name.includes('flexibility') || name.includes('cool down') ||
-      name.includes('cooldown')) {
+      name.includes('cooldown') || name.includes('pose') ||
+      name.includes('yoga') || name.includes('cat-cow') ||
+      name.includes('child')) {
     return 'flexibility';
   }
   
