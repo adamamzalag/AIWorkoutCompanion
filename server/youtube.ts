@@ -35,6 +35,152 @@ interface YouTubeVideoDetailsResponse {
 const YOUTUBE_API_KEY = process.env.YOUTUBE_API_KEY;
 const YOUTUBE_BASE_URL = 'https://www.googleapis.com/youtube/v3';
 
+// Exercise classification for targeted video search
+function classifyExercise(exerciseName: string): string {
+  const name = exerciseName.toLowerCase().trim();
+  
+  // Flexibility/Stretching exercises
+  if (name.includes('stretch') || name.includes('stretching') || 
+      name.includes('breathing') || name.includes('breath') ||
+      name.includes('flexibility') || name.includes('cool down') ||
+      name.includes('cooldown')) {
+    return 'flexibility';
+  }
+  
+  // Warm-up exercises
+  if (name.includes('circles') || name.includes('circle') ||
+      name.includes('swings') || name.includes('swing') ||
+      name.includes('activation') || name.includes('warm') ||
+      name.includes('mobility') || name.includes('dynamic')) {
+    return 'warmup';
+  }
+  
+  // Cardio exercises
+  if (name.includes('treadmill') || name.includes('jogging') ||
+      name.includes('running') || name.includes('bike') ||
+      name.includes('cycling') || name.includes('cardio') ||
+      name.includes('walking') || name.includes('jog')) {
+    return 'cardio';
+  }
+  
+  // Strength exercises
+  if (name.includes('press') || name.includes('squat') ||
+      name.includes('curl') || name.includes('row') ||
+      name.includes('deadlift') || name.includes('bench') ||
+      name.includes('barbell') || name.includes('dumbbell') ||
+      name.includes('weight') || name.includes('lift') ||
+      name.includes('pull-up') || name.includes('pullup') ||
+      name.includes('pull-apart') || name.includes('band') ||
+      name.includes('pushup') || name.includes('push-up')) {
+    return 'strength';
+  }
+  
+  // Default fallback
+  return 'general';
+}
+
+// Get category-specific scoring bonuses
+function getCategoryBonus(title: string, category: string): number {
+  let bonus = 0;
+  
+  switch (category) {
+    case 'flexibility':
+      if (title.includes('stretch')) bonus += 20;
+      if (title.includes('flexibility')) bonus += 15;
+      if (title.includes('mobility')) bonus += 10;
+      if (title.includes('relax')) bonus += 8;
+      break;
+      
+    case 'warmup':
+      if (title.includes('warm')) bonus += 20;
+      if (title.includes('activation')) bonus += 15;
+      if (title.includes('dynamic')) bonus += 12;
+      if (title.includes('prep')) bonus += 10;
+      break;
+      
+    case 'cardio':
+      if (title.includes('cardio')) bonus += 20;
+      if (title.includes('conditioning')) bonus += 15;
+      if (title.includes('endurance')) bonus += 12;
+      if (title.includes('hiit')) bonus += 10;
+      break;
+      
+    case 'strength':
+      if (title.includes('strength')) bonus += 20;
+      if (title.includes('muscle')) bonus += 15;
+      if (title.includes('build')) bonus += 12;
+      if (title.includes('form')) bonus += 15;
+      break;
+      
+    default: // general
+      if (title.includes('exercise')) bonus += 10;
+      if (title.includes('workout')) bonus += 8;
+      break;
+  }
+  
+  return bonus;
+}
+
+// Generate search terms optimized for flexibility/stretching exercises
+function generateFlexibilitySearches(exerciseName: string): string[] {
+  const baseName = exerciseName.toLowerCase().replace(/[^\w\s]/g, '');
+  return [
+    `${exerciseName} stretch tutorial`,
+    `${exerciseName} flexibility exercise`,
+    `how to ${baseName} stretch properly`,
+    `${exerciseName} stretching technique`,
+    `${baseName} stretch form`
+  ];
+}
+
+// Generate search terms optimized for warm-up exercises
+function generateWarmupSearches(exerciseName: string): string[] {
+  const baseName = exerciseName.toLowerCase().replace(/[^\w\s]/g, '');
+  return [
+    `${exerciseName} warm up exercise`,
+    `how to do ${baseName} warmup`,
+    `${exerciseName} mobility drill`,
+    `${baseName} activation exercise`,
+    `${exerciseName} dynamic warmup`
+  ];
+}
+
+// Generate search terms optimized for cardio exercises
+function generateCardioSearches(exerciseName: string): string[] {
+  const baseName = exerciseName.toLowerCase().replace(/[^\w\s]/g, '');
+  return [
+    `${exerciseName} cardio exercise`,
+    `how to ${baseName} properly`,
+    `${exerciseName} technique tutorial`,
+    `${baseName} form demonstration`,
+    `${exerciseName} workout guide`
+  ];
+}
+
+// Generate search terms optimized for strength exercises
+function generateStrengthSearches(exerciseName: string): string[] {
+  const baseName = exerciseName.toLowerCase().replace(/[^\w\s]/g, '');
+  return [
+    `${exerciseName} form tutorial`,
+    `how to ${baseName} proper form`,
+    `${exerciseName} technique guide`,
+    `${baseName} exercise demonstration`,
+    `${exerciseName} strength training`
+  ];
+}
+
+// Generate search terms for general exercises
+function generateGeneralSearches(exerciseName: string): string[] {
+  const baseName = exerciseName.toLowerCase().replace(/[^\w\s]/g, '');
+  return [
+    `${exerciseName} exercise tutorial`,
+    `how to do ${baseName}`,
+    `${exerciseName} proper form`,
+    `${baseName} technique`,
+    `${exerciseName} demonstration`
+  ];
+}
+
 // Fitness channels that tend to have quality exercise tutorials
 const PREFERRED_CHANNELS = [
   'Athlean-X',
@@ -170,10 +316,20 @@ async function getVideoDetails(videoId: string): Promise<{ duration: string; vie
   }
 }
 
-function calculateVideoScore(item: any, details: any): number {
+function calculateVideoScore(item: any, details: any, exerciseCategory: string = 'general'): number {
   let score = 0;
   const title = item.snippet.title.toLowerCase();
   const channelTitle = item.snippet.channelTitle;
+  
+  // STRICT 5-minute maximum enforcement - reject anything longer
+  if (details?.duration) {
+    const duration = parseDuration(details.duration);
+    if (duration > 300) return -100; // Immediate rejection for videos over 5 minutes
+  }
+  
+  // Category-specific scoring adjustments
+  const categoryBonus = getCategoryBonus(title, exerciseCategory);
+  score += categoryBonus;
   
   // Positive indicators
   if (title.includes('tutorial')) score += 30;
@@ -196,12 +352,11 @@ function calculateVideoScore(item: any, details: any): number {
     else if (details.viewCount > 10000) score += 10;
   }
   
-  // Duration preference (short, focused tutorials only)
+  // Duration preference (under 5 minutes only)
   if (details?.duration) {
     const duration = parseDuration(details.duration);
     if (duration >= 30 && duration <= 180) score += 25; // 30s-3min (ideal)
     else if (duration >= 181 && duration <= 300) score += 10; // 3-5min (acceptable)
-    else if (duration > 300) score -= 30; // too long, penalize heavily
     else if (duration < 30) score -= 15; // too short
   }
   
