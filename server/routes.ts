@@ -675,11 +675,16 @@ export async function registerRoutes(app: Express): Promise<Server> {
         return;
       }
 
+      // Normalize equipment array to remove quotes and standardize format
+      const normalizedEquipment = user.equipment.map(item => 
+        item.replace(/^"|"$/g, '').toLowerCase().trim()
+      );
+
       // Combine user profile data with form inputs
       const planRequest: WorkoutPlanRequest = {
         ...req.body,
         fitnessLevel: user.fitnessLevel,
-        equipment: user.equipment,
+        equipment: normalizedEquipment,
         goals: user.goals,
       };
       

@@ -9,6 +9,8 @@ const UNIFIED_COACH_SYSTEM_PROMPT = "You are an expert personal trainer and exer
 const WORKOUT_STRUCTURE_RULES = `
 WORKOUT STRUCTURE PRINCIPLES:
 • Each workout includes: Warm-up → Main Training → Cardio Component → Cool-down
+• EQUIPMENT CONSTRAINT: Only use equipment from the user's available equipment list
+• SINGLE-WORKOUT UNIQUENESS: Within each workout, no exercise should repeat across warmUp, main exercises, and coolDown
 • Warm-up (5-8 minutes): Dynamic preparation specific to the session's focus
 • Main Training: Intelligently selected exercises (typically 3-5) based on workout duration and complexity
 • For shorter sessions (30 min): Focus on fewer, high-impact compound movements
@@ -285,6 +287,17 @@ Framework: ${JSON.stringify(currentWeek)}
 Available Equipment: ${framework.equipment.join(", ")}
 ${progressionContext}
 
+STRICT EQUIPMENT CONSTRAINT: 
+You MUST ONLY use equipment from the user's available equipment list. 
+Do NOT use any equipment not explicitly available to the user.
+You do not need to use ALL available equipment - select the most appropriate equipment for each exercise from what's available.
+If an exercise typically requires unavailable equipment, substitute with alternatives using only the available equipment or bodyweight movements.
+
+IMPORTANT REQUIREMENTS:
+1. Within each individual workout: No exercise should appear more than once across warmUp, main exercises, and coolDown sections
+2. Each workout should have unique exercises in its warmUp and coolDown (no repeats within that single workout)
+3. Different workouts in the plan CAN share the same exercises - this constraint only applies within each individual workout
+
 Design ${currentWeek.workoutDays.length} intelligent workouts for ${timePerWorkout || 45} minutes each that maximize training effectiveness within the time constraints.
 
 CRITICAL: Return JSON with this EXACT structure:
@@ -396,6 +409,12 @@ Workouts per week: ${request.workoutsPerWeek}
 Time per workout: ${request.timePerWorkout} minutes
 Plan Type: ${request.planType === "progressive" ? "Progressive (build on user history)" : "Independent (fresh start)"}${progressContext}
 
+STRICT EQUIPMENT CONSTRAINT: 
+You MUST ONLY use equipment from the user's available equipment list. 
+Do NOT use any equipment not explicitly available to the user.
+You do not need to use ALL available equipment - select the most appropriate equipment for each exercise from what's available.
+If an exercise typically requires unavailable equipment, substitute with alternatives using only the available equipment or bodyweight movements.
+
 Create a progressive plan that includes:
 1. A descriptive title and overview
 2. ${request.workoutsPerWeek * request.duration} total workouts
@@ -437,6 +456,7 @@ IMPORTANT:
 - Use exactly ${request.workoutsPerWeek * request.duration} workouts total
 - Match difficulty to user's fitness level: "${request.fitnessLevel}"
 - Only use equipment from this list: ${JSON.stringify(request.equipment)}
+- Within each workout, no exercise should repeat across warmUp, main exercises, and coolDown sections
 - Ensure progressive difficulty across workouts`;
 
   try {
