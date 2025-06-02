@@ -1,0 +1,667 @@
+import React, { useState, useEffect, createContext, useContext } from 'react';
+
+// --- Icon SVGs (Lucide React Replacements) ---
+// Using the same SVGs as before, color will be controlled by className
+const Dumbbell = ({ className = '', size = 24 }) => (
+  <svg xmlns="http://www.w3.org/2000/svg" width={size} height={size} viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round" className={className}><path d="m6.5 6.5 11 11M21 21l-1-1M3 3l1 1M15 6l-3-3-3 3M9 18l3 3 3-3M14 14l3-3M10 10l-3 3M18 22l4-4M6 2l-4 4"/></svg>
+);
+const Target = ({ className = '', size = 24 }) => (
+  <svg xmlns="http://www.w3.org/2000/svg" width={size} height={size} viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round" className={className}><circle cx="12" cy="12" r="10"></circle><circle cx="12" cy="12" r="6"></circle><circle cx="12" cy="12" r="2"></circle></svg>
+);
+const Clock = ({ className = '', size = 24 }) => (
+  <svg xmlns="http://www.w3.org/2000/svg" width={size} height={size} viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round" className={className}><circle cx="12" cy="12" r="10"></circle><polyline points="12 6 12 12 16 14"></polyline></svg>
+);
+const TrendingUp = ({ className = '', size = 24 }) => (
+  <svg xmlns="http://www.w3.org/2000/svg" width={size} height={size} viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round" className={className}><polyline points="23 6 13.5 15.5 8.5 10.5 1 18"></polyline><polyline points="17 6 23 6 23 12"></polyline></svg>
+);
+const Plus = ({ className = '', size = 24 }) => (
+  <svg xmlns="http://www.w3.org/2000/svg" width={size} height={size} viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round" className={className}><line x1="12" y1="5" x2="12" y2="19"></line><line x1="5" y1="12" x2="19" y2="12"></line></svg>
+);
+const Sparkles = ({ className = '', size = 24 }) => (
+  <svg xmlns="http://www.w3.org/2000/svg" width={size} height={size} viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round" className={className}><path d="M12 3L9.25 8.75L3.5 9.5L7.5 14.25L6.5 20L12 17L17.5 20L16.5 14.25L20.5 9.5L14.75 8.75L12 3z"></path><path d="M5 3L5.85 5.85"></path><path d="M19 3L18.15 5.85"></path><path d="M22 12L19.15 12.85"></path><path d="M2 12L4.85 12.85"></path><path d="M5 21L5.85 18.15"></path><path d="M19 21L18.15 18.15"></path></svg>
+);
+const Play = ({ className = '', size = 24 }) => (
+  <svg xmlns="http://www.w3.org/2000/svg" width={size} height={size} viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round" className={className}><polygon points="5 3 19 12 5 21 5 3"></polygon></svg>
+);
+const Calendar = ({ className = '', size = 24 }) => (
+  <svg xmlns="http://www.w3.org/2000/svg" width={size} height={size} viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round" className={className}><rect x="3" y="4" width="18" height="18" rx="2" ry="2"></rect><line x1="16" y1="2" x2="16" y2="6"></line><line x1="8" y1="2" x2="8" y2="6"></line><line x1="3" y1="10" x2="21" y2="10"></line></svg>
+);
+const Filter = ({ className = '', size = 24 }) => (
+  <svg xmlns="http://www.w3.org/2000/svg" width={size} height={size} viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round" className={className}><polygon points="22 3 2 3 10 12.46 10 19 14 21 14 12.46 22 3"></polygon></svg>
+);
+const Search = ({ className = '', size = 24 }) => (
+  <svg xmlns="http://www.w3.org/2000/svg" width={size} height={size} viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round" className={className}><circle cx="11" cy="11" r="8"></circle><line x1="21" y1="21" x2="16.65" y2="16.65"></line></svg>
+);
+const ChevronDown = ({ className = '', size = 16 }) => (
+  <svg xmlns="http://www.w3.org/2000/svg" width={size} height={size} viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round" className={className}><polyline points="6 9 12 15 18 9"></polyline></svg>
+);
+const XIcon = ({className = '', size = 20}) => (
+ <svg xmlns="http://www.w3.org/2000/svg" width={size} height={size} viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round" className={className}><line x1="18" y1="6" x2="6" y2="18"></line><line x1="6" y1="6" x2="18" y2="18"></line></svg>
+);
+
+
+// --- Mock UI Components (Styled for Dark Theme) ---
+// These are simplified versions. Your actual shadcn/ui components would handle variants and dark theme internally.
+// For this preview, styles are applied directly or via Tailwind classes that assume a dark theme setup.
+
+const Card = ({ children, className = '' }) => (
+  <div className={`glass-effect-dark shadow-md rounded-xl ${className}`}>
+    {children}
+  </div>
+);
+const CardContent = ({ children, className = '' }) => (
+  <div className={`p-4 ${className}`}>
+    {children}
+  </div>
+);
+
+const Button = React.forwardRef(({ children, variant = 'default', size = 'default', className = '', onClick = () => {}, disabled = false, ...props }, ref) => {
+  const baseStyle = "font-medium focus:outline-none focus-visible:ring-2 focus-visible:ring-offset-2 focus-visible:ring-offset-slate-900 transition-all duration-200 ease-in-out touch-target inline-flex items-center justify-center rounded-md";
+  
+  let sizeStyle = "px-4 py-2 text-sm";
+  if (size === 'lg') sizeStyle = "px-8 py-3 text-base"; // Adjusted from text-lg
+  if (size === 'sm') sizeStyle = "px-3 py-1.5 text-xs";
+  if (size === 'icon') sizeStyle = "p-2";
+
+  // Dark Theme Variants
+  let variantStyle = "bg-blue-500 text-white hover:bg-blue-400 focus-visible:ring-blue-500 shadow-lg hover:shadow-blue-500/30"; // Primary
+  if (variant === 'link') {
+    variantStyle = "text-blue-400 hover:text-blue-300 p-0 h-auto shadow-none";
+  } else if (variant === 'outline') {
+    variantStyle = "border border-slate-600 text-slate-300 hover:bg-slate-700 hover:text-slate-100 focus-visible:ring-slate-500 shadow-sm hover:shadow-md";
+  } else if (variant === 'ghost') {
+    variantStyle = "text-slate-300 hover:bg-slate-700/50 focus-visible:ring-slate-500 shadow-none";
+  } else if (variant === 'destructive') {
+    variantStyle = "bg-red-600 text-white hover:bg-red-500 focus-visible:ring-red-500 shadow-lg hover:shadow-red-500/30";
+  }
+
+  // Gradient classes are passed directly in className for main buttons
+  const isGradient = className.includes("bg-gradient-to-r");
+  if (isGradient) {
+    variantStyle = `text-white shadow-lg hover:shadow-xl transition-shadow duration-300`; // Base for gradient, actual gradient in className
+  }
+  
+
+  const disabledStyle = disabled ? "opacity-50 cursor-not-allowed hover:shadow-none" : "transform hover:-translate-y-0.5 active:translate-y-0";
+  
+  return (
+    <button ref={ref} className={`${baseStyle} ${sizeStyle} ${variantStyle} ${disabledStyle} ${className}`} onClick={onClick} disabled={disabled} {...props}>
+      {children}
+    </button>
+  );
+});
+
+const Badge = ({ children, variant = 'default', className = '' }) => {
+  // Dark Theme Badge Variants
+  let variantStyle = "bg-slate-700 text-slate-300 border border-slate-600"; // Default
+  if (variant === 'primary') variantStyle = "bg-blue-500/20 text-blue-300 border border-blue-500/30";
+  if (variant === 'secondary') variantStyle = "bg-purple-500/20 text-purple-300 border border-purple-500/30";
+  if (variant === 'accent') variantStyle = "bg-green-500/20 text-green-300 border border-green-500/30"; // Accent (e.g., green)
+  if (variant === 'destructive') variantStyle = "bg-red-500/20 text-red-300 border border-red-500/30";
+
+  return (
+    <span className={`px-2.5 py-1 text-xs font-medium rounded-full inline-flex items-center whitespace-nowrap ${variantStyle} ${className}`}>
+      {children}
+    </span>
+  );
+};
+
+const Skeleton = ({ className = '' }) => (
+  <div className={`bg-slate-700/50 rounded animate-pulse ${className}`}></div>
+);
+
+// Dialog Components (Dark Theme)
+const DialogContext = createContext({ open: false, onOpenChange: (open) => {} });
+const Dialog = ({ children, open, onOpenChange }) => <DialogContext.Provider value={{ open, onOpenChange }}>{children}</DialogContext.Provider>;
+const DialogTrigger = ({ children, asChild }) => {
+  const { onOpenChange } = useContext(DialogContext);
+  if (asChild) return React.cloneElement(children, { onClick: () => onOpenChange(true) });
+  return <Button onClick={() => onOpenChange(true)}>{children}</Button>;
+};
+const DialogContent = ({ children, className = '' }) => {
+  const { open, onOpenChange } = useContext(DialogContext);
+  if (!open) return null;
+  return (
+    <div className="fixed inset-0 z-50 flex items-center justify-center p-4 bg-black/70 backdrop-blur-sm animate-fadeInDialog">
+      <div 
+        className={`glass-effect-dark shadow-2xl rounded-xl w-full m-4 p-6 relative border border-slate-700/80 ${className}`} // Added border
+        onClick={(e) => e.stopPropagation()}
+      >
+        <Button variant="ghost" size="icon" className="absolute top-3 right-3 text-slate-400 hover:text-slate-200" onClick={() => onOpenChange(false)}>
+          <XIcon size={20}/>
+        </Button>
+        {children}
+      </div>
+      <div className="fixed inset-0 z-[-1]" onClick={() => onOpenChange(false)}></div>
+    </div>
+  );
+};
+const DialogHeader = ({ children, className = '' }) => <div className={`mb-4 text-center ${className}`}>{children}</div>; // Centered header
+const DialogTitle = ({ children, className = '' }) => <h2 className={`text-xl font-poppins font-semibold text-slate-100 ${className}`}>{children}</h2>;
+const DialogDescription = ({ children, className = '' }) => <p className={`text-sm text-slate-400 ${className}`}>{children}</p>;
+
+// Form Components (Dark Theme Mocks)
+const FormContext = createContext({});
+const Form = ({ children, ...props }) => <FormContext.Provider value={props.form}>{children}</FormContext.Provider>;
+const FormField = ({ control, name, render }) => {
+  const mockField = { name, value: control?.defaultValues?.[name] || '', onChange: (e) => console.log(`Field ${name} changed:`, e.target ? e.target.value : e), onBlur: () => {} };
+  const mockFieldState = { invalid: false, error: control?.formState?.errors?.[name] };
+  return render({ field: mockField, fieldState: mockFieldState, formState: control?.formState });
+};
+const FormControl = ({ children }) => <div>{children}</div>;
+const FormItem = ({ children }) => <div className="space-y-1.5">{children}</div>;
+const FormLabel = ({ children, className = '' }) => <label className={`block text-sm font-medium text-slate-200 ${className}`}>{children}</label>;
+const FormMessage = ({ children }) => children ? <p className="text-xs text-red-400 mt-1">{children.message || children}</p> : null;
+
+const Input = React.forwardRef(({ className = '', type = 'text', ...props }, ref) => (
+  <input ref={ref} type={type}
+    className={`block w-full px-3.5 py-2.5 bg-slate-700/50 border border-slate-600 rounded-md shadow-sm placeholder-slate-400 text-slate-100 focus:ring-blue-500 focus:border-blue-500 focus:bg-slate-700 sm:text-sm ${className}`}
+    {...props}
+  />
+));
+
+// Select Components (Dark Theme Mocks)
+const SelectContext = React.createContext({ value: '', onValueChange: (value) => {}, open: false, setOpen: (open) => {} });
+const Select = ({ children, value, onValueChange }) => {
+  const [open, setOpen] = useState(false);
+  return <SelectContext.Provider value={{ value, onValueChange, open, setOpen }}><div className="relative">{children}</div></SelectContext.Provider>;
+};
+const SelectTrigger = ({ children, className = '' }) => {
+  const { value, setOpen, open } = useContext(SelectContext);
+  return (
+    <button type="button" onClick={() => setOpen(!open)}
+      className={`w-full flex items-center justify-between px-3.5 py-2.5 bg-slate-700/50 border border-slate-600 rounded-md shadow-sm text-sm text-slate-200 focus:outline-none focus:ring-2 focus:ring-blue-500 focus:border-blue-500 ${className}`}
+    >
+      {children || <SelectValue />} <ChevronDown size={16} className="ml-2 text-slate-400"/>
+    </button>
+  );
+};
+const SelectValue = ({ placeholder = "Select..." }) => {
+  const { value } = useContext(SelectContext);
+  return <span className="text-slate-200">{value ? value.charAt(0).toUpperCase() + value.slice(1) : placeholder}</span>;
+};
+const SelectContent = ({ children, className = '' }) => {
+  const { open } = useContext(SelectContext);
+  if (!open) return null;
+  return (
+    <div className={`absolute z-10 mt-1 w-full bg-slate-800 shadow-2xl rounded-md border border-slate-700 py-1 ${className}`}>
+      {children}
+    </div>
+  );
+};
+const SelectItem = ({ children, value }) => {
+  const { onValueChange, setOpen, value: currentValue } = useContext(SelectContext);
+  return (
+    <div onClick={() => { onValueChange(value); setOpen(false); }}
+      className={`px-3 py-2 text-sm cursor-pointer hover:bg-slate-700 ${currentValue === value ? 'bg-blue-500/20 text-blue-300' : 'text-slate-200'}`}
+    >
+      {children}
+    </div>
+  );
+};
+
+// --- Mock Custom Components (Dark Theme) ---
+const GenerationProgress = ({ operationId, onComplete }) => {
+  // Simplified from previous, focuses on dark theme appearance
+  const [progress, setProgress] = useState(0);
+  useEffect(() => {
+    if (!operationId) return;
+    setProgress(0);
+    const interval = setInterval(() => setProgress(p => Math.min(p + 20, 100)), 500);
+    setTimeout(() => { clearInterval(interval); onComplete(true, { title: "AI Dark Plan" }); }, 2800);
+    return () => clearInterval(interval);
+  }, [operationId, onComplete]);
+
+  return (
+    <div className="text-center p-6 space-y-4 w-full">
+      <Sparkles size={40} className="mx-auto text-blue-400 animate-pulse" />
+      <h3 className="font-poppins text-lg font-semibold text-slate-100">Generating Your Plan...</h3>
+      <div className="w-full bg-slate-700 rounded-full h-2.5">
+        <div className="bg-blue-500 h-2.5 rounded-full transition-all duration-500 ease-out" style={{ width: `${progress}%` }}></div>
+      </div>
+      <p className="text-sm text-slate-400">{progress === 100 ? "Finalizing..." : "Crafting exercises..."}</p>
+    </div>
+  );
+};
+
+// --- Mock Hooks (from original code, no changes needed in definitions) ---
+const useAuth = () => ({ user: { id: 'mockUserId', email: 'user@example.com', name: 'Current User' } });
+const useLocation = () => {
+  const [path, setPath] = useState(window.location.search);
+  const setLocation = (newPath) => { console.log(`Navigating to: ${newPath}`); window.history.replaceState({}, '', newPath.split('?')[0]); setPath(newPath.includes('?') ? newPath.substring(newPath.indexOf('?')) : ''); };
+  return [path, setLocation];
+};
+const Link = ({ href, children, className = '', ...props }) => <a href={href} className={className} onClick={(e) => { e.preventDefault(); console.log(`Link clicked: ${href}`); }} {...props}>{children}</a>;
+const useToast = () => ({
+  toast: ({ title, description, variant }) => {
+    console.log(`Toast: ${title} - ${description} (${variant || 'default'})`);
+    const toastId = `toast-${Date.now()}`;
+    const toastElement = document.createElement('div');
+    toastElement.id = toastId;
+    let bgColor = 'bg-green-500'; // default
+    if (variant === 'destructive') bgColor = 'bg-red-500';
+    else if (variant === 'info') bgColor = 'bg-blue-500';
+    
+    toastElement.className = `fixed top-5 right-5 p-4 rounded-md shadow-lg text-white text-sm z-[100] animate-slideInRight ${bgColor}`;
+    toastElement.innerHTML = `<strong class="font-semibold">${title}</strong><p>${description || ''}</p>`;
+    document.body.appendChild(toastElement);
+    setTimeout(() => {
+      toastElement.classList.add('animate-fadeOutRight');
+      setTimeout(() => toastElement.remove(), 300);
+    }, 3000);
+  }
+});
+const useQueryClient = () => ({ invalidateQueries: (options) => console.log('Invalidating queries:', options.queryKey) });
+const useMutation = (options) => {
+  const [isPending, setIsPending] = useState(false);
+  const mutate = async (variables) => { setIsPending(true); console.log('Mutation started:', variables); await new Promise(resolve => setTimeout(resolve, 1500)); const result = await options.mutationFn(variables); if (options.onSuccess) options.onSuccess(result); setIsPending(false); };
+  return { mutate, isPending };
+};
+const useQuery = (options) => {
+  const { queryKey, enabled = true, queryFn } = options;
+  const [data, setData] = useState(null);
+  const [isLoading, setIsLoading] = useState(true);
+  useEffect(() => {
+    if (!enabled) { setIsLoading(false); setData(null); return; }
+    const fetchData = async () => {
+      setIsLoading(true); await new Promise(resolve => setTimeout(resolve, 800));
+      let resultData = null;
+      if (queryKey.includes('/api/profile')) {
+        resultData = { id: 'mockUserId', name: 'Dark Mode User', email: 'dark@example.com', fitnessLevel: 'intermediate', equipment: ['dumbbells', 'resistance_bands', 'yoga_mat'], goals: 'strength_training' };
+      } else if (queryKey.includes('/api/workout-plans') && queryKey[1]) {
+        resultData = [
+          { id: 'planActive1', title: 'Shadow Strength Protocol', description: 'Advanced strength building for nocturnal power. Push your limits under the cover of darkness.', duration: 12, totalWorkouts: 36, isActive: true, difficulty: 'advanced', equipment: ['barbell', 'dumbbells', 'chains', 'void_essence'], workouts: [] },
+          { id: 'planInactive1', title: 'Midnight Cardio Burst', description: 'A gentle introduction to cardiovascular fitness, best performed when the moon is high.', duration: 4, totalWorkouts: 12, isActive: false, difficulty: 'beginner', equipment: ['moonlight'], workouts: [] },
+          { id: 'planInactive2', title: 'Twilight Core Sculpt', description: 'Comprehensive core workouts for intermediates, harness the energy of dusk.', duration: 8, totalWorkouts: 24, isActive: false, difficulty: 'intermediate', equipment: ['yoga_mat', 'determination'], workouts: [] },
+        ];
+      }
+      setData(resultData); setIsLoading(false);
+    };
+    fetchData();
+  }, [JSON.stringify(queryKey), enabled]);
+  return { data, isLoading };
+};
+const useForm = (options) => {
+  const [values, setValues] = useState(options.defaultValues || {});
+  const [errors, setErrors] = useState({});
+  const control = { defaultValues: options.defaultValues, formState: { errors } };
+  const handleSubmit = (onSubmit) => async (e) => { e.preventDefault(); onSubmit(values); };
+  const getFieldProps = (name) => ({ name, value: values[name] || '', onChange: (valueOrEvent) => { const newValue = (valueOrEvent && valueOrEvent.target) ? valueOrEvent.target.value : valueOrEvent; setValues(prev => ({ ...prev, [name]: newValue })); } });
+  return { handleSubmit, control: { ...control, getFieldProps }, formState: { errors } };
+};
+const zodResolver = (schema) => (values) => ({ values, errors: {} }); // Simplified
+const z = { object: () => ({}), number: () => ({ min: () => ({ max: () => ({}) }) }), enum: () => ({}) }; // Simplified
+
+// --- Original WorkoutsPage Component Structure with Dark Theme Styling Suggestions Applied ---
+const planTypeOptions = [
+  { value: 'independent', label: 'Independent Plan', description: 'Create a fresh plan based on your current profile' },
+  { value: 'progressive', label: 'Progressive Plan', description: 'Build on your previous plan results and progress' }
+];
+const generatePlanSchema = z.object({}); // Mocked schema
+
+export default function WorkoutsPage() {
+  const [showGenerateDialog, setShowGenerateDialog] = useState(false);
+  const [searchQuery, setSearchQuery] = useState('');
+  const [filterDifficulty, setFilterDifficulty] = useState('all');
+  const [location, setLocation] = useLocation();
+  const { toast } = useToast();
+  const queryClient = useQueryClient();
+  const { user } = useAuth();
+
+  const { data: userProfile } = useQuery({ queryKey: ["/api/profile"] });
+  const { data: workoutPlansData, isLoading: plansLoading } = useQuery({
+    queryKey: ['/api/workout-plans', userProfile?.id],
+    enabled: !!userProfile?.id,
+  });
+  const workoutPlans = workoutPlansData || [];
+
+
+  const [generationState, setGenerationState] = useState({ isGenerating: false, operationId: null });
+
+  useEffect(() => {
+    const urlParams = new URLSearchParams(window.location.search);
+    if (urlParams.get('generate') === 'true') {
+      setShowGenerateDialog(true);
+      setLocation('/workouts');
+    }
+  }, [setLocation]);
+
+  const generatePlanMutation = useMutation({
+    mutationFn: async (data) => { /* Mocked */ return { operationId: `op-${Date.now()}` }; },
+    onSuccess: (data) => {
+      if (data.operationId) {
+        setShowGenerateDialog(false);
+        setGenerationState({ isGenerating: true, operationId: data.operationId });
+      } else { /* ... */ }
+    },
+    onError: () => { /* ... */ }
+  });
+
+  const handleGenerationComplete = (success, data) => {
+    setGenerationState({ isGenerating: false, operationId: null });
+    if (success) { /* ... toast ... */ } else { /* ... toast ... */ }
+  };
+
+  const form = useForm({
+    resolver: zodResolver(generatePlanSchema),
+    defaultValues: { duration: 4, workoutsPerWeek: 3, timePerWorkout: 45, planType: "independent" }
+  });
+
+  const onSubmit = (values) => {
+    if (!userProfile) { /* ... toast ... */ return; }
+    const planRequest = { /* ... */ };
+    generatePlanMutation.mutate(planRequest);
+  };
+
+  const filteredPlans = workoutPlans?.filter(plan => {
+    const matchesSearch = plan.title.toLowerCase().includes(searchQuery.toLowerCase()) ||
+                          (plan.description || '').toLowerCase().includes(searchQuery.toLowerCase());
+    const matchesDifficulty = filterDifficulty === 'all' || plan.difficulty?.toLowerCase() === filterDifficulty.toLowerCase();
+    return matchesSearch && matchesDifficulty;
+  }) || [];
+
+  const activePlans = filteredPlans.filter(plan => plan.isActive);
+  const inactivePlans = filteredPlans.filter(plan => !plan.isActive);
+  
+  // Instead of getDifficultyColor, we'll use Badge variants
+  const getBadgeVariantForDifficulty = (difficulty) => {
+    switch (difficulty?.toLowerCase()) {
+      case 'beginner': return 'accent'; // green
+      case 'intermediate': return 'primary'; // blue
+      case 'advanced': return 'secondary'; // purple
+      default: return 'default'; // slate
+    }
+  };
+
+  return (
+    // Overall Page: Dark background, light text defaults
+    <div className="px-4 sm:px-6 lg:px-8 pb-24 pt-20 space-y-8 bg-slate-900 text-slate-200 min-h-screen font-sans fade-in">
+      
+      {/* Header: Larger title, softer subtitle */}
+      <div className="text-center space-y-3 max-w-2xl mx-auto">
+        <div>
+          <h1 className="font-poppins font-bold text-4xl text-transparent bg-clip-text bg-gradient-to-r from-blue-400 via-purple-400 to-fuchsia-400 mb-2">
+            Your Workout Realm
+          </h1>
+          <p className="text-lg text-slate-400">Craft, manage, and conquer your fitness plans.</p>
+        </div>
+        
+        <Dialog open={showGenerateDialog} onOpenChange={setShowGenerateDialog}>
+          <DialogTrigger asChild>
+            <Button 
+              size="lg" 
+              className="bg-gradient-to-r from-blue-500 via-purple-500 to-fuchsia-500 hover:from-blue-400 hover:via-purple-400 hover:to-fuchsia-400 text-white touch-target px-8 py-3 text-base font-semibold"
+              // Added hover for gradient, explicit font-semibold
+            >
+              <Sparkles size={20} className="mr-2.5" />
+              Generate AI Workout Plan
+            </Button>
+          </DialogTrigger>
+          <DialogContent className="glass-effect-dark border-slate-700/60 max-w-lg mx-auto max-h-[90vh] overflow-y-auto p-6 sm:p-8 rounded-lg">
+            <DialogHeader className="mb-6">
+              <DialogTitle className="font-poppins text-2xl text-slate-100">Forge Your Path</DialogTitle>
+              <DialogDescription className="text-slate-400 mt-1">Let AI sculpt a plan tailored to your might.</DialogDescription>
+            </DialogHeader>
+            
+            <Form {...form}>
+              <form onSubmit={form.handleSubmit(onSubmit)} className="space-y-6">
+                <FormField
+                  control={form.control} name="planType"
+                  render={({ field }) => (
+                    <FormItem>
+                      <FormLabel className="text-slate-200 font-semibold">Plan Archetype</FormLabel>
+                      <div className="space-y-3 mt-2">
+                        {planTypeOptions.map((option) => (
+                          <label key={option.value} 
+                            className={`flex items-start space-x-3 bg-slate-750/50 hover:bg-slate-700/70 border rounded-lg p-4 cursor-pointer transition-colors touch-target 
+                                      ${field.value === option.value ? 'border-blue-500 ring-2 ring-blue-500' : 'border-slate-600'}`}
+                          >
+                            <input type="radio" name="planType" value={option.value}
+                              checked={field.value === option.value}
+                              onChange={() => form.control.getFieldProps('planType').onChange(option.value)}
+                              className="mt-1 w-4 h-4 text-blue-500 bg-slate-600 border-slate-500 focus:ring-blue-500 focus:ring-offset-2 focus:ring-offset-slate-800"
+                            />
+                            <div className="flex-1">
+                              <div className="text-slate-100 font-medium">{option.label}</div>
+                              <div className="text-slate-400 text-sm mt-1">{option.description}</div>
+                            </div>
+                          </label>
+                        ))}
+                      </div>
+                      <FormMessage>{form.formState.errors.planType}</FormMessage>
+                    </FormItem>
+                  )}
+                />
+
+                <div className="grid grid-cols-1 sm:grid-cols-2 gap-x-4 gap-y-6">
+                  <FormField control={form.control} name="duration"
+                    render={({ field }) => ( <FormItem> <FormLabel className="text-slate-200 font-semibold">Duration (weeks)</FormLabel> <FormControl><Input type="number" min="1" max="52" {...form.control.getFieldProps('duration')} /></FormControl> <FormMessage>{form.formState.errors.duration}</FormMessage> </FormItem> )} />
+                  <FormField control={form.control} name="workoutsPerWeek"
+                    render={({ field }) => ( <FormItem> <FormLabel className="text-slate-200 font-semibold">Sessions / Week</FormLabel> <FormControl><Input type="number" min="1" max="7" {...form.control.getFieldProps('workoutsPerWeek')} /></FormControl> <FormMessage>{form.formState.errors.workoutsPerWeek}</FormMessage> </FormItem> )} />
+                </div>
+                <FormField control={form.control} name="timePerWorkout"
+                  render={({ field }) => ( <FormItem> <FormLabel className="text-slate-200 font-semibold">Time per session (min)</FormLabel> <FormControl><Input type="number" min="15" max="180" {...form.control.getFieldProps('timePerWorkout')} /></FormControl> <FormMessage>{form.formState.errors.timePerWorkout}</FormMessage> </FormItem> )} />
+
+                <Button type="submit" className="w-full bg-gradient-to-r from-blue-500 via-purple-500 to-fuchsia-500 hover:from-blue-400 hover:via-purple-400 hover:to-fuchsia-400 text-white py-3 touch-target text-base font-semibold" disabled={generatePlanMutation.isPending}>
+                  {generatePlanMutation.isPending ? (
+                    <> <div className="w-5 h-5 border-2 border-white border-t-transparent rounded-full animate-spin mr-2.5" /> Conjuring... </>
+                  ) : (
+                    <> <Sparkles size={18} className="mr-2" /> Generate Plan </>
+                  )}
+                </Button>
+              </form>
+            </Form>
+          </DialogContent>
+        </Dialog>
+
+        <Dialog open={generationState.isGenerating} onOpenChange={(open) => !open && setGenerationState({ isGenerating: false, operationId: null })}>
+          <DialogContent className="glass-effect-dark border-slate-700/60 max-w-md mx-auto flex flex-col items-center justify-center p-8 rounded-lg">
+            {/* GenerationProgress component will be rendered here, its internal styling is mocked for dark theme */}
+            {generationState.operationId && <GenerationProgress operationId={generationState.operationId} onComplete={handleGenerationComplete} />}
+          </DialogContent>
+        </Dialog>
+      </div>
+
+      {/* Search and Filter: Contained in a subtle dark card */}
+      <div className="max-w-3xl mx-auto space-y-4 sm:flex sm:items-center sm:space-y-0 sm:space-x-4 p-4 glass-effect-dark rounded-lg shadow-lg border border-slate-700/50">
+        <div className="relative flex-grow">
+          <Search className="absolute left-3.5 top-1/2 transform -translate-y-1/2 text-slate-400" size={18} />
+          <Input placeholder="Search plans..." value={searchQuery} onChange={(e) => setSearchQuery(e.target.value)} className="pl-10 py-2.5 text-sm"/>
+        </div>
+        <div className="flex items-center space-x-2">
+          <Filter size={18} className="text-slate-400" />
+          <Select value={filterDifficulty} onValueChange={setFilterDifficulty}>
+            <SelectTrigger className="w-full sm:w-40 text-sm py-2.5">
+              <SelectValue placeholder="Filter by level" />
+            </SelectTrigger>
+            <SelectContent className="shadow-2xl border-slate-700">
+              <SelectItem value="all">All Levels</SelectItem>
+              <SelectItem value="beginner">Beginner</SelectItem>
+              <SelectItem value="intermediate">Intermediate</SelectItem>
+              <SelectItem value="advanced">Advanced</SelectItem>
+            </SelectContent>
+          </Select>
+        </div>
+      </div>
+      
+      {/* Workout Plans Display */}
+      <div className="max-w-3xl mx-auto space-y-8">
+        {plansLoading ? (
+          Array.from({ length: 2 }).map((_, i) => (
+            <Card key={i} className="glass-effect-dark p-4 animate-pulse border-slate-700/50">
+                <Skeleton className="h-7 w-3/5 mb-3" /> <Skeleton className="h-4 w-4/5 mb-2" />
+                <Skeleton className="h-4 w-full mb-4" />
+                <div className="flex justify-between items-center"> <Skeleton className="h-5 w-1/3" /> <Skeleton className="h-10 w-28 rounded-md" /> </div>
+            </Card>
+          ))
+        ) : filteredPlans.length > 0 ? (
+          <>
+            {activePlans.length > 0 && (
+              <section>
+                <div className="flex items-center justify-between mb-4">
+                  <h2 className="font-poppins font-semibold text-2xl text-slate-100">Active Protocol</h2>
+                  <Badge variant="accent" className="px-3 py-1.5 text-sm shadow-lg shadow-green-500/20">Current Focus</Badge>
+                </div>
+                <div className="space-y-4">
+                  {activePlans.map((plan) => (
+                    <Card key={plan.id} className="glass-effect-dark hover:border-blue-500/50 transition-all duration-300 ease-in-out transform hover:-translate-y-1 border-slate-700/50 hover:shadow-xl hover:shadow-blue-500/10">
+                      <CardContent className="p-5 space-y-3">
+                        <div className="flex flex-col sm:flex-row justify-between items-start sm:items-center">
+                          <h3 className="font-poppins font-semibold text-xl text-slate-100 mb-1 sm:mb-0">{plan.title}</h3>
+                          <div className="flex space-x-2 mt-1 sm:mt-0 self-start sm:self-center">
+                            <Badge variant={getBadgeVariantForDifficulty(plan.difficulty)} className="capitalize shadow-sm">{plan.difficulty || 'N/A'}</Badge>
+                            {plan.isActive && <Badge variant="accent" className="shadow-sm">Active</Badge>}
+                          </div>
+                        </div>
+                        {plan.description && <p className="text-sm text-slate-400 line-clamp-2 leading-relaxed">{plan.description}</p>}
+                        <div className="flex flex-wrap gap-x-4 gap-y-2 text-sm text-slate-400 pt-1">
+                          <div className="flex items-center space-x-1.5"> <Calendar size={16} className="text-blue-400" /> <span>{plan.duration} weeks</span> </div>
+                          <div className="flex items-center space-x-1.5"> <Target size={16} className="text-green-400" /> <span>{plan.totalWorkouts} workouts</span> </div>
+                        </div>
+                        {plan.equipment && plan.equipment.length > 0 && (
+                          <div className="pt-1">
+                            <p className="text-xs font-medium text-slate-500 mb-1.5">Equipment Focus:</p>
+                            <div className="flex flex-wrap gap-1.5">
+                              {plan.equipment.slice(0, 4).map((eq) => (<Badge key={eq} variant="default" className="capitalize text-xs bg-slate-700 text-slate-300 border-slate-600">{eq.replace(/_/g, ' ')}</Badge>))}
+                              {plan.equipment.length > 4 && <Badge variant="default" className="text-xs bg-slate-700 text-slate-300 border-slate-600">+{plan.equipment.length - 4} more</Badge>}
+                            </div>
+                          </div>
+                        )}
+                        <div className="pt-2">
+                          <Link href={`/plan/${plan.id}`} className="block">
+                            <Button size="sm" className="w-full font-semibold text-sm py-2.5 bg-gradient-to-r from-blue-500 to-purple-500 hover:from-blue-400 hover:to-purple-400 text-white">
+                              View Active Plan <ChevronDown size={16} className="ml-1.5 rotate-[-90deg] group-hover:opacity-100"/>
+                            </Button>
+                          </Link>
+                        </div>
+                      </CardContent>
+                    </Card>
+                  ))}
+                </div>
+              </section>
+            )}
+            {inactivePlans.length > 0 && (
+              <section>
+                <div className="flex items-center justify-between mb-4">
+                  <h2 className="font-poppins font-semibold text-2xl text-slate-100">Archived Plans</h2>
+                  <Badge variant="default" className="px-3 py-1.5 text-sm shadow-md bg-slate-700 text-slate-300 border-slate-600">History</Badge>
+                </div>
+                <div className="space-y-4">
+                  {inactivePlans.map((plan) => (
+                     <Card key={plan.id} className="glass-effect-dark opacity-75 hover:opacity-100 transition-opacity duration-300 border-slate-700/50">
+                       <CardContent className="p-5 space-y-3">
+                         <div className="flex flex-col sm:flex-row justify-between items-start sm:items-center">
+                           <h3 className="font-poppins font-semibold text-xl text-slate-200 mb-1 sm:mb-0">{plan.title}</h3>
+                           <Badge variant={getBadgeVariantForDifficulty(plan.difficulty)} className="capitalize shadow-sm self-start sm:self-center">{plan.difficulty || 'N/A'}</Badge>
+                         </div>
+                         {plan.description && <p className="text-sm text-slate-400 line-clamp-2 leading-relaxed">{plan.description}</p>}
+                         <div className="flex flex-wrap gap-x-4 gap-y-2 text-sm text-slate-400 pt-1">
+                           <div className="flex items-center space-x-1.5"> <Calendar size={16} className="text-slate-500" /> <span>{plan.duration} weeks</span> </div>
+                           <div className="flex items-center space-x-1.5"> <Target size={16} className="text-slate-500" /> <span>{plan.totalWorkouts} workouts</span> </div>
+                         </div>
+                         {/* Simplified equipment for archived plans */}
+                         <div className="pt-2">
+                           <Link href={`/plan/${plan.id}`} className="block"> <Button variant="outline" size="sm" className="w-full font-semibold text-sm py-2.5">Review Plan</Button> </Link>
+                         </div>
+                       </CardContent>
+                     </Card>
+                  ))}
+                </div>
+              </section>
+            )}
+          </>
+        ) : (
+          <Card className="glass-effect-dark border-slate-700/50">
+            <CardContent className="p-8 text-center">
+              <div className="w-20 h-20 bg-gradient-to-br from-blue-500 via-purple-500 to-fuchsia-500 rounded-full flex items-center justify-center mx-auto mb-6 shadow-xl shadow-purple-500/20">
+                <Dumbbell className="text-white" size={36} />
+              </div>
+              <h3 className="font-poppins font-semibold text-2xl text-slate-100 mb-2">No Plans Forged Yet</h3>
+              <p className="text-slate-400 mb-6">
+                {searchQuery || filterDifficulty !== 'all'
+                  ? 'No scrolls match your query. Broaden your search.'
+                  : "The archives are empty. Time to scribe your first legend!"}
+              </p>
+              {!searchQuery && filterDifficulty === 'all' && (
+                <Button onClick={() => setShowGenerateDialog(true)} size="lg" className="bg-gradient-to-r from-blue-500 via-purple-500 to-fuchsia-500 hover:from-blue-400 hover:via-purple-400 hover:to-fuchsia-400 text-white font-semibold">
+                  <Sparkles size={20} className="mr-2" />
+                  Generate First Plan
+                </Button>
+              )}
+            </CardContent>
+          </Card>
+        )}
+      </div>
+      <style jsx global>{`
+        body {
+          font-family: 'Inter', sans-serif;
+          background-color: #0f172a; /* slate-900 (Tailwind) as base */
+          color: #e2e8f0; /* slate-200 (Tailwind) */
+          -webkit-font-smoothing: antialiased;
+          -moz-osx-font-smoothing: grayscale;
+        }
+        .font-poppins { font-family: 'Poppins', sans-serif; }
+        .glass-effect-dark {
+          background-color: rgba(30, 41, 59, 0.6); /* slate-800 with opacity */
+          backdrop-filter: blur(12px);
+          -webkit-backdrop-filter: blur(12px);
+          /* border: 1px solid rgba(51, 65, 85, 0.5); slate-700 with opacity for border */
+        }
+        .touch-target { min-height: 44px; min-width: 44px; display: inline-flex; align-items: center; justify-content: center; }
+        
+        @keyframes fadeIn { from { opacity: 0; transform: translateY(10px); } to { opacity: 1; transform: translateY(0); } }
+        .fade-in { animation: fadeIn 0.5s ease-out forwards; opacity: 0; }
+        @keyframes fadeInDialog { from { opacity: 0; transform: scale(0.95); } to { opacity: 1; transform: scale(1); } }
+        .animate-fadeInDialog { animation: fadeInDialog 0.3s ease-out forwards; }
+        
+        @keyframes slideInRight { from { transform: translateX(100%); opacity: 0; } to { transform: translateX(0); opacity: 1; } }
+        .animate-slideInRight { animation: slideInRight 0.3s ease-out forwards; }
+        @keyframes fadeOutRight { from { transform: translateX(0); opacity: 1; } to { transform: translateX(100%); opacity: 0; } }
+        .animate-fadeOutRight { animation: fadeOutRight 0.3s ease-in forwards; }
+
+        /* Custom scrollbar for dialog content in dark mode */
+        .dialog-content-scrollable::-webkit-scrollbar { width: 8px; }
+        .dialog-content-scrollable::-webkit-scrollbar-track { background: rgba(51, 65, 85, 0.3); border-radius: 10px; } /* slate-700/30 */
+        .dialog-content-scrollable::-webkit-scrollbar-thumb { background: rgba(71, 85, 105, 0.7); border-radius: 10px; } /* slate-600/70 */
+        .dialog-content-scrollable::-webkit-scrollbar-thumb:hover { background: rgba(100, 116, 139, 0.8); } /* slate-500/80 */
+
+        /* Ensure Radix/Shadcn focus rings are visible in dark mode if they rely on defaults */
+        *:focus-visible {
+          outline-offset: 2px;
+          outline-color: #60a5fa; /* blue-400 or your primary dark theme focus color */
+        }
+      `}</style>
+    </div>
+  );
+}
+
+// --- Main App Component (for previewing) ---
+// This App wrapper is just for the preview environment to load Tailwind and fonts.
+// Your actual app will have its own main layout.
+function App() {
+  useEffect(() => {
+    const tailwindScript = document.getElementById('tailwind-cdn-script');
+    if (!tailwindScript) {
+        const script = document.createElement('script');
+        script.id = 'tailwind-cdn-script';
+        script.src = 'https://cdn.tailwindcss.com';
+        document.head.appendChild(script);
+    }
+    
+    const fontStyle = document.getElementById('google-fonts-style');
+    if(!fontStyle){
+        const style = document.createElement('style');
+        style.id = 'google-fonts-style';
+        style.innerHTML = `
+          @import url('https://fonts.googleapis.com/css2?family=Poppins:wght@400;500;600;700&family=Inter:wght@400;500;600;700&display=swap');
+        `;
+        document.head.appendChild(style);
+    }
+  }, []);
+
+  return (
+    <div className="dark"> {/* Assuming your app has a way to toggle 'dark' class on html or body */}
+      <WorkoutsPage />
+    </div>
+  );
+}

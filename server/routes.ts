@@ -1013,9 +1013,11 @@ export async function registerRoutes(app: Express): Promise<Server> {
       
       // Search for videos for exercises that don't have them (background process)
       console.log("🎥 Starting background video search for new exercises...");
-      searchVideosForNewExercises(workoutPlan.id).catch(error => {
+      try {
+        await searchVideosForNewExercises(workoutPlan.id);
+      } catch (error) {
         console.error("Video search failed:", error);
-      });
+      }
       
       updateProgress(req.body.userId, operationId, 7, 'completed', 'Workout plan generation complete!');
       
