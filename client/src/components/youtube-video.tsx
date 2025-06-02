@@ -1,4 +1,4 @@
-import { useState } from 'react';
+import { useState, useEffect } from 'react';
 import { Play } from 'lucide-react';
 
 interface YouTubeVideoProps {
@@ -11,6 +11,12 @@ interface YouTubeVideoProps {
 export function YouTubeVideo({ videoId, thumbnailUrl, exerciseName, className = "" }: YouTubeVideoProps) {
   const [isPlaying, setIsPlaying] = useState(false);
   const [showPlayer, setShowPlayer] = useState(false);
+
+  // Reset video player state when exercise changes
+  useEffect(() => {
+    setIsPlaying(false);
+    setShowPlayer(false);
+  }, [exerciseName, videoId]);
 
   // Fallback thumbnail URL using YouTube's default thumbnail
   const fallbackThumbnail = videoId ? `https://img.youtube.com/vi/${videoId}/maxresdefault.jpg` : null;
