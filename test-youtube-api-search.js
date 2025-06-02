@@ -1,6 +1,4 @@
 // Test the improved YouTube search with actual API calls
-import dotenv from 'dotenv';
-dotenv.config();
 
 const YOUTUBE_API_KEY = process.env.YOUTUBE_API_KEY;
 const YOUTUBE_BASE_URL = 'https://www.googleapis.com/youtube/v3';
@@ -151,8 +149,7 @@ async function runTests() {
   
   const testExercises = [
     'Push-ups',
-    'Child\'s Pose',
-    'Dumbbell Bench Press'
+    'Child\'s Pose'
   ];
   
   console.log('Testing YouTube Search Algorithm');

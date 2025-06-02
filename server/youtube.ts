@@ -315,9 +315,10 @@ async function searchVideos(query: string, category: string = 'general'): Promis
     })
   );
 
-  // Sort by score and return the best video
-  scoredVideos.sort((a, b) => b.score - a.score);
-  const bestVideo = scoredVideos.find(v => v.score > 0);
+  // Filter out videos that exceed 5 minutes and sort by score
+  const validVideos = scoredVideos.filter(v => v.score > 0);
+  validVideos.sort((a, b) => b.score - a.score);
+  const bestVideo = validVideos[0];
   
   return bestVideo ? bestVideo.video : null;
 }
