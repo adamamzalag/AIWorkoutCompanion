@@ -181,15 +181,15 @@ export function ExerciseCard({
             <div className="p-6">
               {isTimeBased ? (
                 <div className="text-center mb-6">
-                  <div className="text-4xl font-bold text-primary mb-2">{timeLeft}</div>
+                  <div className="text-4xl font-bold text-primary mb-2">{timeRemaining}</div>
                   <div className="text-muted-foreground mb-4">seconds</div>
                   
                   <Button
-                    onClick={isTimerActive ? pauseTimer : startTimer}
+                    onClick={isTimerRunning ? pauseTimer : startTimer}
                     className="w-full mb-4"
                     disabled={isLoading}
                   >
-                    {isTimerActive ? (
+                    {isTimerRunning ? (
                       <>
                         <Pause className="w-4 h-4 mr-2" />
                         Pause Timer
@@ -206,10 +206,10 @@ export function ExerciseCard({
                 <div className="mb-6">
                   <div className="text-center mb-4">
                     <div className="text-lg font-semibold">
-                      Set {currentSetIndex + 1} of {currentExercise?.sets.length || 1}
+                      Set {currentSetIndex + 1} of {exerciseLog?.sets.length || 1}
                     </div>
                     <div className="text-muted-foreground">
-                      {currentExercise?.sets[currentSetIndex]?.reps || reps} reps
+                      {exerciseLog?.sets[currentSetIndex]?.reps || reps} reps
                     </div>
                   </div>
                   

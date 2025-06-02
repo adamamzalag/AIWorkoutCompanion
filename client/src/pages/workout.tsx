@@ -340,7 +340,7 @@ export default function WorkoutPage() {
           onGetCoachingTip={() => getCoachingTip(currentExerciseData.name, { currentSet, reps: 12 })}
           coachingTip={coachingTip}
           isLoading={isUpdating || isGettingTip}
-          isConsolidated={true}
+          isConsolidated={false}
         />
       </div>
 
