@@ -131,7 +131,6 @@ export function ExerciseCard({
       <div className="relative rounded-3xl overflow-hidden h-64">
         <YouTubeVideo
           videoId={exercise.youtubeId}
-          thumbnailUrl={exercise.thumbnailUrl}
           exerciseName={exercise.name}
           exerciseIndex={exerciseIndex}
           totalExercises={totalExercises}

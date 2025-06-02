@@ -71,8 +71,6 @@ export const exercises = pgTable("exercises", {
   modifications: text("modifications").array().default([]), // easier variations
   progressions: text("progressions").array().default([]), // harder variations
   youtubeId: text("youtube_id"), // YouTube video ID for tutorial
-  thumbnailUrl: text("thumbnail_url"), // YouTube video thumbnail URL
-  imageUrl: text("image_url"),
   createdAt: timestamp("created_at").notNull().defaultNow(),
 });
 

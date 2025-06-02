@@ -3,7 +3,6 @@ import { Play, Dumbbell, Heart, Zap, Flower2 } from 'lucide-react';
 
 interface YouTubeVideoProps {
   videoId?: string | null;
-  thumbnailUrl?: string | null;
   exerciseName: string;
   exerciseIndex?: number;
   totalExercises?: number;
@@ -13,7 +12,6 @@ interface YouTubeVideoProps {
 
 export function YouTubeVideo({ 
   videoId, 
-  thumbnailUrl, 
   exerciseName, 
   exerciseIndex = 1,
   totalExercises = 1,

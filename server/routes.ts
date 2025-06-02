@@ -67,8 +67,7 @@ async function searchVideosForNewExercises(workoutPlanId: number): Promise<void>
         
         if (video) {
           await storage.updateExercise(exercise.id, {
-            youtubeId: video.id,
-            thumbnailUrl: video.thumbnailUrl
+            youtubeId: video.id
           });
           successCount++;
           console.log(`✅ Found video for ${exercise.name}`);
@@ -523,10 +522,9 @@ export async function registerRoutes(app: Express): Promise<Server> {
       }
 
       // If exercise already has a video, return it
-      if (exercise.youtubeId && exercise.thumbnailUrl) {
+      if (exercise.youtubeId) {
         return res.json({
           youtubeId: exercise.youtubeId,
-          thumbnailUrl: exercise.thumbnailUrl,
           cached: true
         });
       }
