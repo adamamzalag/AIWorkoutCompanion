@@ -20,6 +20,93 @@ import {
 } from "./openai";
 import { updateAllExerciseTypes, searchExerciseVideo } from "./youtube";
 
+// Improved exercise matching utility function
+function findBestExerciseMatch(exerciseName: string, exercises: any[]) {
+  const normalizedName = exerciseName.toLowerCase().trim();
+  const targetSlug = slugify(exerciseName);
+  
+  // Create exercise name normalization map
+  const normalizeExerciseName = (name: string) => {
+    return name
+      .toLowerCase()
+      .replace(/\b(light|dynamic|deep|static|moderate|brisk)\b/g, '') // Remove intensity modifiers
+      .replace(/\b(treadmill|on treadmill)\b/g, 'treadmill') // Standardize treadmill references
+      .replace(/\b(jogging|running)\b/g, 'jogging') // Treat jogging/running as same
+      .replace(/\b(stretch|stretching)\b/g, 'stretch') // Standardize stretch
+      .replace(/\b(breathing|breath)\b/g, 'breathing') // Standardize breathing
+      .replace(/\b(circles?|circle)\b/g, 'circles') // Standardize circles
+      .replace(/\s+/g, ' ') // Clean up spaces
+      .trim();
+  };
+  
+  const normalizedTarget = normalizeExerciseName(normalizedName);
+  
+  // Scoring function for exercise matches
+  const scoreMatch = (exercise: any) => {
+    const exName = exercise.name.toLowerCase();
+    const exNormalized = normalizeExerciseName(exName);
+    
+    // Exact match (highest priority)
+    if (exName === normalizedName || exercise.slug === targetSlug) {
+      return 100;
+    }
+    
+    // Normalized exact match
+    if (exNormalized === normalizedTarget) {
+      return 95;
+    }
+    
+    // Key word matching with context validation
+    const targetWords = normalizedTarget.split(' ').filter(w => w.length > 2);
+    const exerciseWords = exNormalized.split(' ').filter(w => w.length > 2);
+    
+    if (targetWords.length === 0 || exerciseWords.length === 0) return 0;
+    
+    // Calculate word overlap
+    const commonWords = targetWords.filter(word => exerciseWords.includes(word));
+    const wordOverlapRatio = commonWords.length / Math.max(targetWords.length, exerciseWords.length);
+    
+    // Context validation - ensure movement types match
+    const isBreathingExercise = normalizedTarget.includes('breathing') || normalizedTarget.includes('breath');
+    const isStretchExercise = normalizedTarget.includes('stretch');
+    const isCardioExercise = normalizedTarget.includes('jogging') || normalizedTarget.includes('treadmill') || normalizedTarget.includes('running');
+    const isArmExercise = normalizedTarget.includes('arm') || normalizedTarget.includes('circles');
+    
+    const targetIsBreathing = exNormalized.includes('breathing') || exNormalized.includes('breath');
+    const targetIsStretch = exNormalized.includes('stretch');
+    const targetIsCardio = exNormalized.includes('jogging') || exNormalized.includes('treadmill') || exNormalized.includes('running');
+    const targetIsArm = exNormalized.includes('arm') || exNormalized.includes('circles');
+    
+    // Penalize mismatched exercise types
+    if (isBreathingExercise && !targetIsBreathing) return 0;
+    if (isStretchExercise && !targetIsStretch) return 0;
+    if (isCardioExercise && !targetIsCardio) return 0;
+    if (isArmExercise && !targetIsArm && wordOverlapRatio < 0.5) return 0;
+    
+    // Score based on word overlap
+    if (wordOverlapRatio >= 0.8) return 85;
+    if (wordOverlapRatio >= 0.6) return 75;
+    if (wordOverlapRatio >= 0.4) return 60;
+    if (wordOverlapRatio >= 0.2) return 40;
+    
+    return 0;
+  };
+  
+  // Find best match
+  let bestMatch = null;
+  let bestScore = 0;
+  
+  for (const exercise of exercises) {
+    const score = scoreMatch(exercise);
+    if (score > bestScore && score >= 70) { // Minimum confidence threshold
+      bestScore = score;
+      bestMatch = exercise;
+    }
+  }
+  
+  return { match: bestMatch, score: bestScore };
+}
+
 export async function registerRoutes(app: Express): Promise<Server> {
   // Setup authentication
   await setupAuth(app);
@@ -180,20 +267,16 @@ export async function registerRoutes(app: Express): Promise<Server> {
         const processedWarmUpActivities = [];
         for (const activity of workout.warmUp.activities) {
           if (!activity.exerciseId || typeof activity.exerciseId === 'string') {
-            // Find or create exercise for this activity
+            // Find or create exercise for this activity using improved matching
             const exercises = await storage.getExercises();
-            const targetSlug = slugify(activity.exercise);
-            let existingExercise = exercises.find(ex => 
-              ex.name.toLowerCase() === activity.exercise.toLowerCase() ||
-              ex.slug === targetSlug ||
-              ex.name.toLowerCase().includes(activity.exercise.toLowerCase()) ||
-              activity.exercise.toLowerCase().includes(ex.name.toLowerCase())
-            );
+            const { match: matchedExercise, score } = findBestExerciseMatch(activity.exercise, exercises);
+            
+            let finalExercise = matchedExercise;
 
-            if (!existingExercise) {
-              // Create new exercise
-              existingExercise = await storage.createExercise({
-                slug: targetSlug,
+            if (!finalExercise || score < 70) {
+              // Create new exercise if no good match found
+              finalExercise = await storage.createExercise({
+                slug: slugify(activity.exercise),
                 name: activity.exercise,
                 difficulty: "beginner",
                 muscle_groups: ["general"],
@@ -201,12 +284,15 @@ export async function registerRoutes(app: Express): Promise<Server> {
                 equipment: ["none"],
                 youtubeId: null
               });
+              console.log(`➕ Created new warmup exercise: "${activity.exercise}" (ID: ${finalExercise.id})`);
+            } else {
+              console.log(`✅ Matched warmup exercise: "${activity.exercise}" → "${finalExercise.name}" (ID: ${finalExercise.id}) [confidence: ${score}%]`);
             }
 
             processedWarmUpActivities.push({
               ...activity,
-              exerciseId: existingExercise.id,
-              exercise: existingExercise.name
+              exerciseId: finalExercise.id,
+              exercise: finalExercise.name
             });
             needsUpdate = true;
           } else {
@@ -221,18 +307,16 @@ export async function registerRoutes(app: Express): Promise<Server> {
         const processedCoolDownActivities = [];
         for (const activity of workout.coolDown.activities) {
           if (!activity.exerciseId || typeof activity.exerciseId === 'string') {
+            // Find or create exercise for this activity using improved matching
             const exercises = await storage.getExercises();
-            const targetSlug = slugify(activity.exercise);
-            let existingExercise = exercises.find(ex => 
-              ex.name.toLowerCase() === activity.exercise.toLowerCase() ||
-              ex.slug === targetSlug ||
-              ex.name.toLowerCase().includes(activity.exercise.toLowerCase()) ||
-              activity.exercise.toLowerCase().includes(ex.name.toLowerCase())
-            );
+            const { match: matchedExercise, score } = findBestExerciseMatch(activity.exercise, exercises);
+            
+            let finalExercise = matchedExercise;
 
-            if (!existingExercise) {
-              existingExercise = await storage.createExercise({
-                slug: targetSlug,
+            if (!finalExercise || score < 70) {
+              // Create new exercise if no good match found
+              finalExercise = await storage.createExercise({
+                slug: slugify(activity.exercise),
                 name: activity.exercise,
                 difficulty: "beginner",
                 muscle_groups: ["general"],
@@ -240,12 +324,15 @@ export async function registerRoutes(app: Express): Promise<Server> {
                 equipment: ["none"],
                 youtubeId: null
               });
+              console.log(`➕ Created new cooldown exercise: "${activity.exercise}" (ID: ${finalExercise.id})`);
+            } else {
+              console.log(`✅ Matched cooldown exercise: "${activity.exercise}" → "${finalExercise.name}" (ID: ${finalExercise.id}) [confidence: ${score}%]`);
             }
 
             processedCoolDownActivities.push({
               ...activity,
-              exerciseId: existingExercise.id,
-              exercise: existingExercise.name
+              exerciseId: finalExercise.id,
+              exercise: finalExercise.name
             });
             needsUpdate = true;
           } else {
@@ -607,31 +694,113 @@ export async function registerRoutes(app: Express): Promise<Server> {
           exercises = [];
         }
 
-        // Helper function to process and create exercise records
+        // Helper function to process and create exercise records with intelligent matching
         const processExercise = async (exerciseName: string, isWarmupCooldown = false) => {
           console.log(`🏋️ Processing exercise: ${exerciseName}${isWarmupCooldown ? ' (warmup/cooldown)' : ''}`);
           
           // Get existing exercises for similarity matching
           const existingExercises = await storage.getExercises();
           
+          // Smart exercise matching function
+          const findBestMatch = (name: string, exercises: any[]) => {
+            const normalizedName = name.toLowerCase().trim();
+            const targetSlug = slugify(name);
+            
+            // Create exercise name normalization map
+            const normalizeExerciseName = (exerciseName: string) => {
+              return exerciseName
+                .toLowerCase()
+                .replace(/\b(light|dynamic|deep|static|moderate|brisk)\b/g, '') // Remove intensity modifiers
+                .replace(/\b(treadmill|on treadmill)\b/g, 'treadmill') // Standardize treadmill references
+                .replace(/\b(jogging|running)\b/g, 'jogging') // Treat jogging/running as same
+                .replace(/\b(stretch|stretching)\b/g, 'stretch') // Standardize stretch
+                .replace(/\b(breathing|breath)\b/g, 'breathing') // Standardize breathing
+                .replace(/\b(circles?|circle)\b/g, 'circles') // Standardize circles
+                .replace(/\s+/g, ' ') // Clean up spaces
+                .trim();
+            };
+            
+            const normalizedTarget = normalizeExerciseName(normalizedName);
+            
+            // Scoring function for exercise matches
+            const scoreMatch = (exercise: any) => {
+              const exName = exercise.name.toLowerCase();
+              const exNormalized = normalizeExerciseName(exName);
+              
+              // Exact match (highest priority)
+              if (exName === normalizedName || exercise.slug === targetSlug) {
+                return 100;
+              }
+              
+              // Normalized exact match
+              if (exNormalized === normalizedTarget) {
+                return 95;
+              }
+              
+              // Key word matching with context validation
+              const targetWords = normalizedTarget.split(' ').filter(w => w.length > 2);
+              const exerciseWords = exNormalized.split(' ').filter(w => w.length > 2);
+              
+              if (targetWords.length === 0 || exerciseWords.length === 0) return 0;
+              
+              // Calculate word overlap
+              const commonWords = targetWords.filter(word => exerciseWords.includes(word));
+              const wordOverlapRatio = commonWords.length / Math.max(targetWords.length, exerciseWords.length);
+              
+              // Context validation - ensure movement types match
+              const isBreathingExercise = normalizedTarget.includes('breathing') || normalizedTarget.includes('breath');
+              const isStretchExercise = normalizedTarget.includes('stretch');
+              const isCardioExercise = normalizedTarget.includes('jogging') || normalizedTarget.includes('treadmill') || normalizedTarget.includes('running');
+              const isArmExercise = normalizedTarget.includes('arm') || normalizedTarget.includes('circles');
+              
+              const targetIsBreathing = exNormalized.includes('breathing') || exNormalized.includes('breath');
+              const targetIsStretch = exNormalized.includes('stretch');
+              const targetIsCardio = exNormalized.includes('jogging') || exNormalized.includes('treadmill') || exNormalized.includes('running');
+              const targetIsArm = exNormalized.includes('arm') || exNormalized.includes('circles');
+              
+              // Penalize mismatched exercise types
+              if (isBreathingExercise && !targetIsBreathing) return 0;
+              if (isStretchExercise && !targetIsStretch) return 0;
+              if (isCardioExercise && !targetIsCardio) return 0;
+              if (isArmExercise && !targetIsArm && wordOverlapRatio < 0.5) return 0;
+              
+              // Score based on word overlap
+              if (wordOverlapRatio >= 0.8) return 85;
+              if (wordOverlapRatio >= 0.6) return 75;
+              if (wordOverlapRatio >= 0.4) return 60;
+              if (wordOverlapRatio >= 0.2) return 40;
+              
+              return 0;
+            };
+            
+            // Find best match
+            let bestMatch = null;
+            let bestScore = 0;
+            
+            for (const exercise of exercises) {
+              const score = scoreMatch(exercise);
+              if (score > bestScore && score >= 70) { // Minimum confidence threshold
+                bestScore = score;
+                bestMatch = exercise;
+              }
+            }
+            
+            return { match: bestMatch, score: bestScore };
+          };
+          
+          const { match: existingExercise, score } = findBestMatch(exerciseName, existingExercises);
+          
           let exerciseId: number;
           let finalExerciseName: string;
           
-          // Check for existing exercise by both name and slug to avoid constraint violations
-          const targetSlug = slugify(exerciseName);
-          const existingExercise = existingExercises.find(ex => 
-            ex.name.toLowerCase() === exerciseName.toLowerCase() ||
-            ex.slug === targetSlug ||
-            // More flexible matching for warmup/cooldown activities
-            ex.name.toLowerCase().includes(exerciseName.toLowerCase()) ||
-            exerciseName.toLowerCase().includes(ex.name.toLowerCase())
-          );
-          
-          if (existingExercise) {
-            console.log(`✅ Found existing exercise: "${existingExercise.name}" (ID: ${existingExercise.id})`);
+          if (existingExercise && score >= 70) {
+            console.log(`✅ Found existing exercise: "${existingExercise.name}" (ID: ${existingExercise.id}) [confidence: ${score}%]`);
             exerciseId = existingExercise.id;
             finalExerciseName = existingExercise.name;
           } else {
+            if (existingExercise) {
+              console.log(`⚠️ Low confidence match "${existingExercise.name}" (${score}%) - creating new exercise instead`);
+            }
             console.log(`➕ Creating new exercise: "${exerciseName}"`);
             // Create new exercise record
             const newExercise = await storage.createExercise({
