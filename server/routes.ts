@@ -535,13 +535,11 @@ export async function registerRoutes(app: Express): Promise<Server> {
       if (video) {
         // Save the video to the database for future use
         await storage.updateExercise(exerciseId, {
-          youtubeId: video.id,
-          thumbnailUrl: video.thumbnailUrl
+          youtubeId: video.id
         });
 
         res.json({
           youtubeId: video.id,
-          thumbnailUrl: video.thumbnailUrl,
           cached: false
         });
       } else {
