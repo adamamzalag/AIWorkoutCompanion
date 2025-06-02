@@ -203,21 +203,40 @@ export async function searchExerciseVideo(exerciseName: string): Promise<{ id: s
 
   console.log(`🔍 Searching YouTube for: "${exerciseName}"`);
 
-  // Try different search patterns optimized for short, focused tutorials
-  const searchQueries = [
-    `how to ${exerciseName}`,
-    `${exerciseName} exercise tutorial`,
-    `${exerciseName} proper form`,
-    `${exerciseName} technique tutorial`,
-    `${exerciseName} how to perform`
-  ];
+  // Classify exercise and get category-specific search terms
+  const category = classifyExercise(exerciseName);
+  console.log(`  📂 Exercise category: ${category}`);
+  
+  let searchQueries: string[] = [];
+  switch (category) {
+    case 'flexibility':
+      searchQueries = generateFlexibilitySearches(exerciseName);
+      break;
+    case 'warmup':
+      searchQueries = generateWarmupSearches(exerciseName);
+      break;
+    case 'cardio':
+      searchQueries = generateCardioSearches(exerciseName);
+      break;
+    case 'strength':
+      searchQueries = generateStrengthSearches(exerciseName);
+      break;
+    default:
+      searchQueries = generateGeneralSearches(exerciseName);
+      break;
+  }
 
   for (let i = 0; i < searchQueries.length; i++) {
     const query = searchQueries[i];
     console.log(`  📝 Trying search ${i + 1}/${searchQueries.length}: "${query}"`);
     
     try {
-      const video = await searchVideos(query);
+      // Add rate limiting - wait 1 second between API calls
+      if (i > 0) {
+        await new Promise(resolve => setTimeout(resolve, 1000));
+      }
+      
+      const video = await searchVideos(query, category);
       if (video) {
         console.log(`  ✅ Found video: "${video.title}" by ${video.channelTitle} (${video.duration})`);
         
@@ -240,15 +259,23 @@ export async function searchExerciseVideo(exerciseName: string): Promise<{ id: s
       }
     } catch (error) {
       console.error(`  ❌ Error searching for "${query}":`, error);
+      
+      // Handle quota exceeded errors
+      if (error.message.includes('quotaExceeded')) {
+        console.log(`  ⚠️ YouTube API quota exceeded, stopping search`);
+        break;
+      }
       continue;
     }
   }
+  
+
 
   console.log(`❌ No accessible YouTube videos found for: ${exerciseName}`);
   return null;
 }
 
-async function searchVideos(query: string): Promise<YouTubeVideo | null> {
+async function searchVideos(query: string, category: string = 'general'): Promise<YouTubeVideo | null> {
   const searchUrl = `${YOUTUBE_BASE_URL}/search?` +
     `part=snippet&type=video&q=${encodeURIComponent(query)}&` +
     `maxResults=10&key=${YOUTUBE_API_KEY}&` +
@@ -270,7 +297,7 @@ async function searchVideos(query: string): Promise<YouTubeVideo | null> {
   const scoredVideos = await Promise.all(
     data.items.map(async (item) => {
       const details = await getVideoDetails(item.id.videoId);
-      const score = calculateVideoScore(item, details);
+      const score = calculateVideoScore(item, details, category);
       
       return {
         video: {
@@ -328,8 +355,7 @@ function calculateVideoScore(item: any, details: any, exerciseCategory: string =
   }
   
   // Category-specific scoring adjustments
-  const categoryBonus = getCategoryBonus(title, exerciseCategory);
-  score += categoryBonus;
+  score += getCategoryBonus(title, exerciseCategory);
   
   // Positive indicators
   if (title.includes('tutorial')) score += 30;
