@@ -11,6 +11,9 @@ interface ExerciseCardProps {
   exercise: Exercise;
   exerciseLog?: ExerciseLog;
   currentSetIndex: number;
+  exerciseIndex?: number;
+  totalExercises?: number;
+  workoutTitle?: string;
   onCompleteSet: (setData: { reps: number; weight?: number; duration?: number }) => void;
   onShowTutorial: () => void;
   onGetCoachingTip: () => void;
@@ -22,6 +25,9 @@ export function ExerciseCard({
   exercise,
   exerciseLog,
   currentSetIndex,
+  exerciseIndex = 1,
+  totalExercises = 1,
+  workoutTitle = "Workout",
   onCompleteSet,
   onShowTutorial,
   onGetCoachingTip,
@@ -127,6 +133,9 @@ export function ExerciseCard({
           videoId={exercise.youtubeId}
           thumbnailUrl={exercise.thumbnailUrl}
           exerciseName={exercise.name}
+          exerciseIndex={exerciseIndex}
+          totalExercises={totalExercises}
+          workoutTitle={workoutTitle}
           className="w-full h-full"
         />
       </div>

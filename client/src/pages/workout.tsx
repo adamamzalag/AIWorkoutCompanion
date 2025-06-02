@@ -343,6 +343,9 @@ export default function WorkoutPage() {
           exercise={currentExerciseData}
           exerciseLog={currentExercise}
           currentSetIndex={currentSet}
+          exerciseIndex={currentExerciseIndex + 1}
+          totalExercises={exerciseLogs.length}
+          workoutTitle={workout?.title || 'Workout'}
           onCompleteSet={handleCompleteSet}
           onShowTutorial={() => console.log('Show tutorial')}
           onGetCoachingTip={() => getCoachingTip(currentExerciseData.name, { currentSet, reps: 12 })}

@@ -1,14 +1,25 @@
 import { useState, useEffect } from 'react';
-import { Play } from 'lucide-react';
+import { Play, Dumbbell, Heart, Zap, Flower2 } from 'lucide-react';
 
 interface YouTubeVideoProps {
   videoId?: string | null;
   thumbnailUrl?: string | null;
   exerciseName: string;
+  exerciseIndex?: number;
+  totalExercises?: number;
+  workoutTitle?: string;
   className?: string;
 }
 
-export function YouTubeVideo({ videoId, thumbnailUrl, exerciseName, className = "" }: YouTubeVideoProps) {
+export function YouTubeVideo({ 
+  videoId, 
+  thumbnailUrl, 
+  exerciseName, 
+  exerciseIndex = 1,
+  totalExercises = 1,
+  workoutTitle = "Workout",
+  className = "" 
+}: YouTubeVideoProps) {
   const [isPlaying, setIsPlaying] = useState(false);
   const [showPlayer, setShowPlayer] = useState(false);
 
@@ -18,9 +29,58 @@ export function YouTubeVideo({ videoId, thumbnailUrl, exerciseName, className = 
     setShowPlayer(false);
   }, [exerciseName, videoId]);
 
-  // Fallback thumbnail URL using YouTube's default thumbnail
-  const fallbackThumbnail = videoId ? `https://img.youtube.com/vi/${videoId}/maxresdefault.jpg` : null;
-  const displayThumbnail = thumbnailUrl || fallbackThumbnail;
+  // Exercise category classification for themed styling
+  const getExerciseCategory = (name: string) => {
+    const lowerName = name.toLowerCase();
+    
+    if (lowerName.includes('stretch') || lowerName.includes('breathing') || lowerName.includes('relaxation')) {
+      return 'flexibility';
+    }
+    if (lowerName.includes('circles') || lowerName.includes('warm') || lowerName.includes('pull-apart')) {
+      return 'warmup';
+    }
+    if (lowerName.includes('cardio') || lowerName.includes('bike') || lowerName.includes('treadmill') || 
+        lowerName.includes('jog') || lowerName.includes('run')) {
+      return 'cardio';
+    }
+    return 'strength';
+  };
+
+  // Category-specific styling
+  const getThemeColors = (category: string) => {
+    switch (category) {
+      case 'strength':
+        return {
+          gradient: 'from-blue-600/90 via-blue-700/90 to-indigo-800/90',
+          accent: 'text-blue-200',
+          icon: Dumbbell
+        };
+      case 'cardio':
+        return {
+          gradient: 'from-orange-600/90 via-red-600/90 to-pink-700/90',
+          accent: 'text-orange-200',
+          icon: Heart
+        };
+      case 'warmup':
+        return {
+          gradient: 'from-emerald-600/90 via-teal-600/90 to-cyan-700/90',
+          accent: 'text-emerald-200',
+          icon: Zap
+        };
+      case 'flexibility':
+        return {
+          gradient: 'from-purple-600/90 via-violet-600/90 to-indigo-700/90',
+          accent: 'text-purple-200',
+          icon: Flower2
+        };
+      default:
+        return {
+          gradient: 'from-gray-600/90 via-gray-700/90 to-gray-800/90',
+          accent: 'text-gray-200',
+          icon: Dumbbell
+        };
+    }
+  };
 
   const handlePlay = () => {
     if (videoId) {
@@ -29,62 +89,9 @@ export function YouTubeVideo({ videoId, thumbnailUrl, exerciseName, className = 
     }
   };
 
-  if (!videoId || !displayThumbnail) {
-    // Generate exercise-specific Unsplash search terms with proper API format
-    const getExerciseImageQuery = (name: string) => {
-      const lowerName = name.toLowerCase();
-      
-      // Map exercise types to specific, working Unsplash image IDs
-      if (lowerName.includes('treadmill') || lowerName.includes('jogging') || lowerName.includes('running')) {
-        return 'photo-1544367567-0f2fcb009e0b?auto=format&fit=crop&w=800&h=600&q=80'; // Person running on treadmill
-      }
-      if (lowerName.includes('stretch') || lowerName.includes('chest opener') || lowerName.includes('chest stretch')) {
-        return 'photo-1506629905607-683b2b53b7dc?auto=format&fit=crop&w=800&h=600&q=80'; // Person stretching
-      }
-      if (lowerName.includes('circle') || lowerName.includes('arm circle')) {
-        return 'photo-1571019613454-1cb2f99b2d8b?auto=format&fit=crop&w=800&h=600&q=80'; // Person doing arm exercises
-      }
-      if (lowerName.includes('breath') || lowerName.includes('breathing')) {
-        return 'photo-1506126613408-eca07ce68773?auto=format&fit=crop&w=800&h=600&q=80'; // Meditation/breathing
-      }
-      if (lowerName.includes('bench press')) {
-        return 'photo-1583454110551-21f2fa2afe61?auto=format&fit=crop&w=800&h=600&q=80'; // Person bench pressing
-      }
-      if (lowerName.includes('shoulder press') || lowerName.includes('dumbbell')) {
-        return 'photo-1571019613454-1cb2f99b2d8b?auto=format&fit=crop&w=800&h=600&q=80'; // Person with dumbbells
-      }
-      if (lowerName.includes('tricep')) {
-        return 'photo-1571019613454-1cb2f99b2d8b?auto=format&fit=crop&w=800&h=600&q=80'; // Person doing tricep exercise
-      }
-      
-      // Default to general fitness
-      return 'photo-1571019613454-1cb2f99b2d8b?auto=format&fit=crop&w=800&h=600&q=80';
-    };
-
-    const imageId = getExerciseImageQuery(exerciseName);
-    
-    return (
-      <div className={`relative ${className}`}>
-        <img
-          src={`https://images.unsplash.com/${imageId}`}
-          alt={`${exerciseName} exercise`}
-          className="w-full h-full object-cover rounded-2xl"
-          onError={(e) => {
-            // Fallback to a reliable generic fitness image
-            const target = e.target as HTMLImageElement;
-            target.src = 'https://images.unsplash.com/photo-1571019613454-1cb2f99b2d8b?auto=format&fit=crop&w=800&h=600&q=80';
-          }}
-        />
-        {/* Exercise label for fallback images */}
-        <div className="absolute bottom-3 left-3 right-3">
-          <div className="glass-effect bg-black/50 text-white text-sm px-3 py-2 rounded-lg backdrop-blur-sm">
-            <div className="font-medium">{exerciseName}</div>
-            <div className="text-xs opacity-80">Exercise demonstration</div>
-          </div>
-        </div>
-      </div>
-    );
-  }
+  const category = getExerciseCategory(exerciseName);
+  const theme = getThemeColors(category);
+  const CategoryIcon = theme.icon;
 
   if (showPlayer && isPlaying) {
     return (
@@ -102,28 +109,72 @@ export function YouTubeVideo({ videoId, thumbnailUrl, exerciseName, className = 
   }
 
   return (
-    <div className={`relative cursor-pointer group ${className}`} onClick={handlePlay}>
-      {/* Video Thumbnail */}
-      <img
-        src={displayThumbnail}
-        alt={`${exerciseName} tutorial`}
-        className="w-full h-full object-cover rounded-2xl"
-      />
+    <div 
+      className={`relative cursor-pointer group overflow-hidden rounded-2xl ${className}`} 
+      onClick={handlePlay}
+    >
+      {/* Beautiful themed gradient background */}
+      <div className={`absolute inset-0 bg-gradient-to-br ${theme.gradient}`} />
       
-      {/* Play Button Overlay */}
-      <div className="absolute inset-0 flex items-center justify-center bg-black/30 rounded-2xl group-hover:bg-black/40 transition-colors">
-        <div className="glass-effect bg-white/20 hover:bg-white/30 rounded-full p-4 transform group-hover:scale-110 transition-all duration-200">
-          <Play size={32} className="text-white ml-1" fill="currentColor" />
+      {/* Decorative pattern overlay */}
+      <div className="absolute inset-0 bg-gradient-to-br from-white/5 via-transparent to-black/20" />
+      
+      {/* Content Container */}
+      <div className="relative h-full flex flex-col justify-between p-6">
+        
+        {/* Header with exercise count and workout title */}
+        <div className="flex items-center justify-between">
+          <div className="flex items-center space-x-3">
+            <div className="bg-white/10 backdrop-blur-sm rounded-full p-2">
+              <CategoryIcon size={20} className="text-white" />
+            </div>
+            <div>
+              <div className="text-white/90 text-sm font-medium">
+                Exercise {exerciseIndex} of {totalExercises}
+              </div>
+              <div className={`text-xs ${theme.accent} capitalize`}>
+                {workoutTitle}
+              </div>
+            </div>
+          </div>
+          
+          {/* Video availability indicator */}
+          {videoId && (
+            <div className="bg-green-500/20 backdrop-blur-sm rounded-full px-3 py-1">
+              <div className="text-green-300 text-xs font-medium">Video Available</div>
+            </div>
+          )}
         </div>
-      </div>
 
-      {/* Video Tutorial Label */}
-      <div className="absolute bottom-3 left-3 right-3">
-        <div className="glass-effect bg-black/50 text-white text-sm px-3 py-2 rounded-lg backdrop-blur-sm">
-          <div className="font-medium">{exerciseName} Tutorial</div>
-          <div className="text-xs opacity-80">Tap to play video</div>
+        {/* Center play button and exercise info */}
+        <div className="flex flex-col items-center space-y-4">
+          
+          {/* Large play button */}
+          <div className="bg-white/15 hover:bg-white/25 backdrop-blur-sm rounded-full p-6 transform group-hover:scale-105 transition-all duration-300 shadow-lg">
+            <Play size={40} className="text-white ml-1" fill="currentColor" />
+          </div>
+          
+          {/* Exercise name */}
+          <div className="text-center">
+            <h3 className="text-white font-semibold text-lg mb-1">{exerciseName}</h3>
+            <p className="text-white/70 text-sm">
+              {videoId ? 'Tap to watch tutorial' : 'Exercise demonstration'}
+            </p>
+          </div>
+        </div>
+
+        {/* Bottom category label */}
+        <div className="flex justify-center">
+          <div className="bg-white/10 backdrop-blur-sm rounded-full px-4 py-2">
+            <div className={`text-sm font-medium capitalize ${theme.accent}`}>
+              {category} Exercise
+            </div>
+          </div>
         </div>
       </div>
+      
+      {/* Subtle shine effect on hover */}
+      <div className="absolute inset-0 bg-gradient-to-r from-transparent via-white/5 to-transparent -skew-x-12 transform translate-x-full group-hover:translate-x-[-200%] transition-transform duration-1000 ease-out" />
     </div>
   );
 }
