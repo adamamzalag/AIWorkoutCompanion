@@ -314,20 +314,31 @@ export default function WorkoutPage() {
 
   return (
     <div className="min-h-screen bg-background pb-4">
-      {/* Minimal Header - just exit button */}
-      <div className="absolute top-4 right-4 z-10">
+      {/* Simplified Workout Header - single exit button */}
+      <div className="px-4 py-3 flex items-center justify-between">
+        <div className="w-10 h-10"></div> {/* Spacer */}
+        
+        <div className="text-center">
+          <div className="font-medium text-foreground">
+            Exercise {currentExerciseIndex + 1} of {exerciseLogs.length}
+          </div>
+          <div className="text-sm text-muted-foreground">
+            {workout?.title || 'Upper Body Strength'}
+          </div>
+        </div>
+        
         <Button
           variant="outline"
           size="sm"
-          className="w-10 h-10 rounded-full p-0 glass-effect border-border/50 bg-background/80 backdrop-blur-sm"
+          className="w-10 h-10 rounded-full p-0 glass-effect border-border/50"
           onClick={handleExitWorkout}
         >
           <X size={16} />
         </Button>
       </div>
 
-      {/* Consolidated Hero Exercise Card */}
-      <div className="px-4 pt-16 pb-6">
+      {/* Exercise Content */}
+      <div className="px-4 py-6">
         <ExerciseCard
           exercise={currentExerciseData}
           exerciseLog={currentExercise}
@@ -340,13 +351,12 @@ export default function WorkoutPage() {
           onGetCoachingTip={() => getCoachingTip(currentExerciseData.name, { currentSet, reps: 12 })}
           coachingTip={coachingTip}
           isLoading={isUpdating || isGettingTip}
-          isConsolidated={false}
         />
       </div>
 
-      {/* Progress Indicator */}
+      {/* Progress Indicator - moved to main content area */}
       <div className="px-4 pb-20">
-        <div className="flex justify-center space-x-2 mb-6">
+        <div className="flex justify-center space-x-2">
           {exerciseLogs.map((_, index) => (
             <div
               key={index}
@@ -359,31 +369,6 @@ export default function WorkoutPage() {
               }`}
             />
           ))}
-        </div>
-        
-        {/* Minimal Navigation */}
-        <div className="flex items-center justify-between">
-          <Button
-            variant="ghost"
-            size="sm"
-            className={`flex items-center gap-2 ${isFirstExercise || isUpdating ? 'opacity-50' : ''}`}
-            onClick={previousExercise}
-            disabled={isFirstExercise || isUpdating}
-          >
-            <ChevronLeft size={16} />
-            Previous
-          </Button>
-          
-          <Button
-            variant="ghost"
-            size="sm"
-            className={`flex items-center gap-2 ${isUpdating ? 'opacity-50' : ''}`}
-            onClick={handleNextExercise}
-            disabled={isUpdating}
-          >
-            {isLastExercise ? 'Finish' : 'Next'}
-            <ChevronRight size={16} />
-          </Button>
         </div>
       </div>
 

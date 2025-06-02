@@ -19,7 +19,6 @@ interface ExerciseCardProps {
   onGetCoachingTip: () => void;
   coachingTip?: string;
   isLoading?: boolean;
-  isConsolidated?: boolean;
 }
 
 export function ExerciseCard({
@@ -33,8 +32,7 @@ export function ExerciseCard({
   onShowTutorial,
   onGetCoachingTip,
   coachingTip,
-  isLoading = false,
-  isConsolidated = false
+  isLoading = false
 }: ExerciseCardProps) {
   const [reps, setReps] = useState(12);
   const [weight, setWeight] = useState(15);
@@ -126,134 +124,6 @@ export function ExerciseCard({
       });
     }
   };
-
-  if (isConsolidated) {
-    return (
-      <div className="space-y-6">
-        {/* Consolidated Hero Card */}
-        <Card className="overflow-hidden">
-          <CardContent className="p-0">
-            {/* Video Section with Overlay Info */}
-            <div className="relative h-80">
-              <YouTubeVideo
-                videoId={exercise.youtubeId}
-                exerciseName={exercise.name}
-                exerciseIndex={exerciseIndex}
-                totalExercises={totalExercises}
-                workoutTitle={workoutTitle}
-                className="w-full h-full"
-              />
-              
-              {/* Exercise Info Overlay */}
-              <div className="absolute bottom-0 left-0 right-0 bg-gradient-to-t from-black/80 via-black/40 to-transparent p-6">
-                <div className="text-white">
-                  <div className="flex items-center gap-2 mb-2">
-                    <span className="text-sm bg-white/20 px-2 py-1 rounded-full">
-                      Exercise {exerciseIndex} of {totalExercises}
-                    </span>
-                    <span className="text-sm opacity-80">{workoutTitle}</span>
-                  </div>
-                  
-                  <h1 className="text-2xl font-bold mb-2">{exercise.name}</h1>
-                  
-                  {/* Muscle Groups */}
-                  {exercise.muscle_groups && exercise.muscle_groups.length > 0 && (
-                    <div className="flex flex-wrap gap-2 mb-2">
-                      {exercise.muscle_groups.slice(0, 3).map((group, index) => (
-                        <span key={index} className="text-sm bg-white/20 px-2 py-1 rounded-full capitalize">
-                          {group}
-                        </span>
-                      ))}
-                    </div>
-                  )}
-                  
-                  {/* Key Instruction */}
-                  {exercise.instructions && exercise.instructions.length > 0 && (
-                    <p className="text-sm opacity-90 line-clamp-2">
-                      {exercise.instructions[0]}
-                    </p>
-                  )}
-                </div>
-              </div>
-            </div>
-            
-            {/* Action Section */}
-            <div className="p-6">
-              {isTimeBased ? (
-                <div className="text-center mb-6">
-                  <div className="text-4xl font-bold text-primary mb-2">{timeRemaining}</div>
-                  <div className="text-muted-foreground mb-4">seconds</div>
-                  
-                  <Button
-                    onClick={isTimerRunning ? pauseTimer : startTimer}
-                    className="w-full mb-4"
-                    disabled={isLoading}
-                  >
-                    {isTimerRunning ? (
-                      <>
-                        <Pause className="w-4 h-4 mr-2" />
-                        Pause Timer
-                      </>
-                    ) : (
-                      <>
-                        <Play className="w-4 h-4 mr-2" />
-                        Start Timer
-                      </>
-                    )}
-                  </Button>
-                </div>
-              ) : (
-                <div className="mb-6">
-                  <div className="text-center mb-4">
-                    <div className="text-lg font-semibold">
-                      Set {currentSetIndex + 1} of {exerciseLog?.sets.length || 1}
-                    </div>
-                    <div className="text-muted-foreground">
-                      {exerciseLog?.sets[currentSetIndex]?.reps || reps} reps
-                    </div>
-                  </div>
-                  
-                  <Button
-                    onClick={handleCompleteSet}
-                    className="w-full mb-4"
-                    disabled={isLoading}
-                  >
-                    Complete Set
-                  </Button>
-                </div>
-              )}
-              
-              {/* Secondary Actions */}
-              <div className="flex justify-center">
-                <Button
-                  variant="ghost"
-                  size="sm"
-                  onClick={onGetCoachingTip}
-                  disabled={isLoading}
-                  className="text-muted-foreground"
-                >
-                  <MessageCircle className="w-4 h-4 mr-2" />
-                  Get AI Tip
-                </Button>
-              </div>
-              
-              {/* Coaching Tip */}
-              {coachingTip && (
-                <Card className="mt-4 bg-primary/5 border-primary/20">
-                  <CardContent className="p-4">
-                    <div className="flex items-start gap-3">
-                      <MessageCircle className="w-5 h-5 text-primary mt-0.5 flex-shrink-0" />
-                      <p className="text-sm text-foreground">{coachingTip}</p>
-                    </div>
-                  </CardContent>
-                </Card>
-              )}
-            </div>
-          </CardContent>
-        </Card>
-      </div>
-    );
-  }
 
   return (
     <div className="space-y-6">
