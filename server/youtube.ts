@@ -263,7 +263,7 @@ export async function searchExerciseVideo(exerciseName: string): Promise<{ id: s
       console.error(`  ❌ Error searching for "${query}":`, error);
       
       // Handle quota exceeded errors
-      if (error.message.includes('quotaExceeded')) {
+      if (error instanceof Error && error.message.includes('quotaExceeded')) {
         console.log(`  ⚠️ YouTube API quota exceeded, stopping search`);
         break;
       }
