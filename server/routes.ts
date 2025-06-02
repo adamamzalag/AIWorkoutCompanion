@@ -20,6 +20,85 @@ import {
 } from "./openai";
 import { updateAllExerciseTypes, searchExerciseVideo } from "./youtube";
 
+// Search for videos for exercises that don't have them yet
+async function searchVideosForNewExercises(workoutPlanId: number): Promise<void> {
+  try {
+    console.log(`🎥 Starting video search for workout plan ${workoutPlanId}`);
+    
+    // Get all exercises from workouts in this plan that don't have videos
+    const workouts = await storage.getWorkouts(workoutPlanId);
+    const exercisesNeedingVideos: any[] = [];
+    
+    for (const workout of workouts) {
+      if (workout.exercises) {
+        for (const exercise of workout.exercises) {
+          const exerciseRecord = await storage.getExercise(exercise.exerciseId);
+          if (exerciseRecord && !exerciseRecord.youtubeId) {
+            exercisesNeedingVideos.push({
+              id: exerciseRecord.id,
+              name: exerciseRecord.name
+            });
+          }
+        }
+      }
+    }
+    
+    // Remove duplicates
+    const uniqueExercises = exercisesNeedingVideos.filter((exercise, index, self) => 
+      index === self.findIndex(e => e.id === exercise.id)
+    );
+    
+    console.log(`📝 Found ${uniqueExercises.length} exercises needing videos`);
+    
+    if (uniqueExercises.length === 0) {
+      console.log("✅ All exercises already have videos");
+      return;
+    }
+    
+    // Search for videos with rate limiting
+    let successCount = 0;
+    for (let i = 0; i < uniqueExercises.length; i++) {
+      const exercise = uniqueExercises[i];
+      
+      try {
+        console.log(`🔍 Searching video for: ${exercise.name} (${i + 1}/${uniqueExercises.length})`);
+        
+        const video = await searchExerciseVideo(exercise.name);
+        
+        if (video) {
+          await storage.updateExercise(exercise.id, {
+            youtubeId: video.id,
+            thumbnailUrl: video.thumbnailUrl
+          });
+          successCount++;
+          console.log(`✅ Found video for ${exercise.name}`);
+        } else {
+          console.log(`❌ No video found for ${exercise.name}`);
+        }
+        
+        // Rate limiting: wait 2 seconds between searches
+        if (i < uniqueExercises.length - 1) {
+          await new Promise(resolve => setTimeout(resolve, 2000));
+        }
+        
+      } catch (error) {
+        console.error(`❌ Error searching video for ${exercise.name}:`, error);
+        
+        // If quota exceeded, stop searching
+        if (error instanceof Error && error.message.includes('quotaExceeded')) {
+          console.log("⚠️ YouTube API quota exceeded, stopping video search");
+          break;
+        }
+      }
+    }
+    
+    console.log(`🎥 Video search complete: ${successCount}/${uniqueExercises.length} videos found`);
+    
+  } catch (error) {
+    console.error("❌ Error in video search process:", error);
+  }
+}
+
 // Improved exercise matching utility function
 function findBestExerciseMatch(exerciseName: string, exercises: any[]) {
   const normalizedName = exerciseName.toLowerCase().trim();
