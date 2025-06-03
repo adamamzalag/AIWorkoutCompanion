@@ -71,6 +71,7 @@ export const exercises = pgTable("exercises", {
   modifications: text("modifications").array().default([]), // easier variations
   progressions: text("progressions").array().default([]), // harder variations
   youtubeId: text("youtube_id"), // YouTube video ID for tutorial
+  type: text("type").notNull().default("main"), // main, warmup, cardio, cooldown
   createdAt: timestamp("created_at").notNull().defaultNow(),
 });
 
@@ -150,6 +151,8 @@ export const insertWorkoutPlanSchema = createInsertSchema(workoutPlans).omit({
 export const insertExerciseSchema = createInsertSchema(exercises).omit({
   id: true,
   createdAt: true,
+}).extend({
+  type: z.enum(["main", "warmup", "cardio", "cooldown"]).default("main"),
 });
 
 export const insertWorkoutSchema = createInsertSchema(workouts).omit({
@@ -212,6 +215,16 @@ export type PlanWeek = typeof planWeeks.$inferSelect;
 
 export type InsertProgressSnapshot = z.infer<typeof insertProgressSnapshotSchema>;
 export type ProgressSnapshot = typeof progressSnapshots.$inferSelect;
+
+// Exercise type constants
+export const EXERCISE_TYPES = {
+  MAIN: "main",
+  WARMUP: "warmup", 
+  CARDIO: "cardio",
+  COOLDOWN: "cooldown"
+} as const;
+
+export type ExerciseType = typeof EXERCISE_TYPES[keyof typeof EXERCISE_TYPES];
 
 // Additional types used by the frontend
 export interface UserStats {
