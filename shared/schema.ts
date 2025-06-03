@@ -108,6 +108,9 @@ export const chatSessions = pgTable("chat_sessions", {
   id: serial("id").primaryKey(),
   userId: integer("user_id").notNull(),
   title: text("title"), // Optional, auto-generated from first message
+  titleGenerated: boolean("title_generated").default(false),
+  titleEditedManually: boolean("title_edited_manually").default(false),
+  originalAiTitle: text("original_ai_title"), // Keep AI suggestion for reference
   createdAt: timestamp("created_at").notNull().defaultNow(),
   lastMessageAt: timestamp("last_message_at").notNull().defaultNow(),
 });

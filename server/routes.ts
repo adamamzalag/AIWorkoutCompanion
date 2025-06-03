@@ -606,6 +606,29 @@ export async function registerRoutes(app: Express): Promise<Server> {
       // Save user message
       const userMessage = await storage.createChatMessage(messageData);
       
+      // Check if this is the first message in the session and generate title
+      const existingMessages = await storage.getChatMessages(messageData.userId, messageData.sessionId);
+      const isFirstMessage = existingMessages.length === 1; // Only the message we just saved
+      
+      if (isFirstMessage && messageData.sessionId) {
+        // Generate AI title asynchronously (don't block response)
+        const { generateChatTitle } = await import('./openai');
+        generateChatTitle(messageData.content)
+          .then(async (generatedTitle) => {
+            try {
+              await storage.updateChatSession(messageData.sessionId!, messageData.userId, {
+                title: generatedTitle,
+                titleGenerated: true,
+                originalAiTitle: generatedTitle
+              });
+              console.log(`📝 Generated title for session ${messageData.sessionId}: "${generatedTitle}"`);
+            } catch (error) {
+              console.error('Failed to update session title:', error);
+            }
+          })
+          .catch(error => console.error('Failed to generate chat title:', error));
+      }
+      
       // Get user context for AI response - ONLY from current session to maintain isolation
       const user = await storage.getUser(messageData.userId);
       const recentSessions = await storage.getRecentWorkoutSessions(messageData.userId, 5);
@@ -1342,6 +1365,37 @@ export async function registerRoutes(app: Express): Promise<Server> {
     } catch (error) {
       console.error('Chat session deletion error:', error);
       res.status(400).json({ error: "Failed to delete chat session" });
+    }
+  });
+
+  app.put("/api/chat-sessions/:id/:userId/title", async (req, res) => {
+    try {
+      const id = parseInt(req.params.id);
+      const userId = parseInt(req.params.userId);
+      const { title } = req.body;
+      
+      if (!title || typeof title !== 'string') {
+        return res.status(400).json({ error: "Title is required" });
+      }
+      
+      if (title.length > 20) {
+        return res.status(400).json({ error: "Title must be 20 characters or less" });
+      }
+      
+      const session = await storage.updateChatSession(id, userId, {
+        title: title.trim(),
+        titleEditedManually: true
+      });
+      
+      if (!session) {
+        return res.status(404).json({ error: "Chat session not found" });
+      }
+      
+      console.log(`✏️ User edited title for session ${id}: "${title}"`);
+      res.json(session);
+    } catch (error) {
+      console.error('Chat session title update error:', error);
+      res.status(400).json({ error: "Failed to update chat session title" });
     }
   });
 

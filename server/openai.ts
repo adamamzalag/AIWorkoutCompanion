@@ -393,6 +393,46 @@ Use null for weight on bodyweight exercises, specific weights for loaded exercis
 
 
 
+export async function generateChatTitle(firstMessage: string): Promise<string> {
+  try {
+    const prompt = `Generate a concise, descriptive title for a fitness coaching chat based on this first message: "${firstMessage}"
+
+Rules:
+- Maximum 20 characters
+- Focus on the fitness topic or question
+- Use title case
+- No special characters or punctuation
+- Examples: "Arm Building", "Cardio Tips", "Form Check", "Meal Planning"
+
+If the message isn't fitness-related, create a general but concise title.`;
+
+    const response = await openai.chat.completions.create({
+      model: "gpt-4o-mini",
+      messages: [
+        { role: "system", content: "You are a helpful assistant that creates concise, descriptive titles for fitness coaching conversations." },
+        { role: "user", content: prompt }
+      ],
+      max_tokens: 50,
+      temperature: 0.3,
+    });
+
+    let title = response.choices[0].message.content?.trim() || "New Chat";
+    
+    // Ensure 20 character limit
+    if (title.length > 20) {
+      title = title.substring(0, 20).trim();
+    }
+    
+    // Remove quotes if present
+    title = title.replace(/['"]/g, '');
+    
+    return title;
+  } catch (error) {
+    console.error("Error generating chat title:", error);
+    return "New Chat";
+  }
+}
+
 export async function generateCoachingTip(
   exercise: string,
   userPerformance: any,
