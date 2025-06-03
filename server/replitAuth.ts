@@ -30,6 +30,12 @@ export function getSession() {
     ttl: sessionTtl,
     tableName: "sessions",
   });
+
+  // Handle session store errors gracefully
+  sessionStore.on('error', (err) => {
+    console.error('Session store error:', err);
+  });
+
   return session({
     secret: process.env.SESSION_SECRET!,
     store: sessionStore,
