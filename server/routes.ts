@@ -1035,7 +1035,8 @@ export async function registerRoutes(app: Express): Promise<Server> {
               tempo: aiExercise.tempo,
               modifications: aiExercise.modifications || [],
               progressions: aiExercise.progressions || [],
-              youtubeId: null
+              youtubeId: null,
+              type: "main"
             });
             exerciseId = newExercise.id;
             exerciseName = newExercise.name;
