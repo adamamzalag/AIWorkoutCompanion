@@ -199,6 +199,7 @@ export function TopNavigation() {
   const [isVisible, setIsVisible] = useState(true);
   const [lastScrollY, setLastScrollY] = useState(0);
   const { isGenerating, isCompleted, operationId, dismissCompletion } = useGlobalGenerationStatus();
+  const queryClient = useQueryClient();
 
   useEffect(() => {
     const handleScroll = () => {
@@ -244,43 +245,28 @@ export function TopNavigation() {
                   )}
                 </Button>
               </DialogTrigger>
-              <DialogContent className="glass-effect border-border/50 max-w-sm mx-auto">
+              <DialogContent className="glass-effect border-border/50 max-w-md mx-auto">
                 <DialogHeader className="sr-only">
-                  <DialogTitle>Workout Plan Status</DialogTitle>
+                  <DialogTitle>Workout Plan Generation</DialogTitle>
                   <DialogDescription>
-                    Current status of your workout plan generation or completion notification.
+                    Your AI workout plan is being generated. Please wait while we create your personalized fitness program.
                   </DialogDescription>
                 </DialogHeader>
-                <div className="text-center space-y-3 p-4">
-                  {isCompleted ? (
-                    <>
-                      <div className="flex items-center justify-center gap-2">
-                        <CheckCircle className="w-5 h-5 text-green-500" />
-                        <span className="font-medium text-sm">Plan Ready!</span>
-                      </div>
-                      <p className="text-xs text-muted-foreground mb-3">
-                        Your AI workout plan has been generated successfully.
-                      </p>
-                      <Button 
-                        size="sm" 
-                        onClick={dismissCompletion}
-                        className="w-full"
-                      >
-                        View Plans
-                      </Button>
-                    </>
-                  ) : (
-                    <>
-                      <div className="flex items-center justify-center gap-2">
-                        <Loader2 className="w-4 h-4 animate-spin text-blue-500" />
-                        <span className="font-medium text-sm">Plan Generation in Progress</span>
-                      </div>
-                      <p className="text-xs text-muted-foreground">
-                        Your AI workout plan is being created in the background. You'll be notified when it's ready!
-                      </p>
-                    </>
-                  )}
-                </div>
+                {operationId && (
+                  <GenerationProgress 
+                    operationId={operationId}
+                    onComplete={(success: boolean) => {
+                      if (success) {
+                        // Invalidate multiple related queries to ensure fresh data
+                        queryClient.invalidateQueries({ queryKey: ['/api/workout-plans'] });
+                        queryClient.invalidateQueries({ queryKey: ['/api/stats'] });
+                        queryClient.invalidateQueries({ queryKey: ['/api/recent-sessions'] });
+                      }
+                      dismissCompletion();
+                    }}
+                    showViewPlansButton={true}
+                  />
+                )}
               </DialogContent>
             </Dialog>
           )}
