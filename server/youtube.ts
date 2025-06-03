@@ -184,6 +184,79 @@ function classifyExercise(exerciseName: string): string {
 }
 
 // Get category-specific scoring bonuses
+function extractExerciseKeywords(title: string): string[] {
+  const lowerTitle = title.toLowerCase();
+  
+  // Define exercise-specific keywords
+  const exerciseTypes = [
+    'squat', 'squats', 'deadlift', 'deadlifts', 'bench press', 'press',
+    'curl', 'curls', 'row', 'rows', 'pull', 'pullup', 'pullups', 'chin',
+    'push', 'pushup', 'pushups', 'dip', 'dips', 'lunge', 'lunges',
+    'calf raise', 'calf raises', 'raises', 'extension', 'fly', 'flyes',
+    'crunch', 'crunches', 'plank', 'planks', 'burpee', 'burpees',
+    'mountain climber', 'jumping jack', 'split squat', 'bulgarian',
+    'overhead', 'lateral', 'front raise', 'rear delt', 'tricep', 'bicep',
+    'shoulder', 'chest', 'back', 'leg', 'abs', 'core', 'glute', 'hamstring'
+  ];
+  
+  return exerciseTypes.filter(keyword => lowerTitle.includes(keyword));
+}
+
+function extractQueryKeywords(query: string): string[] {
+  const lowerQuery = query.toLowerCase();
+  
+  // Extract key exercise terms from the search query
+  const queryWords = lowerQuery.split(' ').filter(word => word.length > 2);
+  const exerciseKeywords = [
+    'calf', 'raises', 'squat', 'deadlift', 'bench', 'press', 'curl', 'row',
+    'pull', 'push', 'lunge', 'dip', 'extension', 'fly', 'crunch', 'plank',
+    'burpee', 'mountain', 'climbing', 'jack', 'bulgarian', 'split',
+    'overhead', 'lateral', 'front', 'rear', 'tricep', 'bicep', 'dumbbell',
+    'barbell', 'shoulder', 'chest', 'back', 'leg', 'abs', 'core'
+  ];
+  
+  return queryWords.filter(word => exerciseKeywords.includes(word));
+}
+
+function calculateExerciseRelevance(titleKeywords: string[], queryKeywords: string[]): number {
+  if (queryKeywords.length === 0) return 0;
+  
+  // Check for direct keyword matches
+  const matches = titleKeywords.filter(titleKeyword => 
+    queryKeywords.some(queryKeyword => 
+      titleKeyword.includes(queryKeyword) || queryKeyword.includes(titleKeyword)
+    )
+  );
+  
+  // If no exercise keywords match, heavily penalize
+  if (matches.length === 0) {
+    // Check if it's a completely different exercise
+    const incompatibleExercises = [
+      ['calf', 'squat'], ['calf', 'deadlift'], ['calf', 'bench'],
+      ['squat', 'curl'], ['squat', 'press'], ['deadlift', 'curl'],
+      ['bench', 'squat'], ['curl', 'squat'], ['row', 'squat']
+    ];
+    
+    for (const [keyword1, keyword2] of incompatibleExercises) {
+      if (queryKeywords.includes(keyword1) && titleKeywords.some(k => k.includes(keyword2))) {
+        return -80; // Heavy penalty for wrong exercise
+      }
+      if (queryKeywords.includes(keyword2) && titleKeywords.some(k => k.includes(keyword1))) {
+        return -80; // Heavy penalty for wrong exercise
+      }
+    }
+    
+    return -30; // Moderate penalty for no matches
+  }
+  
+  // Bonus for exact matches
+  const exactMatches = matches.filter(match => 
+    queryKeywords.includes(match) || queryKeywords.some(q => q === match)
+  );
+  
+  return (matches.length * 25) + (exactMatches.length * 15);
+}
+
 function getCategoryBonus(title: string, category: string): number {
   let bonus = 0;
   
@@ -450,7 +523,7 @@ async function searchVideos(query: string, category: string = 'general'): Promis
   // OPTIMIZATION: Pre-filter videos and only fetch details for top candidates
   // Calculate preliminary scores without video details (saves API calls)
   const preliminaryScores = data.items.map((item: any) => {
-    const preliminaryScore = calculateVideoScore(item, null, category);
+    const preliminaryScore = calculateVideoScore(item, null, category, query);
     return { item, preliminaryScore };
   });
 
@@ -470,7 +543,7 @@ async function searchVideos(query: string, category: string = 'general'): Promis
   const scoredVideos = await Promise.all(
     topCandidates.map(async ({ item }) => {
       const details = await getVideoDetails(item.id.videoId);
-      const finalScore = calculateVideoScore(item, details, category);
+      const finalScore = calculateVideoScore(item, details, category, query);
       
       return {
         video: {
@@ -514,7 +587,7 @@ async function getVideoDetails(videoId: string): Promise<{ duration: string; vie
   }
 }
 
-function calculateVideoScore(item: any, details: any, exerciseCategory: string = 'general'): number {
+function calculateVideoScore(item: any, details: any, exerciseCategory: string = 'general', searchQuery: string = ''): number {
   let score = 0;
   const title = item.snippet.title.toLowerCase();
   const channelTitle = item.snippet.channelTitle;
@@ -528,6 +601,14 @@ function calculateVideoScore(item: any, details: any, exerciseCategory: string =
   
   // Category-specific scoring adjustments
   score += getCategoryBonus(title, exerciseCategory);
+  
+  // Exercise relevance check - heavily penalize completely wrong exercises
+  if (searchQuery) {
+    const exerciseKeywords = extractExerciseKeywords(title);
+    const queryKeywords = extractQueryKeywords(searchQuery);
+    const relevanceScore = calculateExerciseRelevance(exerciseKeywords, queryKeywords);
+    score += relevanceScore;
+  }
   
   // Positive indicators
   if (title.includes('tutorial')) score += 30;
