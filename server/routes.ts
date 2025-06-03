@@ -72,7 +72,8 @@ async function searchVideosForNewExercises(workoutPlanId: number): Promise<void>
                     muscle_groups: [],
                     equipment: [],
                     instructions: [],
-                    difficulty: 'intermediate'
+                    difficulty: 'intermediate',
+                    type: sectionName === 'warmUp' ? 'warmup' : sectionName === 'cardio' ? 'cardio' : 'cooldown'
                   });
                   exercisesNeedingVideos.push({
                     id: newExercise.id,
@@ -405,7 +406,8 @@ export async function registerRoutes(app: Express): Promise<Server> {
                 muscle_groups: ["general"],
                 instructions: [`Perform ${activity.exercise.toLowerCase()} as instructed`],
                 equipment: ["none"],
-                youtubeId: null
+                youtubeId: null,
+                type: "warmup"
               });
               console.log(`➕ Created new warmup exercise: "${activity.exercise}" (ID: ${finalExercise.id})`);
             } else {
@@ -445,7 +447,8 @@ export async function registerRoutes(app: Express): Promise<Server> {
                 muscle_groups: ["general"],
                 instructions: [`Perform ${activity.exercise.toLowerCase()} as instructed`],
                 equipment: ["none"],
-                youtubeId: null
+                youtubeId: null,
+                type: "cooldown"
               });
               console.log(`➕ Created new cooldown exercise: "${activity.exercise}" (ID: ${finalExercise.id})`);
             } else {
@@ -946,7 +949,8 @@ export async function registerRoutes(app: Express): Promise<Server> {
               muscle_groups: isWarmupCooldown ? ["general"] : ["general"],
               instructions: [`Perform ${exerciseName.toLowerCase()} as instructed`],
               equipment: ["none"],
-              youtubeId: null
+              youtubeId: null,
+              type: "main"
             });
             exerciseId = newExercise.id;
             finalExerciseName = newExercise.name;
