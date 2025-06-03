@@ -471,7 +471,7 @@ Keep it concise (2-3 sentences max) and personal.`;
           content: prompt
         }
       ],
-      temperature: 0.7,
+      temperature: 0.5,
     });
 
     return response.choices[0].message.content || "Welcome to your fitness journey! Ready to make today count?";
