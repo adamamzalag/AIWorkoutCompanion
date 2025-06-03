@@ -1342,15 +1342,27 @@ export async function registerRoutes(app: Express): Promise<Server> {
       const planId = parseInt(req.params.planId);
       console.log(`🎥 Starting video search for workout plan ${planId}`);
       
-      await searchVideosForNewExercises(planId);
+      // Set response headers to prevent timeout
+      res.setHeader('Content-Type', 'application/json');
       
+      // Start the search process
+      const searchPromise = searchVideosForNewExercises(planId);
+      
+      // Send immediate response to prevent timeout, search continues in background
       res.json({
         success: true,
-        message: "Video search completed for workout plan"
+        message: "Video search started for workout plan",
+        planId: planId
       });
+      
+      // Continue search in background
+      await searchPromise;
+      
     } catch (error) {
       console.error("Error searching videos for plan:", error);
-      res.status(500).json({ error: "Failed to search videos for plan" });
+      if (!res.headersSent) {
+        res.status(500).json({ error: "Failed to search videos for plan" });
+      }
     }
   });
 
