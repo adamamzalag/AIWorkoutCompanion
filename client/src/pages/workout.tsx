@@ -56,22 +56,16 @@ export default function WorkoutPage() {
     const warmUp = workout.warmUp ? 
       (typeof workout.warmUp === 'string' ? JSON.parse(workout.warmUp) : workout.warmUp) : {};
     
-    // Add warm-up exercises
+    // Add warm-up exercises (prioritize database records)
     if (warmUp.activities) {
       warmUp.activities.forEach((activity: any, index: number) => {
-        // Use exerciseId from processed data if available, otherwise try to find by name
-        let exerciseId = activity.exerciseId;
-        if (!exerciseId) {
-          const realExercise = exercises?.find(ex => 
-            ex.name.toLowerCase().includes(activity.exercise.toLowerCase()) ||
-            activity.exercise.toLowerCase().includes(ex.name.toLowerCase())
-          );
-          exerciseId = realExercise ? realExercise.id : `warmup-${index}`;
-        }
+        // Prioritize exerciseId from database if available
+        const exerciseId = activity.exerciseId || `warmup-${index}`;
+        const exerciseName = activity.exercise;
         
         exerciseLogs.push({
           exerciseId,
-          name: activity.exercise,
+          name: exerciseName,
           sets: [{ reps: 0, completed: false }], // Time-based exercise
           restTime: '30 seconds',
           isWarmup: true,
@@ -103,22 +97,16 @@ export default function WorkoutPage() {
     const coolDown = workout.coolDown ? 
       (typeof workout.coolDown === 'string' ? JSON.parse(workout.coolDown) : workout.coolDown) : {};
     
-    // Add cool-down exercises
+    // Add cool-down exercises (prioritize database records)
     if (coolDown.activities) {
       coolDown.activities.forEach((activity: any, index: number) => {
-        // Use exerciseId from processed data if available, otherwise try to find by name
-        let exerciseId = activity.exerciseId;
-        if (!exerciseId) {
-          const realExercise = exercises?.find(ex => 
-            ex.name.toLowerCase().includes(activity.exercise.toLowerCase()) ||
-            activity.exercise.toLowerCase().includes(ex.name.toLowerCase())
-          );
-          exerciseId = realExercise ? realExercise.id : `cooldown-${index}`;
-        }
+        // Prioritize exerciseId from database if available
+        const exerciseId = activity.exerciseId || `cooldown-${index}`;
+        const exerciseName = activity.exercise;
         
         exerciseLogs.push({
           exerciseId,
-          name: activity.exercise,
+          name: exerciseName,
           sets: [{ reps: 0, completed: false }], // Time-based exercise
           restTime: '30 seconds',
           isCooldown: true,
@@ -185,54 +173,12 @@ export default function WorkoutPage() {
   // For all exercises, try to look them up in the database first
   // For warm-up, cardio, and cool-down exercises, search by name if not found by ID
   const currentExerciseData = (() => {
-    // First try to find by exerciseId (for main exercises)
-    if (typeof currentExercise?.exerciseId === 'number') {
-      const foundExercise = exercises?.find(ex => ex.id === currentExercise.exerciseId);
-      if (foundExercise) return foundExercise;
-    }
+    if (!currentExercise || !exercises) return null;
     
-    // For warmup/cardio/cooldown or if not found by ID, search by name
-    if (currentExercise?.name && exercises) {
-      // Try exact match first
-      let foundExercise = exercises.find(ex => 
-        ex.name.toLowerCase() === currentExercise.name.toLowerCase()
-      );
-      
-      // If no exact match, try partial match
-      if (!foundExercise) {
-        foundExercise = exercises.find(ex => 
-          ex.name.toLowerCase().includes(currentExercise.name.toLowerCase()) ||
-          currentExercise.name.toLowerCase().includes(ex.name.toLowerCase())
-        );
-      }
-      
+    // Prioritize exerciseId lookup for database records
+    if (typeof currentExercise.exerciseId === 'number') {
+      const foundExercise = exercises.find(ex => ex.id === currentExercise.exerciseId);
       if (foundExercise) return foundExercise;
-    }
-    
-    // Fallback: create minimal exercise object only if no database match found
-    if (currentExercise) {
-      return {
-        id: typeof currentExercise.exerciseId === 'string' ? 0 : currentExercise.exerciseId || 0,
-        name: currentExercise.name,
-        slug: currentExercise.name.toLowerCase().replace(/\s+/g, '-'),
-        description: currentExercise.isWarmup ? 'Warm-up exercise' : 
-                     currentExercise.isCardio ? 'Cardio exercise' : 'Cool-down exercise',
-        muscle_groups: [],
-        equipment: [],
-        difficulty: 'beginner',
-        instructions: currentExercise.isWarmup ? 
-          [`Perform ${currentExercise.name} for ${currentExercise.duration} seconds`] :
-          currentExercise.isCardio ?
-          [`Perform ${currentExercise.name} for ${currentExercise.duration} seconds`] :
-          [`Hold ${currentExercise.name} for ${currentExercise.duration} seconds`],
-        createdAt: new Date(),
-        tempo: null,
-        modifications: null,
-        progressions: null,
-        youtubeId: null,
-        thumbnailUrl: null,
-        imageUrl: null
-      };
     }
     
     return null;
