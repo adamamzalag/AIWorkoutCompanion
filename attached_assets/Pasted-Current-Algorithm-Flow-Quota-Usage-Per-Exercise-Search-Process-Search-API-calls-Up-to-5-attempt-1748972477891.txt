@@ -1,0 +1,48 @@
+Current Algorithm Flow & Quota Usage
+Per Exercise Search Process:
+
+Search API calls: Up to 5 attempts per exercise (100 quota units each) = 500 units max
+Video Details API calls: Up to 10 videos per search × 5 searches = 50 calls (1 quota unit each) = 50 units max
+Thumbnail verification: HTTP HEAD requests (no quota cost)
+Total per exercise: Up to 550 quota units (worst case)
+
+Major Inefficiencies Identified
+1. Excessive Search Attempts
+
+Current: 5 different search variations per exercise
+Each search fetches 10 videos and gets details for all of them
+Most exercises find a video on the first 1-2 attempts
+2. Redundant Video Detail Fetching
+
+Fetches details for all 10 videos from each search
+Only needs details for videos that pass initial filtering
+Could filter by title/channel first, then get details only for promising candidates
+3. No Intelligent Search Ordering
+
+Doesn't prioritize simpler, more likely-to-succeed searches first
+Complex searches with multiple terms often fail but still consume quota
+Optimization Strategy for 99%+ Coverage
+1. Reduce Search Attempts: 5 → 2 searches per exercise
+
+Use only the two most effective search patterns
+Save 300 quota units per exercise
+2. Selective Detail Fetching:
+
+Pre-filter videos by title keywords and preferred channels
+Only fetch details for top 3 candidates instead of all 10
+Save 35 quota units per exercise
+3. Smarter Search Prioritization:
+
+Start with simple "{exercise name} tutorial"
+Fallback to "{exercise name} exercise" only if needed
+Most exercises succeed on first attempt
+4. Batch Processing with Early Termination:
+
+Stop searching once a suitable video is found
+Average quota usage would drop to ~150 units per exercise
+Projected Quota Savings
+Current usage: 23 exercises × 550 units = 12,650 units
+Optimized usage: 23 exercises × 150 units = 3,450 units
+Savings: 73% reduction in quota usage
+
+This optimization would likely maintain 99%+ success rate while using dramatically less quota, allowing for future video searches and maintaining sustainable API usage.

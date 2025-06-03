@@ -32,8 +32,98 @@ interface YouTubeVideoDetailsResponse {
   }>;
 }
 
-const YOUTUBE_API_KEY = process.env.YOUTUBE_API_KEY;
+// Multi-key failover system for YouTube API
+const YOUTUBE_API_KEYS = [
+  process.env.YOUTUBE_API_KEY,
+  process.env.YOUTUBE_API_KEY_2,
+  process.env.YOUTUBE_API_KEY_3
+].filter(Boolean); // Remove any undefined keys
+
 const YOUTUBE_BASE_URL = 'https://www.googleapis.com/youtube/v3';
+
+// API key rotation state
+let currentKeyIndex = 0;
+let lastQuotaReset = new Date();
+
+// Check if it's a new day (quota resets at midnight Pacific)
+function shouldResetQuota(): boolean {
+  const now = new Date();
+  const pacificTime = new Date(now.toLocaleString("en-US", {timeZone: "America/Los_Angeles"}));
+  const lastResetPacific = new Date(lastQuotaReset.toLocaleString("en-US", {timeZone: "America/Los_Angeles"}));
+  
+  return pacificTime.getDate() !== lastResetPacific.getDate();
+}
+
+// Get current active API key
+function getCurrentApiKey(): string | null {
+  if (shouldResetQuota()) {
+    console.log('🔄 Daily quota reset detected, resetting to first API key');
+    currentKeyIndex = 0;
+    lastQuotaReset = new Date();
+  }
+  
+  if (currentKeyIndex >= YOUTUBE_API_KEYS.length) {
+    console.error('❌ All YouTube API keys exhausted');
+    return null;
+  }
+  
+  return YOUTUBE_API_KEYS[currentKeyIndex];
+}
+
+// Rotate to next API key when quota exceeded
+function rotateToNextKey(): boolean {
+  currentKeyIndex++;
+  
+  if (currentKeyIndex >= YOUTUBE_API_KEYS.length) {
+    console.error('❌ All YouTube API keys exhausted for today');
+    return false;
+  }
+  
+  console.log(`🔄 Rotating to API key ${currentKeyIndex + 1}/${YOUTUBE_API_KEYS.length}`);
+  return true;
+}
+
+// Enhanced API call with failover logic
+async function makeYouTubeRequest(url: string, retryCount = 0): Promise<any> {
+  const apiKey = getCurrentApiKey();
+  if (!apiKey) {
+    throw new Error('No YouTube API keys available');
+  }
+  
+  const fullUrl = url.includes('key=') ? url : `${url}&key=${apiKey}`;
+  
+  try {
+    const response = await fetch(fullUrl);
+    
+    if (response.status === 403) {
+      const errorData = await response.json().catch(() => ({}));
+      
+      // Check if it's a quota exceeded error
+      if (errorData.error?.errors?.[0]?.reason === 'quotaExceeded') {
+        console.log(`⚠️ Quota exceeded for API key ${currentKeyIndex + 1}`);
+        
+        // Try to rotate to next key
+        if (rotateToNextKey() && retryCount < YOUTUBE_API_KEYS.length) {
+          console.log(`🔄 Retrying request with next API key...`);
+          return makeYouTubeRequest(url, retryCount + 1);
+        } else {
+          throw new Error('All YouTube API keys exhausted');
+        }
+      }
+    }
+    
+    if (!response.ok) {
+      throw new Error(`YouTube API error: ${response.status}`);
+    }
+    
+    return response.json();
+  } catch (error) {
+    if (error instanceof Error && error.message.includes('fetch')) {
+      throw new Error(`Network error: ${error.message}`);
+    }
+    throw error;
+  }
+}
 
 // Exercise classification for targeted video search
 function classifyExercise(exerciseName: string): string {
@@ -198,8 +288,8 @@ const PREFERRED_CHANNELS = [
 ];
 
 export async function searchExerciseVideo(exerciseName: string, exerciseType?: string): Promise<{ id: string; thumbnailUrl: string } | null> {
-  if (!YOUTUBE_API_KEY) {
-    console.error('YouTube API key not configured');
+  if (YOUTUBE_API_KEYS.length === 0) {
+    console.error('No YouTube API keys configured');
     return null;
   }
 
@@ -284,9 +374,9 @@ export async function searchExerciseVideo(exerciseName: string, exerciseType?: s
     } catch (error) {
       console.error(`  ❌ Error searching for "${query}":`, error);
       
-      // Handle quota exceeded errors
-      if (error instanceof Error && error.message.includes('quotaExceeded')) {
-        console.log(`  ⚠️ YouTube API quota exceeded, stopping search`);
+      // Handle quota exceeded errors - this will be caught by makeYouTubeRequest
+      if (error instanceof Error && error.message.includes('All YouTube API keys exhausted')) {
+        console.log(`  ⚠️ All YouTube API keys exhausted, stopping search`);
         break;
       }
       continue;
@@ -302,16 +392,11 @@ export async function searchExerciseVideo(exerciseName: string, exerciseType?: s
 async function searchVideos(query: string, category: string = 'general'): Promise<YouTubeVideo | null> {
   const searchUrl = `${YOUTUBE_BASE_URL}/search?` +
     `part=snippet&type=video&q=${encodeURIComponent(query)}&` +
-    `maxResults=10&key=${YOUTUBE_API_KEY}&` +
+    `maxResults=10&` +
     `videoDefinition=any&videoDuration=medium&` +
     `relevanceLanguage=en&safeSearch=strict`;
 
-  const response = await fetch(searchUrl);
-  if (!response.ok) {
-    throw new Error(`YouTube API error: ${response.status}`);
-  }
-
-  const data: YouTubeSearchResponse = await response.json();
+  const data = await makeYouTubeRequest(searchUrl);
   
   if (!data.items || data.items.length === 0) {
     return null;
@@ -348,12 +433,9 @@ async function searchVideos(query: string, category: string = 'general'): Promis
 async function getVideoDetails(videoId: string): Promise<{ duration: string; viewCount: number } | null> {
   try {
     const detailsUrl = `${YOUTUBE_BASE_URL}/videos?` +
-      `part=contentDetails,statistics&id=${videoId}&key=${YOUTUBE_API_KEY}`;
+      `part=contentDetails,statistics&id=${videoId}`;
 
-    const response = await fetch(detailsUrl);
-    if (!response.ok) return null;
-
-    const data: YouTubeVideoDetailsResponse = await response.json();
+    const data = await makeYouTubeRequest(detailsUrl);
     const item = data.items?.[0];
     
     if (!item) return null;
