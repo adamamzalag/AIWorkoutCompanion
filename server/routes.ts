@@ -1337,6 +1337,23 @@ export async function registerRoutes(app: Express): Promise<Server> {
     }
   });
 
+  app.post("/api/search-videos-for-plan/:planId", async (req, res) => {
+    try {
+      const planId = parseInt(req.params.planId);
+      console.log(`🎥 Starting video search for workout plan ${planId}`);
+      
+      await searchVideosForNewExercises(planId);
+      
+      res.json({
+        success: true,
+        message: "Video search completed for workout plan"
+      });
+    } catch (error) {
+      console.error("Error searching videos for plan:", error);
+      res.status(500).json({ error: "Failed to search videos for plan" });
+    }
+  });
+
 
 
   const httpServer = createServer(app);
