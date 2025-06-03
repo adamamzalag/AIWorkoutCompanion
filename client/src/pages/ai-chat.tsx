@@ -25,6 +25,8 @@ export default function AIChatPage() {
     enabled: !!(userProfile as any)?.id,
   });
 
+  console.log('Chat messages data:', { messages, isLoading, userProfileId: (userProfile as any)?.id });
+
   const sendMessageMutation = useMutation({
     mutationFn: async (content: string) => {
       const userId = (userProfile as any)?.id;
