@@ -5,7 +5,7 @@ import { Input } from '@/components/ui/input';
 import { Textarea } from '@/components/ui/textarea';
 import { Card, CardContent } from '@/components/ui/card';
 import { Skeleton } from '@/components/ui/skeleton';
-import { MessageCircle, Send, TrendingUp, Dumbbell, Target, Plus, ChevronDown } from 'lucide-react';
+import { MessageCircle, Send, TrendingUp, Dumbbell, Target, Plus, ChevronDown, Edit3, Check, X } from 'lucide-react';
 import { apiRequest } from '@/lib/queryClient';
 import type { ChatMessage, ChatSession, User } from '@shared/schema';
 import { useAuth } from '@/hooks/useAuth';
@@ -14,6 +14,8 @@ export default function AIChatPage() {
   const [message, setMessage] = useState('');
   const [isTyping, setIsTyping] = useState(false);
   const [currentSessionId, setCurrentSessionId] = useState<number | null>(null);
+  const [editingSessionId, setEditingSessionId] = useState<number | null>(null);
+  const [editingTitle, setEditingTitle] = useState('');
   const messagesEndRef = useRef<HTMLDivElement>(null);
   const textareaRef = useRef<HTMLTextAreaElement>(null);
   const queryClient = useQueryClient();
@@ -119,8 +121,37 @@ export default function AIChatPage() {
     }
   });
 
+  // Update chat title mutation
+  const updateTitleMutation = useMutation({
+    mutationFn: async ({ sessionId, title }: { sessionId: number; title: string }) => {
+      const response = await apiRequest('PUT', `/api/chat-sessions/${sessionId}`, { title });
+      return response.json();
+    },
+    onSuccess: () => {
+      queryClient.invalidateQueries({ queryKey: ['/api/chat-sessions', (userProfile as any)?.id] });
+      setEditingSessionId(null);
+      setEditingTitle('');
+    }
+  });
+
   const createNewSession = () => {
     createSessionMutation.mutate();
+  };
+
+  const startEditing = (sessionId: number, currentTitle: string) => {
+    setEditingSessionId(sessionId);
+    setEditingTitle(currentTitle);
+  };
+
+  const saveTitle = () => {
+    if (editingSessionId && editingTitle.trim() && editingTitle.length <= 20) {
+      updateTitleMutation.mutate({ sessionId: editingSessionId, title: editingTitle.trim() });
+    }
+  };
+
+  const cancelEditing = () => {
+    setEditingSessionId(null);
+    setEditingTitle('');
   };
 
   const handleSendMessage = (e: React.FormEvent) => {
@@ -157,35 +188,88 @@ export default function AIChatPage() {
 
   return (
     <div className="flex flex-col h-screen bg-background">
-      {/* Integrated Header */}
+      {/* Enhanced Header with Renaming */}
       {chatSessions && chatSessions.length > 0 && (
         <div className="flex items-center justify-between py-3 px-4 border-b border-border/20">
-          {/* AI Avatar + Integrated Session Selector */}
-          <div className="flex items-center space-x-3">
+          {/* AI Avatar + Chat Title/Editor */}
+          <div className="flex items-center space-x-3 flex-1 min-w-0">
             <div className="w-8 h-8 bg-gradient-to-r from-accent to-primary rounded-full flex items-center justify-center flex-shrink-0">
               <MessageCircle className="text-white" size={14} />
             </div>
-            <select 
-              value={currentSessionId || ''} 
-              onChange={(e) => setCurrentSessionId(Number(e.target.value))}
-              className="bg-transparent text-base font-medium text-foreground border-none outline-none cursor-pointer hover:text-accent transition-colors min-w-0 flex-1"
-            >
-              {chatSessions.map((session) => (
-                <option key={session.id} value={session.id}>
-                  {session.title}
-                </option>
-              ))}
-            </select>
+            
+            {editingSessionId === currentSessionId ? (
+              // Editing Mode
+              <div className="flex items-center space-x-2 flex-1">
+                <Input
+                  value={editingTitle}
+                  onChange={(e) => setEditingTitle(e.target.value)}
+                  className="h-8 text-sm border-accent/50 focus:border-accent"
+                  maxLength={20}
+                  autoFocus
+                  onKeyDown={(e) => {
+                    if (e.key === 'Enter') saveTitle();
+                    if (e.key === 'Escape') cancelEditing();
+                  }}
+                />
+                <Button
+                  onClick={saveTitle}
+                  size="sm"
+                  variant="ghost"
+                  className="h-6 w-6 p-0 hover:bg-accent/10"
+                  disabled={!editingTitle.trim() || editingTitle.length > 20}
+                >
+                  <Check size={12} className="text-accent" />
+                </Button>
+                <Button
+                  onClick={cancelEditing}
+                  size="sm"
+                  variant="ghost"
+                  className="h-6 w-6 p-0 hover:bg-destructive/10"
+                >
+                  <X size={12} className="text-muted-foreground" />
+                </Button>
+              </div>
+            ) : (
+              // Display Mode
+              <div className="flex items-center space-x-2 flex-1">
+                {chatSessions.length > 1 ? (
+                  <select 
+                    value={currentSessionId || ''} 
+                    onChange={(e) => setCurrentSessionId(Number(e.target.value))}
+                    className="bg-transparent text-base font-medium text-foreground border-none outline-none cursor-pointer hover:text-accent transition-colors min-w-0 flex-1"
+                  >
+                    {chatSessions.map((session) => (
+                      <option key={session.id} value={session.id}>
+                        {session.title}
+                      </option>
+                    ))}
+                  </select>
+                ) : (
+                  <span className="text-base font-medium text-foreground">
+                    {chatSessions.find(s => s.id === currentSessionId)?.title || 'New Chat'}
+                  </span>
+                )}
+                <Button
+                  onClick={() => startEditing(currentSessionId!, chatSessions.find(s => s.id === currentSessionId)?.title || 'New Chat')}
+                  size="sm"
+                  variant="ghost"
+                  className="h-6 w-6 p-0 hover:bg-accent/10 opacity-70 hover:opacity-100"
+                >
+                  <Edit3 size={12} className="text-muted-foreground" />
+                </Button>
+              </div>
+            )}
           </div>
 
-          {/* New Chat Action */}
+          {/* Enhanced New Chat Button */}
           <Button
             onClick={createNewSession}
             size="sm"
-            variant="ghost"
-            className="h-8 px-3 text-sm hover:bg-accent/10 transition-colors"
+            className="h-9 px-4 bg-accent hover:bg-accent/90 text-accent-foreground font-medium"
+            disabled={createSessionMutation.isPending}
           >
-            <Plus size={16} />
+            <Plus size={18} className="mr-1" />
+            New Chat
           </Button>
         </div>
       )}
