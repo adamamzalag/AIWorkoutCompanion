@@ -1,5 +1,5 @@
 import { storage } from "./storage";
-import { searchYouTubeVideos } from "./youtube";
+import { searchExerciseVideo } from "./youtube";
 
 interface VideoSearchResult {
   exerciseId: number;
@@ -31,15 +31,12 @@ export async function runComprehensiveVideoAudit(): Promise<{
     
     try {
       // Search for YouTube videos using exercise name
-      const videos = await searchYouTubeVideos(exercise.name);
+      const video = await searchExerciseVideo(exercise.name, exercise.type);
       
-      if (videos.length > 0) {
-        // Use the first video found
-        const selectedVideo = videos[0];
-        
+      if (video) {
         // Update exercise with YouTube ID
         await storage.updateExercise(exercise.id, {
-          youtubeId: selectedVideo.id
+          youtubeId: video.id
         });
         
         results.push({
@@ -47,11 +44,11 @@ export async function runComprehensiveVideoAudit(): Promise<{
           exerciseName: exercise.name,
           exerciseType: exercise.type,
           success: true,
-          videoId: selectedVideo.id
+          videoId: video.id
         });
         
         successCount++;
-        console.log(`✅ Found and assigned video ${selectedVideo.id} to ${exercise.name}`);
+        console.log(`✅ Found and assigned video ${video.id} to ${exercise.name}`);
       } else {
         results.push({
           exerciseId: exercise.id,

@@ -1285,7 +1285,8 @@ export async function registerRoutes(app: Express): Promise<Server> {
   app.post("/api/admin/audit-exercise-videos", async (req, res) => {
     try {
       console.log('🔍 Starting comprehensive exercise video audit...');
-      const auditResults = await auditAndFixExerciseVideos();
+      const { runComprehensiveVideoAudit } = await import('./video-audit');
+      const auditResults = await runComprehensiveVideoAudit();
       res.json({
         success: true,
         results: auditResults
