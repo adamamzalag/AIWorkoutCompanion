@@ -265,11 +265,10 @@ export default function AIChatPage() {
           <Button
             onClick={createNewSession}
             size="sm"
-            className="h-9 px-4 bg-accent hover:bg-accent/90 text-accent-foreground font-medium"
+            className="h-9 w-9 bg-accent hover:bg-accent/90 text-accent-foreground rounded-full"
             disabled={createSessionMutation.isPending}
           >
-            <Plus size={18} className="mr-1" />
-            New Chat
+            <Plus size={20} />
           </Button>
         </div>
       )}
