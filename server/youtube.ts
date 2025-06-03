@@ -483,10 +483,6 @@ export async function searchExerciseVideo(exerciseName: string, exerciseType?: s
         }
       } else {
         console.log(`  ❌ No suitable video found for this search`);
-        // Force logging for analysis when no video found
-        if (query.includes('calf raises')) {
-          console.log(`  🔍 DEBUG: Investigating why calf raises search failed...`);
-        }
       }
     } catch (error) {
       console.error(`  ❌ Error searching for "${query}":`, error);
