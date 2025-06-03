@@ -27,8 +27,15 @@ export default function AIChatPage() {
 
   const sendMessageMutation = useMutation({
     mutationFn: async (content: string) => {
+      const userId = (userProfile as any)?.id;
+      console.log('Sending chat message:', { userId, content, userProfile });
+      
+      if (!userId) {
+        throw new Error('User profile not loaded');
+      }
+      
       const response = await apiRequest('POST', '/api/chat', {
-        userId: (userProfile as any)?.id,
+        userId,
         role: 'user',
         content
       });
@@ -49,6 +56,13 @@ export default function AIChatPage() {
 
   const handleSendMessage = (e: React.FormEvent) => {
     e.preventDefault();
+    console.log('Handle send message called:', { 
+      message: message.trim(), 
+      isPending: sendMessageMutation.isPending,
+      userProfile,
+      userId: (userProfile as any)?.id 
+    });
+    
     if (message.trim() && !sendMessageMutation.isPending) {
       sendMessageMutation.mutate(message.trim());
     }

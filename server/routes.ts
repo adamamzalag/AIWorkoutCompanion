@@ -604,7 +604,12 @@ export async function registerRoutes(app: Express): Promise<Server> {
 
   app.post("/api/chat", async (req, res) => {
     try {
+      console.log('Chat API received body:', req.body);
+      console.log('Body keys:', Object.keys(req.body));
+      console.log('userId type:', typeof req.body.userId, 'value:', req.body.userId);
+      
       const messageData = insertChatMessageSchema.parse(req.body);
+      console.log('Parsed messageData:', messageData);
       
       // Save user message
       const userMessage = await storage.createChatMessage(messageData);
