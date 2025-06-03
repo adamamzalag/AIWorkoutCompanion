@@ -684,46 +684,7 @@ function parseDuration(duration: string): number {
 
 
 
-// Universal function to find tutorial videos for ANY exercise/movement type
-export async function updateAllExerciseTypes(storage: any): Promise<void> {
-  console.log('Starting universal video search for all movements and exercises...');
-  
-  try {
-    const exercises = await storage.getExercises();
-    
-    for (const exercise of exercises) {
-      if (exercise.youtubeId && exercise.thumbnailUrl) {
-        console.log(`Skipping ${exercise.name} - already has video`);
-        continue;
-      }
-      
-      console.log(`Searching video for: ${exercise.name}`);
-      
-      // Universal search approach - try multiple search patterns for ANY movement type
-      const video = await searchExerciseVideo(exercise.name);
-      
-      if (video) {
-        console.log(`Found video for ${exercise.name}: ${video.id} (${video.title}) - Duration: ${video.duration}`);
-        
-        await storage.updateExercise(exercise.id, {
-          youtubeId: video.id,
-          thumbnailUrl: video.thumbnailUrl
-        });
-        
-        console.log(`Updated ${exercise.name} with video ${video.id}`);
-      } else {
-        console.log(`No suitable video found for ${exercise.name}`);
-      }
-      
-      // Respect API rate limits
-      await new Promise(resolve => setTimeout(resolve, 2000));
-    }
-    
-    console.log('Universal video update process completed');
-  } catch (error) {
-    console.error('Error in universal video update:', error);
-  }
-}
+// Removed legacy updateAllExerciseTypes function - replaced by optimized bulk search in routes.ts
 
 export async function updateSpecificExerciseVideo(storage: any, exerciseId: number): Promise<void> {
   try {
@@ -731,7 +692,7 @@ export async function updateSpecificExerciseVideo(storage: any, exerciseId: numb
     if (!exercise) return;
     
     console.log(`Searching video for specific exercise: ${exercise.name}`);
-    const video = await searchExerciseVideo(exercise.name);
+    const video = await searchExerciseVideo(exercise.name, exercise.type);
     
     if (video) {
       await storage.updateExercise(exerciseId, {
