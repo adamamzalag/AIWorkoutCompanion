@@ -157,50 +157,36 @@ export default function AIChatPage() {
 
   return (
     <div className="flex flex-col h-screen bg-background">
-      {/* Clean Header Design */}
+      {/* Integrated Header */}
       {chatSessions && chatSessions.length > 0 && (
-        <div className="flex items-center justify-between py-4 px-6 border-b border-border/10">
-          {/* Left: AI Avatar + Chat Title */}
-          <div className="flex items-center space-x-4">
+        <div className="flex items-center justify-between py-3 px-4 border-b border-border/20">
+          {/* AI Avatar + Integrated Session Selector */}
+          <div className="flex items-center space-x-3">
             <div className="w-8 h-8 bg-gradient-to-r from-accent to-primary rounded-full flex items-center justify-center flex-shrink-0">
               <MessageCircle className="text-white" size={14} />
             </div>
-            <div className="flex flex-col">
-              <h1 className="text-base font-semibold text-foreground leading-tight">
-                {chatSessions.find(s => s.id === currentSessionId)?.title || 'New Chat'}
-              </h1>
-              <p className="text-xs text-muted-foreground">AI Fitness Coach</p>
-            </div>
+            <select 
+              value={currentSessionId || ''} 
+              onChange={(e) => setCurrentSessionId(Number(e.target.value))}
+              className="bg-transparent text-base font-medium text-foreground border-none outline-none cursor-pointer hover:text-accent transition-colors min-w-0 flex-1"
+            >
+              {chatSessions.map((session) => (
+                <option key={session.id} value={session.id}>
+                  {session.title}
+                </option>
+              ))}
+            </select>
           </div>
 
-          {/* Right: Session Actions */}
-          <div className="flex items-center space-x-3">
-            {/* Session Switcher */}
-            {chatSessions.length > 1 && (
-              <select 
-                value={currentSessionId || ''} 
-                onChange={(e) => setCurrentSessionId(Number(e.target.value))}
-                className="bg-secondary/50 text-sm text-foreground border border-border/20 rounded-lg px-3 py-1.5 cursor-pointer hover:bg-secondary/70 transition-colors outline-none focus:ring-2 focus:ring-accent/50"
-              >
-                {chatSessions.map((session) => (
-                  <option key={session.id} value={session.id}>
-                    {session.title}
-                  </option>
-                ))}
-              </select>
-            )}
-            
-            {/* New Chat Button */}
-            <Button
-              onClick={createNewSession}
-              size="sm"
-              variant="outline"
-              className="h-8 px-4 text-sm font-medium border-accent/30 hover:bg-accent/10 hover:border-accent/50 transition-all"
-            >
-              <Plus size={16} className="mr-2" />
-              New Chat
-            </Button>
-          </div>
+          {/* New Chat Action */}
+          <Button
+            onClick={createNewSession}
+            size="sm"
+            variant="ghost"
+            className="h-8 px-3 text-sm hover:bg-accent/10 transition-colors"
+          >
+            <Plus size={16} />
+          </Button>
         </div>
       )}
 
