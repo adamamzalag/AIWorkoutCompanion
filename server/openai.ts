@@ -33,6 +33,12 @@ REQUIRED JSON STRUCTURE:
           {"exercise": "Dynamic stretching", "durationSeconds": 60}
         ]
       },
+      "cardio": {
+        "durationMinutes": 10,
+        "activities": [
+          {"exercise": "Jumping jacks", "durationSeconds": 60}
+        ]
+      },
       "coolDown": {
         "durationMinutes": 5,
         "activities": [
@@ -179,6 +185,10 @@ Client Data:
 - Available Equipment: ${request.equipment.join(", ")}
 - Plan Duration: ${request.duration} weeks
 
+STRICT EQUIPMENT CONSTRAINT: 
+You MUST design workout patterns that only use equipment from the user's available equipment list.
+Do NOT suggest workout focuses or patterns that require unavailable equipment.
+
 Think through your coaching strategy:
 1. What workout split maximizes results for this goal and schedule?
 2. How should training intensity and volume progress over ${request.duration} weeks?
@@ -275,7 +285,17 @@ export async function generateWeeklyWorkouts(
 
   const prompt = `Generate detailed workouts for Week ${weekNumber}:
 
-Framework: ${JSON.stringify(currentWeek)}
+PLAN CONTEXT:
+- Overall Plan: ${framework.title} (${framework.difficulty})
+- Total Duration: ${framework.duration} weeks
+- Plan Goals: ${framework.description}
+
+PROGRESSION STRATEGY:
+${JSON.stringify(framework.progressionRules)}
+
+CURRENT WEEK FOCUS:
+${JSON.stringify(currentWeek)}
+
 Available Equipment: ${framework.equipment.join(", ")}
 ${progressionContext}
 
@@ -304,6 +324,12 @@ CRITICAL: Return JSON with this EXACT structure:
         "activities": [
           {"exercise": "Arm circles", "durationSeconds": 30},
           {"exercise": "Light cardio", "durationSeconds": 120}
+        ]
+      },
+      "cardio": {
+        "durationMinutes": 10,
+        "activities": [
+          {"exercise": "Jumping jacks", "durationSeconds": 60}
         ]
       },
       "coolDown": {

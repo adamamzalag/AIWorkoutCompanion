@@ -84,6 +84,7 @@ export const workouts = pgTable("workouts", {
   estimatedDuration: integer("estimated_duration").notNull(), // in minutes
   exercises: jsonb("exercises").notNull(), // array of exercise objects with sets/reps
   warmUp: jsonb("warm_up"), // warm-up activities and duration
+  cardio: jsonb("cardio"), // cardio activities and duration
   coolDown: jsonb("cool_down"), // cool-down activities and duration
   orderIndex: integer("order_index").notNull(),
   dayIndex: integer("day_index"), // which day of the week (1-7)
