@@ -104,9 +104,18 @@ export const workoutSessions = pgTable("workout_sessions", {
   aiCoachFeedback: text("ai_coach_feedback"),
 });
 
+export const chatSessions = pgTable("chat_sessions", {
+  id: serial("id").primaryKey(),
+  userId: integer("user_id").notNull(),
+  title: text("title"), // Optional, auto-generated from first message
+  createdAt: timestamp("created_at").notNull().defaultNow(),
+  lastMessageAt: timestamp("last_message_at").notNull().defaultNow(),
+});
+
 export const chatMessages = pgTable("chat_messages", {
   id: serial("id").primaryKey(),
   userId: integer("user_id").notNull(),
+  sessionId: integer("session_id"), // Nullable for migration, will be required later
   role: text("role").notNull(), // 'user' or 'assistant'
   content: text("content").notNull(),
   timestamp: timestamp("timestamp").notNull().defaultNow(),
@@ -165,6 +174,12 @@ export const insertWorkoutSessionSchema = createInsertSchema(workoutSessions).om
   startedAt: true,
 });
 
+export const insertChatSessionSchema = createInsertSchema(chatSessions).omit({
+  id: true,
+  createdAt: true,
+  lastMessageAt: true,
+});
+
 export const insertChatMessageSchema = createInsertSchema(chatMessages).omit({
   id: true,
   timestamp: true,
@@ -203,6 +218,9 @@ export type Workout = typeof workouts.$inferSelect;
 
 export type InsertWorkoutSession = z.infer<typeof insertWorkoutSessionSchema>;
 export type WorkoutSession = typeof workoutSessions.$inferSelect;
+
+export type InsertChatSession = z.infer<typeof insertChatSessionSchema>;
+export type ChatSession = typeof chatSessions.$inferSelect;
 
 export type InsertChatMessage = z.infer<typeof insertChatMessageSchema>;
 export type ChatMessage = typeof chatMessages.$inferSelect;
