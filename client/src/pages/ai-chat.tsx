@@ -41,6 +41,13 @@ export default function AIChatPage() {
     }
   }, [chatSessions, currentSessionId]);
 
+  // Force refetch when session changes
+  useEffect(() => {
+    if (currentSessionId) {
+      queryClient.invalidateQueries({ queryKey: ['/api/chat', (userProfile as any)?.id, currentSessionId] });
+    }
+  }, [currentSessionId, queryClient, userProfile]);
+
   const { data: messages, isLoading } = useQuery<ChatMessage[]>({
     queryKey: ['/api/chat', (userProfile as any)?.id, currentSessionId],
     queryFn: async () => {
