@@ -3,6 +3,8 @@ import { Home, Dumbbell, TrendingUp, MessageCircle, Settings, Loader2, CheckCirc
 import { useState, useEffect } from 'react';
 import { Button } from '@/components/ui/button';
 import { Dialog, DialogContent, DialogHeader, DialogTitle, DialogDescription, DialogTrigger } from '@/components/ui/dialog';
+import { GenerationProgress } from '@/components/generation-progress';
+import { useQueryClient } from '@tanstack/react-query';
 
 // Workout-specific bottom controls
 function WorkoutBottomControls() {

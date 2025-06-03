@@ -124,7 +124,11 @@ export default function WorkoutsPage() {
     setGenerationState({ isGenerating: false, operationId: null });
     
     if (success) {
-      queryClient.invalidateQueries({ queryKey: ['/api/workout-plans', (userProfile as any)?.id] });
+      // Invalidate multiple related queries to ensure fresh data
+      queryClient.invalidateQueries({ queryKey: ['/api/workout-plans'] });
+      queryClient.invalidateQueries({ queryKey: ['/api/stats'] });
+      queryClient.invalidateQueries({ queryKey: ['/api/recent-sessions'] });
+      
       setShowGenerateDialog(false);
       toast({
         title: "Workout Plan Generated!",

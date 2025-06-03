@@ -6,12 +6,14 @@ import { Loader2, CheckCircle, XCircle } from 'lucide-react';
 interface GenerationProgressProps {
   operationId: string;
   onComplete: (success: boolean, data?: any) => void;
+  showViewPlansButton?: boolean;
 }
 
-export function GenerationProgress({ operationId, onComplete }: GenerationProgressProps) {
+export function GenerationProgress({ operationId, onComplete, showViewPlansButton = true }: GenerationProgressProps) {
   const [status, setStatus] = useState('starting');
   const [currentStep, setCurrentStep] = useState('Initializing workout plan generation...');
   const [error, setError] = useState<string | null>(null);
+  const [, setLocation] = useLocation();
 
   useEffect(() => {
     let interval: NodeJS.Timeout | null = null;
@@ -110,9 +112,12 @@ export function GenerationProgress({ operationId, onComplete }: GenerationProgre
             </div>
           )}
           
-          {status === 'completed' && (
+          {status === 'completed' && showViewPlansButton && (
             <Button 
-              onClick={() => onComplete(true)}
+              onClick={() => {
+                onComplete(true);
+                setLocation('/workouts');
+              }}
               className="bg-gradient-to-r from-primary to-secondary hover:from-primary/90 hover:to-secondary/90 text-white"
             >
               View Plans
