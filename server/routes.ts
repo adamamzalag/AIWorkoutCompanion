@@ -618,6 +618,14 @@ export async function registerRoutes(app: Express): Promise<Server> {
         recentWorkouts: recentSessions.length
       };
 
+      // Log session isolation details for verification
+      console.log(`🔍 AI Context for Session ${messageData.sessionId}:`);
+      console.log(`   - Chat history messages: ${chatHistory.length}`);
+      console.log(`   - Previous messages in this session: ${chatHistory.filter(m => m.role === 'user').length} user, ${chatHistory.filter(m => m.role === 'assistant').length} assistant`);
+      if (chatHistory.length > 0) {
+        console.log(`   - Last message: "${chatHistory[chatHistory.length - 1]?.content?.substring(0, 50)}..."`);
+      }
+
       // Generate AI response
       const aiResponse = await generateChatResponse(
         messageData.content,
