@@ -56,6 +56,8 @@ export default function AIChatPage() {
       queryClient.invalidateQueries({ queryKey: ['/api/chat', (userProfile as any)?.id] });
       setMessage('');
       setIsTyping(false);
+      // Scroll to bottom after new message
+      setTimeout(() => scrollToBottom(), 100);
     },
     onError: () => {
       setIsTyping(false);
