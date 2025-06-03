@@ -159,6 +159,8 @@ function useGlobalGenerationStatus() {
             setIsGenerating(false);
             setIsCompleted(true);
             // Keep the operationId to show completion state
+            // Auto-dismiss after delay unless user interacts
+            dismissCompletion(false);
           } else if (data.status === 'failed') {
             localStorage.removeItem('activeGenerationId');
             setIsGenerating(false);
@@ -186,10 +188,22 @@ function useGlobalGenerationStatus() {
     };
   }, [operationId, isGenerating, isCompleted]);
 
-  const dismissCompletion = () => {
-    localStorage.removeItem('activeGenerationId');
-    setIsCompleted(false);
-    setOperationId(null);
+  const dismissCompletion = (immediate: boolean = false) => {
+    if (immediate) {
+      localStorage.removeItem('activeGenerationId');
+      setIsCompleted(false);
+      setOperationId(null);
+    } else {
+      // Delay dismissal to allow user interaction with completion state
+      setTimeout(() => {
+        const currentStoredId = localStorage.getItem('activeGenerationId');
+        if (currentStoredId === operationId) {
+          localStorage.removeItem('activeGenerationId');
+          setIsCompleted(false);
+          setOperationId(null);
+        }
+      }, 5000); // 5 second delay for user interaction
+    }
   };
 
   return { isGenerating, isCompleted, operationId, dismissCompletion };
@@ -264,7 +278,7 @@ export function TopNavigation() {
                         queryClient.invalidateQueries({ queryKey: ['/api/recent-sessions'] });
                       }
                       setIsDialogOpen(false);
-                      dismissCompletion();
+                      dismissCompletion(true); // Immediate dismissal when user clicks View Plans
                     }}
                     showViewPlansButton={true}
                   />
