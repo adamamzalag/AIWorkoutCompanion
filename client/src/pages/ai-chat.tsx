@@ -55,6 +55,27 @@ export default function AIChatPage() {
 
   console.log('Chat messages data:', { messages, isLoading, userProfileId: (userProfile as any)?.id });
 
+  // Create new session mutation
+  const createSessionMutation = useMutation({
+    mutationFn: async () => {
+      const userId = (userProfile as any)?.id;
+      if (!userId) {
+        throw new Error('User profile not loaded');
+      }
+      
+      const response = await apiRequest('POST', '/api/chat-sessions', {
+        userId,
+        title: `New Chat ${new Date().toLocaleString()}`,
+        goals: (userProfile as any)?.goals || ''
+      });
+      return response.json();
+    },
+    onSuccess: (newSession) => {
+      queryClient.invalidateQueries({ queryKey: ['/api/chat-sessions', (userProfile as any)?.id] });
+      setCurrentSessionId(newSession.id);
+    }
+  });
+
   const sendMessageMutation = useMutation({
     mutationFn: async (content: string) => {
       const userId = (userProfile as any)?.id;
@@ -90,6 +111,10 @@ export default function AIChatPage() {
       setIsTyping(false);
     }
   });
+
+  const createNewSession = () => {
+    createSessionMutation.mutate();
+  };
 
   const handleSendMessage = (e: React.FormEvent) => {
     e.preventDefault();
@@ -143,9 +168,20 @@ export default function AIChatPage() {
             </select>
             <ChevronDown className="text-muted-foreground" size={14} />
           </div>
-          <div className="flex items-center space-x-2">
-            <div className="w-2 h-2 bg-accent rounded-full animate-pulse"></div>
-            <span className="text-xs text-muted-foreground">AI Coach is online</span>
+          <div className="flex items-center space-x-3">
+            <Button
+              onClick={createNewSession}
+              size="sm"
+              variant="ghost"
+              className="h-8 px-3 text-xs"
+            >
+              <Plus size={14} className="mr-1" />
+              New Chat
+            </Button>
+            <div className="flex items-center space-x-2">
+              <div className="w-2 h-2 bg-accent rounded-full animate-pulse"></div>
+              <span className="text-xs text-muted-foreground">AI Coach is online</span>
+            </div>
           </div>
         </div>
       )}
