@@ -1,6 +1,6 @@
 import { Switch, Route, useLocation } from "wouter";
 import { queryClient } from "./lib/queryClient";
-import { QueryClientProvider } from "@tanstack/react-query";
+import { QueryClientProvider, useQueryClient } from "@tanstack/react-query";
 import { Toaster } from "@/components/ui/toaster";
 import { TooltipProvider } from "@/components/ui/tooltip";
 import { TopNavigation, BottomNavigation } from "@/components/navigation";
@@ -15,6 +15,7 @@ import AIChatPage from "@/pages/ai-chat";
 import OnboardingPage from "@/pages/onboarding";
 import ProfilePage from "@/pages/profile";
 import { Button } from "@/components/ui/button";
+import { useEffect } from "react";
 
 function LandingPage() {
   return (
@@ -89,7 +90,7 @@ function OnboardingCheck({ children }: { children: React.ReactNode }) {
     return <LandingPage />;
   }
 
-  if (user && !user.onboardingCompleted) {
+  if (user && !(user as any).onboardingCompleted) {
     return <OnboardingPage />;
   }
 
@@ -97,6 +98,35 @@ function OnboardingCheck({ children }: { children: React.ReactNode }) {
 }
 
 function Router() {
+  const [location] = useLocation();
+  const queryClient = useQueryClient();
+
+  // Invalidate relevant queries when navigating to key pages
+  useEffect(() => {
+    const invalidateQueriesForPage = () => {
+      switch (location) {
+        case '/':
+          // Home page - refresh stats and recent sessions
+          queryClient.invalidateQueries({ queryKey: ['/api/stats'] });
+          queryClient.invalidateQueries({ queryKey: ['/api/recent-sessions'] });
+          break;
+        case '/workouts':
+          // Workouts page - refresh workout plans
+          queryClient.invalidateQueries({ queryKey: ['/api/workout-plans'] });
+          break;
+        case '/progress':
+          // Progress page - refresh stats and workout sessions
+          queryClient.invalidateQueries({ queryKey: ['/api/stats'] });
+          queryClient.invalidateQueries({ queryKey: ['/api/workout-sessions'] });
+          break;
+      }
+    };
+
+    // Small delay to ensure page has mounted
+    const timeoutId = setTimeout(invalidateQueriesForPage, 100);
+    return () => clearTimeout(timeoutId);
+  }, [location, queryClient]);
+
   return (
     <Switch>
       <Route path="/" component={Home} />

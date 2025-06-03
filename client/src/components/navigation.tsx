@@ -198,6 +198,7 @@ function useGlobalGenerationStatus() {
 export function TopNavigation() {
   const [isVisible, setIsVisible] = useState(true);
   const [lastScrollY, setLastScrollY] = useState(0);
+  const [isDialogOpen, setIsDialogOpen] = useState(false);
   const { isGenerating, isCompleted, operationId, dismissCompletion } = useGlobalGenerationStatus();
   const queryClient = useQueryClient();
 
@@ -235,7 +236,7 @@ export function TopNavigation() {
         <div className="flex items-center space-x-2">
           {/* Generation Status Indicator */}
           {(isGenerating || isCompleted) && (
-            <Dialog>
+            <Dialog open={isDialogOpen} onOpenChange={setIsDialogOpen}>
               <DialogTrigger asChild>
                 <Button variant="ghost" size="sm" className="w-10 h-10 glass-effect rounded-full flex items-center justify-center touch-target hover:bg-card/60 transition-colors">
                   {isCompleted ? (
@@ -262,6 +263,7 @@ export function TopNavigation() {
                         queryClient.invalidateQueries({ queryKey: ['/api/stats'] });
                         queryClient.invalidateQueries({ queryKey: ['/api/recent-sessions'] });
                       }
+                      setIsDialogOpen(false);
                       dismissCompletion();
                     }}
                     showViewPlansButton={true}
