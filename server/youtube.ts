@@ -225,51 +225,82 @@ function getCategoryBonus(title: string, category: string): number {
   return bonus;
 }
 
-// Generate search terms optimized for flexibility/stretching exercises
+// Generate optimized search terms for flexibility/stretching exercises
 function generateFlexibilitySearches(exerciseName: string): string[] {
-  const baseName = exerciseName.toLowerCase().replace(/[^\w\s]/g, '');
   return [
-    `${exerciseName} stretch tutorial`,
-    `${exerciseName} flexibility exercise`,
-    `how to ${baseName} stretch properly`,
-    `${exerciseName} stretching technique`,
-    `${baseName} stretch form`
+    `intitle:"${exerciseName}" stretch`,
+    `${exerciseName} flexibility tutorial`
   ];
 }
 
-// Generate search terms optimized for warm-up exercises
+// Smart parsing for compound exercise names
+function parseExerciseName(exerciseName: string): { simplifiedName: string; equipment: string } {
+  const name = exerciseName.toLowerCase();
+  
+  // Extract equipment
+  let equipment = '';
+  if (name.includes('barbell')) equipment = 'barbell';
+  else if (name.includes('dumbbell')) equipment = 'dumbbell';
+  else if (name.includes('kettlebell')) equipment = 'kettlebell';
+  else if (name.includes('band')) equipment = 'band';
+  else if (name.includes('cable')) equipment = 'cable';
+  
+  // Simplify compound names
+  let simplifiedName = name;
+  
+  // Common compound exercise patterns
+  const simplifications = {
+    'bent-over barbell rows': 'barbell rows',
+    'bent over barbell rows': 'barbell rows',
+    'standing dumbbell calf raises': 'calf raises',
+    'seated dumbbell shoulder press': 'shoulder press',
+    'lying dumbbell chest press': 'chest press',
+    'romanian deadlift': 'deadlift',
+    'sumo deadlift': 'deadlift',
+    'bulgarian split squats': 'split squats',
+    'single leg deadlift': 'deadlift'
+  };
+  
+  // Apply simplifications
+  for (const [compound, simple] of Object.entries(simplifications)) {
+    if (name.includes(compound)) {
+      simplifiedName = simple;
+      break;
+    }
+  }
+  
+  // Remove equipment from simplified name if it's already extracted
+  if (equipment) {
+    simplifiedName = simplifiedName.replace(equipment, '').trim();
+  }
+  
+  return { simplifiedName, equipment };
+}
+
+// Generate optimized search terms for warm-up exercises
 function generateWarmupSearches(exerciseName: string): string[] {
-  const baseName = exerciseName.toLowerCase().replace(/[^\w\s]/g, '');
   return [
-    `${exerciseName} warm up exercise`,
-    `how to do ${baseName} warmup`,
-    `${exerciseName} mobility drill`,
-    `${baseName} activation exercise`,
-    `${exerciseName} dynamic warmup`
+    `intitle:"${exerciseName}" warm up`,
+    `${exerciseName} warmup exercise tutorial`
   ];
 }
 
-// Generate search terms optimized for cardio exercises
+// Generate optimized search terms for cardio exercises
 function generateCardioSearches(exerciseName: string): string[] {
-  const baseName = exerciseName.toLowerCase().replace(/[^\w\s]/g, '');
   return [
-    `${exerciseName} cardio exercise`,
-    `how to ${baseName} properly`,
-    `${exerciseName} technique tutorial`,
-    `${baseName} form demonstration`,
-    `${exerciseName} workout guide`
+    `intitle:"${exerciseName}" cardio`,
+    `${exerciseName} technique tutorial`
   ];
 }
 
-// Generate search terms optimized for strength exercises
+// Generate optimized search terms for strength exercises with smart name parsing
 function generateStrengthSearches(exerciseName: string): string[] {
-  const baseName = exerciseName.toLowerCase().replace(/[^\w\s]/g, '');
+  const { simplifiedName, equipment } = parseExerciseName(exerciseName);
+  
+  // Two optimized queries only
   return [
-    `${exerciseName} form tutorial`,
-    `how to ${baseName} proper form`,
-    `${exerciseName} technique guide`,
-    `${baseName} exercise demonstration`,
-    `${exerciseName} strength training`
+    `intitle:"${exerciseName}" tutorial`, // Exact phrase match
+    `${simplifiedName} ${equipment} proper form technique`.trim() // Simplified with equipment
   ];
 }
 

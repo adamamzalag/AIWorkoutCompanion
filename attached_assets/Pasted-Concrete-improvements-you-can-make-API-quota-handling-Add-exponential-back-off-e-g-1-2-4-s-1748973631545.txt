@@ -1,0 +1,35 @@
+Concrete improvements you can make
+API / quota handling
+• Add exponential back-off (e.g. 1 → 2 → 4 s) when the status is 429 or network fails – avoids hammering the next key.
+• Use videoEmbeddable=true and videoSyndicated=true in search to ensure returned videos can play inside an <iframe>.
+• Cache successful exercise → video pairs (in Redis or local DB) to avoid repeated API hits when the same plan is regenerated.
+• Persist daily quota usage per key so the service can restart without forgetting where it was (right now it relies on process memory).
+
+Search precision
+• Include inTitle operator (intitle:"romanian deadlift") by adding "\"${exerciseName}\"" to queries – YouTube’s search parser respects quoted phrases.
+• Add order=viewCount or order=relevance depending on category (tutorials often benefit from viewCount, stretches from relevance).
+• Ask for maxResults=25 in the first call, then pre-filter locally; the marginal quota cost is the same.
+
+Scoring tweaks
+• Factor published date (ISO snippet.publishedAt) – newer tutorials = +recency bonus, outdated (> 8 y) = penalty.
+• Grab statistics.likeCount and compute like-ratio = likes / (likes+dislikes) (needs YouTube v3 + dislike plugin or API fallback). Use it to bump high-quality videos.
+• Normalise viewCount by days-since-published to avoid ancient, irrelevant high-view videos.
+• Turn magic numbers into a small JSON config so you can A/B tune them without redeploying.
+
+Duration logic
+• Current search uses videoDuration=medium (4–20 min), but you later reject > 5 min. Switch to videoDuration=short for the first search, then allow medium only as a fallback round.
+• Consider allowing 5 – 8 min for strength lifts where proper setup takes longer; penalise but don’t hard-reject. Make the limit category-specific.
+
+Classification & query generation
+• Edge cases: add keywords for “plank”, “lunge”, “burpee”, “band pull apart” (already partial), “mobility flow”, “foam roll”.
+• Let DB pass an explicit equipment field (e.g. barbell, dumbbell, band) and inject it into search strings for more precise hits.
+• Use natural-language variants in queries like “step-by-step [exercise]”, “beginner guide to [exercise]” for novices.
+
+Robustness
+• Make the thumbnail “HEAD” check optional because some CDNs block HEAD; fall back to a lightweight GET with range: bytes=0-0.
+• Guard against undefined thumbnails (item.snippet.thumbnails.default always exists).
+• Wrap storage updates in try/catch per exercise so a DB hiccup doesn’t abort the whole batch.
+
+DX / monitoring
+• Expose Prometheus counters (or simple logs) for requests per key, quota errors, videos rejected by rule, cache hits.
+• Surface getApiKeyStatus() via a /health endpoint so your orchestrator can alert when all keys are drained.
