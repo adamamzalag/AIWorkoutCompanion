@@ -7,7 +7,8 @@ import {
   insertUserSchema, 
   insertWorkoutPlanSchema, 
   insertWorkoutSessionSchema, 
-  insertChatMessageSchema 
+  insertChatMessageSchema,
+  insertChatSessionSchema 
 } from "@shared/schema";
 import { 
   generateWorkoutFramework,
@@ -1288,6 +1289,85 @@ export async function registerRoutes(app: Express): Promise<Server> {
       res.json(snapshots);
     } catch (error) {
       res.status(500).json({ error: "Failed to fetch plan completion snapshots" });
+    }
+  });
+
+  // Chat Session Routes
+  app.get("/api/chat-sessions/:userId", async (req, res) => {
+    try {
+      const userId = parseInt(req.params.userId);
+      if (!userId) {
+        return res.status(400).json({ error: "User ID is required" });
+      }
+      const sessions = await storage.getChatSessions(userId);
+      res.json(sessions);
+    } catch (error) {
+      console.error('Chat sessions retrieval error:', error);
+      res.status(400).json({ error: "Failed to fetch chat sessions" });
+    }
+  });
+
+  app.post("/api/chat-sessions", async (req, res) => {
+    try {
+      const sessionData = insertChatSessionSchema.parse(req.body);
+      const session = await storage.createChatSession(sessionData);
+      res.json(session);
+    } catch (error) {
+      console.error('Chat session creation error:', error);
+      res.status(400).json({ error: "Failed to create chat session" });
+    }
+  });
+
+  app.put("/api/chat-sessions/:id/:userId", async (req, res) => {
+    try {
+      const id = parseInt(req.params.id);
+      const userId = parseInt(req.params.userId);
+      const updates = req.body;
+      
+      const session = await storage.updateChatSession(id, userId, updates);
+      if (!session) {
+        return res.status(404).json({ error: "Chat session not found" });
+      }
+      res.json(session);
+    } catch (error) {
+      console.error('Chat session update error:', error);
+      res.status(400).json({ error: "Failed to update chat session" });
+    }
+  });
+
+  app.delete("/api/chat-sessions/:id/:userId", async (req, res) => {
+    try {
+      const id = parseInt(req.params.id);
+      const userId = parseInt(req.params.userId);
+      
+      const deleted = await storage.deleteChatSession(id, userId);
+      if (!deleted) {
+        return res.status(404).json({ error: "Chat session not found" });
+      }
+      res.json({ success: true });
+    } catch (error) {
+      console.error('Chat session deletion error:', error);
+      res.status(400).json({ error: "Failed to delete chat session" });
+    }
+  });
+
+  // Update existing chat routes to support sessionId
+  app.get("/api/chat", async (req, res) => {
+    try {
+      const userId = parseInt(req.query.userId as string);
+      const sessionId = req.query.sessionId ? parseInt(req.query.sessionId as string) : undefined;
+      
+      if (!userId) {
+        return res.status(400).json({ error: "User ID is required" });
+      }
+      
+      console.log('Getting chat messages for userId:', userId, 'sessionId:', sessionId);
+      const messages = await storage.getChatMessages(userId, sessionId);
+      console.log('Retrieved messages:', messages?.length || 0);
+      res.json(messages);
+    } catch (error) {
+      console.error('Chat retrieval error:', error);
+      res.status(400).json({ error: "Failed to fetch chat messages" });
     }
   });
 

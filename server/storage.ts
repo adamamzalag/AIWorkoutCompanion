@@ -289,8 +289,58 @@ export class DatabaseStorage implements IStorage {
       .limit(limit);
   }
 
-  async getChatMessages(userId: number): Promise<ChatMessage[]> {
-    return await db.select().from(chatMessages).where(eq(chatMessages.userId, userId)).orderBy(chatMessages.timestamp);
+  // Chat Sessions
+  async getChatSessions(userId: number): Promise<ChatSession[]> {
+    return await db.select().from(chatSessions)
+      .where(eq(chatSessions.userId, userId))
+      .orderBy(desc(chatSessions.lastMessageAt));
+  }
+
+  async getChatSession(id: number, userId: number): Promise<ChatSession | undefined> {
+    const [session] = await db.select().from(chatSessions)
+      .where(and(eq(chatSessions.id, id), eq(chatSessions.userId, userId)));
+    return session || undefined;
+  }
+
+  async createChatSession(insertSession: InsertChatSession): Promise<ChatSession> {
+    const [session] = await db
+      .insert(chatSessions)
+      .values(insertSession)
+      .returning();
+    return session;
+  }
+
+  async updateChatSession(id: number, userId: number, updates: Partial<InsertChatSession>): Promise<ChatSession | undefined> {
+    const [session] = await db
+      .update(chatSessions)
+      .set(updates)
+      .where(and(eq(chatSessions.id, id), eq(chatSessions.userId, userId)))
+      .returning();
+    return session || undefined;
+  }
+
+  async deleteChatSession(id: number, userId: number): Promise<boolean> {
+    // First delete all messages in this session
+    await db.delete(chatMessages)
+      .where(and(eq(chatMessages.sessionId, id), eq(chatMessages.userId, userId)));
+    
+    // Then delete the session
+    const result = await db.delete(chatSessions)
+      .where(and(eq(chatSessions.id, id), eq(chatSessions.userId, userId)));
+    
+    return result.rowCount > 0;
+  }
+
+  // Chat Messages
+  async getChatMessages(userId: number, sessionId?: number): Promise<ChatMessage[]> {
+    const conditions = [eq(chatMessages.userId, userId)];
+    if (sessionId !== undefined) {
+      conditions.push(eq(chatMessages.sessionId, sessionId));
+    }
+    
+    return await db.select().from(chatMessages)
+      .where(and(...conditions))
+      .orderBy(chatMessages.timestamp);
   }
 
   async createChatMessage(insertMessage: InsertChatMessage): Promise<ChatMessage> {
