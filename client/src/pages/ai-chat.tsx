@@ -14,6 +14,7 @@ export default function AIChatPage() {
   const [message, setMessage] = useState('');
   const [isTyping, setIsTyping] = useState(false);
   const messagesEndRef = useRef<HTMLDivElement>(null);
+  const textareaRef = useRef<HTMLTextAreaElement>(null);
   const queryClient = useQueryClient();
 
   const { data: userProfile } = useQuery<User>({
@@ -56,6 +57,10 @@ export default function AIChatPage() {
       queryClient.invalidateQueries({ queryKey: ['/api/chat', (userProfile as any)?.id] });
       setMessage('');
       setIsTyping(false);
+      // Reset textarea height to default
+      if (textareaRef.current) {
+        textareaRef.current.style.height = '44px';
+      }
       // Scroll to bottom after new message
       setTimeout(() => scrollToBottom(), 100);
     },
@@ -195,6 +200,7 @@ export default function AIChatPage() {
       <div className="fixed bottom-20 left-1/2 transform -translate-x-1/2 w-full max-w-sm px-4 z-40">
         <form onSubmit={handleSendMessage} className="glass-effect rounded-2xl p-3 flex items-end space-x-3 bg-card/80 backdrop-blur-xl border border-border/20">
           <Textarea
+            ref={textareaRef}
             value={message}
             onChange={(e) => setMessage(e.target.value)}
             placeholder="Ask your AI coach anything..."
