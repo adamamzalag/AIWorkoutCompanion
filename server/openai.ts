@@ -11,12 +11,15 @@ WORKOUT STRUCTURE PRINCIPLES:
 • Each workout includes: Warm-up → Main Training → Cardio Component → Cool-down
 • EQUIPMENT CONSTRAINT: Only use equipment from the user's available equipment list
 • SINGLE-WORKOUT UNIQUENESS: Within each workout, no exercise should repeat across warmUp, main exercises, and coolDown
-• Warm-up (5-8 minutes): Dynamic preparation specific to the session's focus
-• Main Training: Intelligently selected exercises (typically 3-5) based on workout duration and complexity
-• For shorter sessions (30 min): Focus on fewer, high-impact compound movements
-• For longer sessions (45-60 min): Include comprehensive training with accessory work
-• Cardio Component: Appropriate cardiovascular work for the day's goals
-• Cool-down (5-8 minutes): Targeted recovery addressing muscles worked
+
+TIME-BASED ALLOCATION:
+• Warm-up ≈ 10% of total workout time
+• Main Training ≈ 60-80% of total workout time
+• Cardio ≈ 15-20% of total workout time (optional)
+• Cool-down ≥ 5% of total workout time
+
+EXERCISE TIME ESTIMATION:
+• Estimate each exercise's total time = sets × (repsOrSeconds + rest) and ensure section stays within its budget
 • Prioritize movement quality and training effect over rigid exercise counts
 • Consider fatigue management and exercise sequencing
 
@@ -248,7 +251,7 @@ Return only valid JSON with this exact structure: {
       { role: "user", content: prompt }
     ],
     response_format: { type: "json_object" },
-    temperature: 0.3,
+    temperature: 0.5,
   });
 
   return await parseJSONWithRetry(response.choices[0].message.content || "{}", async () => {
@@ -259,7 +262,7 @@ Return only valid JSON with this exact structure: {
         { role: "user", content: prompt }
       ],
       response_format: { type: "json_object" },
-      temperature: 0.3,
+      temperature: 0.5,
     });
   });
 }
@@ -371,7 +374,7 @@ Use null for weight on bodyweight exercises, specific weights for loaded exercis
       { role: "user", content: prompt }
     ],
     response_format: { type: "json_object" },
-    temperature: 0.3,
+    temperature: 0.5,
   });
 
   const result = await parseJSONWithRetry(response.choices[0].message.content || "{}", async () => {
@@ -382,7 +385,7 @@ Use null for weight on bodyweight exercises, specific weights for loaded exercis
         { role: "user", content: prompt }
       ],
       response_format: { type: "json_object" },
-      temperature: 0.3,
+      temperature: 0.5,
     });
   });
   return result.workouts || [];
@@ -415,7 +418,7 @@ Give a personalized, encouraging tip that helps improve form, motivation, or per
           content: prompt
         }
       ],
-      temperature: 0.3,
+      temperature: 0.5,
     });
 
     return response.choices[0].message.content || "Great work! Keep focusing on proper form and controlled movements.";
@@ -523,7 +526,7 @@ Provide helpful advice, motivation, and answer fitness-related questions. Keep r
     const response = await openai.chat.completions.create({
       model: "gpt-4.1-mini",
       messages: messages,
-      temperature: 0.3,
+      temperature: 0.5,
     });
 
     return response.choices[0].message.content || "I'm here to help you reach your fitness goals! What would you like to know?";
@@ -569,7 +572,7 @@ If no match, respond with JSON format: {"match": false}`;
         }
       ],
       response_format: { type: "json_object" },
-      temperature: 0.3,
+      temperature: 0.5,
     });
 
     const result = JSON.parse(response.choices[0].message.content || "{}");
@@ -624,7 +627,7 @@ Use the weekly snapshot schema provided in the system message.`;
         }
       ],
       response_format: { type: "json_object" },
-      temperature: 0.3,
+      temperature: 0.5,
     });
 
     const result = await parseJSONWithRetry(response.choices[0].message.content || "{}", async () => {
@@ -641,7 +644,7 @@ Use the weekly snapshot schema provided in the system message.`;
           }
         ],
         response_format: { type: "json_object" },
-        temperature: 0.3,
+        temperature: 0.5,
       });
     });
     return {
@@ -723,7 +726,7 @@ No keys outside this schema. Only include insights that would help generate bett
         }
       ],
       response_format: { type: "json_object" },
-      temperature: 0.3,
+      temperature: 0.5,
     });
 
     const result = await parseJSONWithRetry(response.choices[0].message.content || "{}", async () => {
@@ -740,7 +743,7 @@ No keys outside this schema. Only include insights that would help generate bett
           }
         ],
         response_format: { type: "json_object" },
-        temperature: 0.3,
+        temperature: 0.5,
       });
     });
     return {
@@ -802,7 +805,7 @@ Calculate strength improvement as a percentage and provide actionable recommenda
         }
       ],
       response_format: { type: "json_object" },
-      temperature: 0.3,
+      temperature: 0.5,
     });
 
     const result = await parseJSONWithRetry(response.choices[0].message.content || "{}", async () => {
@@ -819,7 +822,7 @@ Calculate strength improvement as a percentage and provide actionable recommenda
           }
         ],
         response_format: { type: "json_object" },
-        temperature: 0.3,
+        temperature: 0.5,
       });
     });
     return {

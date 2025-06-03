@@ -1,0 +1,39 @@
+• Update WORKOUT_STRUCTURE_RULES so cardio, warm-up, and cool-down are recommended blocks; allow any block to be omitted or reported with reps instead of time. State: “Include a warm-up and cool-down unless the block’s activities are rep-based and the time would be zero.”
+
+• Extend every activities item in warmUp, cardio, and coolDown to a union type:
+{ exercise: string; durationSeconds?: number; reps?: number } (one of durationSeconds or reps must be present).
+
+• Add a post-generation validator that rejects:
+– an activity containing both durationSeconds and reps
+– an activity missing both fields
+– any block entirely empty.
+
+• Keep weight explicit: use null (not omitted) for body-weight moves; change TS field to weight: string | null.
+
+• Define tempo as a simple 4-digit string ("3110" for 3-1-1-0) plus optional 'x' for explosive; document this and validate against /^[0-5x]{4}$/i. If you need more nuance later, you can still parse it.
+
+• Promote JSON_RESPONSE_RULES and the “return valid JSON only” reminder into UNIFIED_COACH_SYSTEM_PROMPT; then in each call you just append task-specific rules.
+
+• Replace repeated long prompt sections with helper functions:
+buildSystemPrompt({includeWorkoutRules?:boolean}) and buildUserPrompt(...).
+
+• After each workout batch, run a local duplicate checker to ensure no exercise appears twice inside that workout’s warmUp + main + coolDown. If it fails, re-prompt only for the offending workout-day.
+
+• Pass only the currentWeek slice (plus equipment array and progressionRules) to the weekly generator to conserve tokens; cap cumulative tokens with a length guard on messages.
+
+• Raise temperature to 0.5 in generateWeeklyWorkouts to increase variety; leave summary/analytics endpoints at 0.3.
+
+• Add locale and units to the chat context so GPT consistently outputs kg/lb.
+
+• TS typings to add:
+
+ts
+Copy
+Edit
+type Activity = { exercise: string; durationSeconds?: number; reps?: number };
+interface WarmCardCool { durationMinutes?: number; activities: Activity[] }
+• GPT-4.1-mini supports the response_format:{type:"json_object"} you’re using; its “tools” schema-based calling does work but costs extra tokens. Unless you need tool invocation, stick with response_format and your own validator.
+
+• No RPE/HR fields added for now; keep schema lean.
+
+Let me know if you’d like a code diff or further tweaks.
