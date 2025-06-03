@@ -1281,6 +1281,31 @@ export async function registerRoutes(app: Express): Promise<Server> {
     }
   });
 
+  // Data Integrity Routes
+  app.post("/api/admin/audit-exercise-videos", async (req, res) => {
+    try {
+      console.log('🔍 Starting comprehensive exercise video audit...');
+      const auditResults = await auditAndFixExerciseVideos();
+      res.json({
+        success: true,
+        results: auditResults
+      });
+    } catch (error) {
+      console.error("Error during exercise video audit:", error);
+      res.status(500).json({ error: "Failed to complete video audit" });
+    }
+  });
+
+  app.get("/api/admin/data-integrity-report", async (req, res) => {
+    try {
+      const report = await generateDataIntegrityReport();
+      res.json(report);
+    } catch (error) {
+      console.error("Error generating data integrity report:", error);
+      res.status(500).json({ error: "Failed to generate integrity report" });
+    }
+  });
+
   const httpServer = createServer(app);
   return httpServer;
 }
