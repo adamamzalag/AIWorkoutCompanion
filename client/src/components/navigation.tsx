@@ -159,8 +159,7 @@ function useGlobalGenerationStatus() {
             setIsGenerating(false);
             setIsCompleted(true);
             // Keep the operationId to show completion state
-            // Auto-dismiss after delay unless user interacts
-            dismissCompletion(false);
+            // Will only dismiss when user interacts with modal
           } else if (data.status === 'failed') {
             localStorage.removeItem('activeGenerationId');
             setIsGenerating(false);
@@ -171,10 +170,9 @@ function useGlobalGenerationStatus() {
           // Network error or other issues
           console.log('Error checking progress:', error);
         }
-      } else if (isGenerating || isCompleted) {
-        // No stored operation but we think we're generating/completed - clear state
+      } else if (isGenerating) {
+        // No stored operation but we think we're generating - clear generating state only
         setIsGenerating(false);
-        setIsCompleted(false);
         setOperationId(null);
       }
     };
@@ -188,22 +186,10 @@ function useGlobalGenerationStatus() {
     };
   }, [operationId, isGenerating, isCompleted]);
 
-  const dismissCompletion = (immediate: boolean = false) => {
-    if (immediate) {
-      localStorage.removeItem('activeGenerationId');
-      setIsCompleted(false);
-      setOperationId(null);
-    } else {
-      // Delay dismissal to allow user interaction with completion state
-      setTimeout(() => {
-        const currentStoredId = localStorage.getItem('activeGenerationId');
-        if (currentStoredId === operationId) {
-          localStorage.removeItem('activeGenerationId');
-          setIsCompleted(false);
-          setOperationId(null);
-        }
-      }, 5000); // 5 second delay for user interaction
-    }
+  const dismissCompletion = () => {
+    localStorage.removeItem('activeGenerationId');
+    setIsCompleted(false);
+    setOperationId(null);
   };
 
   return { isGenerating, isCompleted, operationId, dismissCompletion };
@@ -250,7 +236,13 @@ export function TopNavigation() {
         <div className="flex items-center space-x-2">
           {/* Generation Status Indicator */}
           {(isGenerating || isCompleted) && (
-            <Dialog open={isDialogOpen} onOpenChange={setIsDialogOpen}>
+            <Dialog open={isDialogOpen} onOpenChange={(open) => {
+              setIsDialogOpen(open);
+              // If user closes modal without taking action, dismiss completion
+              if (!open && isCompleted) {
+                dismissCompletion();
+              }
+            }}>
               <DialogTrigger asChild>
                 <Button variant="ghost" size="sm" className="w-10 h-10 glass-effect rounded-full flex items-center justify-center touch-target hover:bg-card/60 transition-colors">
                   {isCompleted ? (
@@ -278,7 +270,7 @@ export function TopNavigation() {
                         queryClient.invalidateQueries({ queryKey: ['/api/recent-sessions'] });
                       }
                       setIsDialogOpen(false);
-                      dismissCompletion(true); // Immediate dismissal when user clicks View Plans
+                      dismissCompletion(); // Dismiss when user interacts with modal
                     }}
                     showViewPlansButton={true}
                   />
