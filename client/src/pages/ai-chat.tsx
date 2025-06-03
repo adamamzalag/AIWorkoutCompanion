@@ -5,14 +5,15 @@ import { Input } from '@/components/ui/input';
 import { Textarea } from '@/components/ui/textarea';
 import { Card, CardContent } from '@/components/ui/card';
 import { Skeleton } from '@/components/ui/skeleton';
-import { MessageCircle, Send, TrendingUp, Dumbbell, Target } from 'lucide-react';
+import { MessageCircle, Send, TrendingUp, Dumbbell, Target, Plus, ChevronDown } from 'lucide-react';
 import { apiRequest } from '@/lib/queryClient';
-import type { ChatMessage, User } from '@shared/schema';
+import type { ChatMessage, ChatSession, User } from '@shared/schema';
 import { useAuth } from '@/hooks/useAuth';
 
 export default function AIChatPage() {
   const [message, setMessage] = useState('');
   const [isTyping, setIsTyping] = useState(false);
+  const [currentSessionId, setCurrentSessionId] = useState<number | null>(null);
   const messagesEndRef = useRef<HTMLDivElement>(null);
   const textareaRef = useRef<HTMLTextAreaElement>(null);
   const queryClient = useQueryClient();
@@ -21,15 +22,35 @@ export default function AIChatPage() {
     queryKey: ["/api/profile"],
   });
 
-  const { data: messages, isLoading } = useQuery<ChatMessage[]>({
-    queryKey: ['/api/chat', (userProfile as any)?.id],
+  // Load chat sessions
+  const { data: chatSessions } = useQuery<ChatSession[]>({
+    queryKey: ['/api/chat-sessions', (userProfile as any)?.id],
     queryFn: async () => {
       const userId = (userProfile as any)?.id;
-      const response = await fetch(`/api/chat?userId=${userId}`);
-      if (!response.ok) throw new Error('Failed to fetch chat messages');
+      const response = await fetch(`/api/chat-sessions/${userId}`);
+      if (!response.ok) throw new Error('Failed to fetch chat sessions');
       return response.json();
     },
     enabled: !!(userProfile as any)?.id,
+  });
+
+  // Automatically select the first session if none is selected
+  useEffect(() => {
+    if (chatSessions && chatSessions.length > 0 && currentSessionId === null) {
+      setCurrentSessionId(chatSessions[0].id);
+    }
+  }, [chatSessions, currentSessionId]);
+
+  const { data: messages, isLoading } = useQuery<ChatMessage[]>({
+    queryKey: ['/api/chat', (userProfile as any)?.id, currentSessionId],
+    queryFn: async () => {
+      const userId = (userProfile as any)?.id;
+      const sessionParam = currentSessionId ? `&sessionId=${currentSessionId}` : '';
+      const response = await fetch(`/api/chat?userId=${userId}${sessionParam}`);
+      if (!response.ok) throw new Error('Failed to fetch chat messages');
+      return response.json();
+    },
+    enabled: !!(userProfile as any)?.id && currentSessionId !== null,
   });
 
   console.log('Chat messages data:', { messages, isLoading, userProfileId: (userProfile as any)?.id });
@@ -46,7 +67,8 @@ export default function AIChatPage() {
       const response = await apiRequest('POST', '/api/chat', {
         userId,
         role: 'user',
-        content
+        content,
+        sessionId: currentSessionId
       });
       return response.json();
     },
@@ -54,7 +76,7 @@ export default function AIChatPage() {
       setIsTyping(true);
     },
     onSuccess: () => {
-      queryClient.invalidateQueries({ queryKey: ['/api/chat', (userProfile as any)?.id] });
+      queryClient.invalidateQueries({ queryKey: ['/api/chat', (userProfile as any)?.id, currentSessionId] });
       setMessage('');
       setIsTyping(false);
       // Reset textarea height to default
@@ -103,9 +125,24 @@ export default function AIChatPage() {
 
   return (
     <div className="flex flex-col h-screen bg-background">
-      {/* Minimal chat indicator - only when there are messages */}
-      {messages && messages.length > 0 && (
-        <div className="flex items-center justify-center py-2 px-4 border-b border-border/20">
+      {/* Session Management Header */}
+      {chatSessions && chatSessions.length > 0 && (
+        <div className="flex items-center justify-between py-3 px-4 border-b border-border/20">
+          <div className="flex items-center space-x-3">
+            <MessageCircle className="text-accent" size={16} />
+            <select 
+              value={currentSessionId || ''} 
+              onChange={(e) => setCurrentSessionId(Number(e.target.value))}
+              className="bg-transparent text-sm font-medium text-foreground border-none outline-none cursor-pointer"
+            >
+              {chatSessions.map((session) => (
+                <option key={session.id} value={session.id}>
+                  {session.title}
+                </option>
+              ))}
+            </select>
+            <ChevronDown className="text-muted-foreground" size={14} />
+          </div>
           <div className="flex items-center space-x-2">
             <div className="w-2 h-2 bg-accent rounded-full animate-pulse"></div>
             <span className="text-xs text-muted-foreground">AI Coach is online</span>
