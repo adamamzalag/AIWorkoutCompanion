@@ -12,7 +12,7 @@ import {
   type ProgressSnapshot, type InsertProgressSnapshot
 } from "@shared/schema";
 import { db } from "./db";
-import { eq, desc, like, and, isNull, isNotNull } from "drizzle-orm";
+import { eq, desc, like, and, isNull, isNotNull, sql } from "drizzle-orm";
 
 export interface IStorage {
   // Users
@@ -180,6 +180,46 @@ export class DatabaseStorage implements IStorage {
 
   async searchExercises(query: string): Promise<Exercise[]> {
     return await db.select().from(exercises).where(like(exercises.name, `%${query}%`));
+  }
+
+  async getExercisesWithoutVideos(): Promise<Exercise[]> {
+    return await db.select().from(exercises).where(isNull(exercises.youtubeId));
+  }
+
+  async getTotalExerciseCount(): Promise<number> {
+    const result = await db.select({ count: sql`count(*)` }).from(exercises);
+    return parseInt(result[0].count as string);
+  }
+
+  async getExerciseStatsByType(): Promise<any[]> {
+    return await db
+      .select({
+        type: exercises.type,
+        total: sql`count(*)`,
+        withVideos: sql`count(${exercises.youtubeId})`,
+        coverage: sql`round(count(${exercises.youtubeId}) * 100.0 / count(*), 2)`
+      })
+      .from(exercises)
+      .groupBy(exercises.type)
+      .orderBy(exercises.type);
+  }
+
+  async findDuplicateExercises(): Promise<any[]> {
+    return await db
+      .select({
+        name: exercises.name,
+        count: sql`count(*)`,
+        ids: sql`array_agg(${exercises.id})`
+      })
+      .from(exercises)
+      .groupBy(exercises.name)
+      .having(sql`count(*) > 1`);
+  }
+
+  async findOrphanedWorkoutData(): Promise<any[]> {
+    // This would require complex joins to check workout references
+    // For now, return empty array as placeholder
+    return [];
   }
 
   async getWorkouts(planId: number): Promise<Workout[]> {

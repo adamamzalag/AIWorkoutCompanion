@@ -20,6 +20,7 @@ import {
   type WorkoutPlanRequest 
 } from "./openai";
 import { updateAllExerciseTypes, searchExerciseVideo } from "./youtube";
+import { auditAndFixExerciseVideos, generateDataIntegrityReport } from "./data-integrity";
 
 // Search for videos for exercises that don't have them yet
 async function searchVideosForNewExercises(workoutPlanId: number): Promise<void> {
