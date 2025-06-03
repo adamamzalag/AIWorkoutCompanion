@@ -491,7 +491,7 @@ export async function generateChatResponse(
 
 User Context:
 - Fitness level: ${JSON.stringify(userContext.fitnessLevel)}
-- Goals: ${JSON.stringify(userContext.goals?.join(", ") || "General fitness")}
+- Goals: ${JSON.stringify(userContext.goals || "General fitness")}
 - Equipment: ${JSON.stringify(userContext.equipment?.join(", ") || "None")}
 - Recent workouts: ${JSON.stringify(userContext.recentWorkouts || "None")}
 
