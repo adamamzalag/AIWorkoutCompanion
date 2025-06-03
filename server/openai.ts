@@ -474,50 +474,40 @@ export async function generateDailyCoachingTip(
   recentSessions: any[]
 ): Promise<string> {
   const timeOfDay = new Date().getHours() < 12 ? 'morning' : new Date().getHours() < 17 ? 'afternoon' : 'evening';
+  const daysSinceLastWorkout = recentSessions.length > 0 ? 
+    Math.floor((Date.now() - new Date(recentSessions[0].startTime).getTime()) / (1000 * 60 * 60 * 24)) : null;
   
-  const prompt = `As a personalized AI fitness coach, create a brief motivational message for this ${timeOfDay}.
+  const prompt = `Create a practical fitness tip for this ${timeOfDay}.
 
-User Profile:
+Context:
 - Fitness level: ${userContext.fitnessLevel || 'beginner'}
 - Goals: ${userContext.goals || 'general fitness'}
-- Equipment available: ${userContext.equipment?.join(', ') || 'basic equipment'}
-- Recent workout sessions: ${recentSessions.length}
+- Days since last workout: ${daysSinceLastWorkout || 'no recent workouts'}
 - Has active plan: ${userContext.hasActivePlan}
-- Total plans created: ${userContext.totalPlans}
 
-Recent Activity:
-${recentSessions.length > 0 ? 
-  recentSessions.map(session => `- ${session.workoutType || 'Workout'} completed ${Math.floor((Date.now() - new Date(session.startTime).getTime()) / (1000 * 60 * 60 * 24))} days ago`).join('\n') 
-  : '- No recent workout sessions'}
-
-Create a personalized, encouraging message that:
-1. Acknowledges their current fitness journey
-2. Provides specific motivation based on their recent activity
-3. Suggests next steps if appropriate
-4. Keeps an upbeat, supportive tone
-
-Keep it concise (2-3 sentences max) and personal.`;
+Give ONE practical tip related to today's potential workout. Focus on form, technique, or motivation. Maximum 2 sentences.`;
 
   try {
     const response = await openai.chat.completions.create({
-      model: "gpt-4.1-mini",
+      model: "gpt-4o-mini",
       messages: [
         {
           role: "system",
-          content: UNIFIED_COACH_SYSTEM_PROMPT + " Keep responses to 2-3 sentences maximum. Be encouraging and specific to their situation."
+          content: "You are a fitness coach giving brief, practical daily tips. Respond with exactly 1-2 sentences. Focus on actionable advice."
         },
         {
           role: "user",
           content: prompt
         }
       ],
-      temperature: 0.5,
+      max_tokens: 50,
+      temperature: 0.3,
     });
 
-    return response.choices[0].message.content || "Welcome to your fitness journey! Ready to make today count?";
+    return response.choices[0].message.content || "Focus on controlled movements and proper breathing during your workout today.";
   } catch (error) {
     console.error("Error generating daily coaching tip:", error);
-    return "Welcome to your fitness journey! Ready to make today count?";
+    return "Focus on controlled movements and proper breathing during your workout today.";
   }
 }
 
