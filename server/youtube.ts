@@ -197,16 +197,38 @@ const PREFERRED_CHANNELS = [
   'MadFit'
 ];
 
-export async function searchExerciseVideo(exerciseName: string): Promise<{ id: string; thumbnailUrl: string } | null> {
+export async function searchExerciseVideo(exerciseName: string, exerciseType?: string): Promise<{ id: string; thumbnailUrl: string } | null> {
   if (!YOUTUBE_API_KEY) {
     console.error('YouTube API key not configured');
     return null;
   }
 
-  console.log(`🔍 Searching YouTube for: "${exerciseName}"`);
+  console.log(`🔍 Searching YouTube for: "${exerciseName}" (type: ${exerciseType || 'unknown'})`);
 
-  // Classify exercise and get category-specific search terms
-  const category = classifyExercise(exerciseName);
+  // Use exercise type from database, fallback to classification
+  let category: string;
+  if (exerciseType) {
+    // Map database types to search categories
+    switch (exerciseType) {
+      case 'warmup':
+        category = 'warmup';
+        break;
+      case 'cardio':
+        category = 'cardio';
+        break;
+      case 'cooldown':
+        category = 'flexibility'; // cooldown exercises are typically stretches
+        break;
+      case 'main':
+        category = 'strength';
+        break;
+      default:
+        category = classifyExercise(exerciseName);
+    }
+  } else {
+    category = classifyExercise(exerciseName);
+  }
+  
   console.log(`  📂 Exercise category: ${category}`);
   
   let searchQueries: string[] = [];

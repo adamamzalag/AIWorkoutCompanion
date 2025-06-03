@@ -88,7 +88,7 @@ async function searchVideosForNewExercises(workoutPlanId: number): Promise<void>
       try {
         console.log(`🔍 Searching video for: ${exercise.name} (${i + 1}/${uniqueExercises.length})`);
         
-        const video = await searchExerciseVideo(exercise.name);
+        const video = await searchExerciseVideo(exercise.name, exercise.type);
         
         if (video) {
           await storage.updateExercise(exercise.id, {
@@ -557,7 +557,7 @@ export async function registerRoutes(app: Express): Promise<Server> {
       }
 
       // Otherwise, try to fetch a video dynamically
-      const video = await searchExerciseVideo(exercise.name);
+      const video = await searchExerciseVideo(exercise.name, exercise.type);
       
       if (video) {
         // Save the video to the database for future use
