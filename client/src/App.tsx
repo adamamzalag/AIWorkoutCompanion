@@ -14,6 +14,7 @@ import WorkoutPage from "@/pages/workout";
 import AIChatPage from "@/pages/ai-chat";
 import OnboardingPage from "@/pages/onboarding";
 import ProfilePage from "@/pages/profile";
+import ExercisesPage from "@/pages/exercises";
 import { Button } from "@/components/ui/button";
 import { useEffect } from "react";
 
@@ -134,6 +135,7 @@ function Router() {
       <Route path="/plan/:id" component={PlanDetailPage} />
       <Route path="/progress" component={ProgressPage} />
       <Route path="/workout" component={WorkoutPage} />
+      <Route path="/exercises" component={ExercisesPage} />
       <Route path="/ai-chat" component={AIChatPage} />
       <Route path="/profile" component={ProfilePage} />
       {/* Fallback to 404 */}

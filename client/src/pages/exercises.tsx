@@ -137,7 +137,6 @@ export default function ExercisesPage() {
                               <h4 className="font-semibold mb-2">Video Tutorial</h4>
                               <YouTubeVideo 
                                 videoId={exercise.youtubeId}
-                                title={exercise.name}
                               />
                             </div>
                           )}
