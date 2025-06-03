@@ -217,14 +217,14 @@ export default function AIChatPage() {
     <div className="flex flex-col h-screen bg-background">
       {/* Enhanced Header with Smart Layout */}
       {chatSessions && chatSessions.length > 0 && (
-        <div className="flex items-center py-3 px-4 border-b border-border/20 gap-3">
-          {/* AI Avatar */}
-          <div className="w-8 h-8 bg-gradient-to-r from-accent to-primary rounded-full flex items-center justify-center flex-shrink-0">
+        <div className="flex items-center py-3 px-4 border-b border-border/20">
+          {/* Left: AI Avatar */}
+          <div className="w-8 h-8 bg-gradient-to-r from-accent to-primary rounded-full flex items-center justify-center flex-shrink-0 mr-3">
             <MessageCircle className="text-white" size={14} />
           </div>
           
-          {/* Title Section - Constrained Width */}
-          <div className="flex items-center min-w-0 flex-1 max-w-[calc(100vw-140px)]">
+          {/* Center: Title Section - Takes remaining space */}
+          <div className="flex items-center min-w-0 flex-1 mr-3">
             {editingSessionId === currentSessionId ? (
               // Editing Mode
               <div className="flex items-center space-x-2 w-full">
@@ -304,7 +304,7 @@ export default function AIChatPage() {
             )}
           </div>
 
-          {/* New Chat Button - Fixed Right */}
+          {/* Right: New Chat Button */}
           <Button
             onClick={createNewSession}
             size="sm"
