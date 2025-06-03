@@ -304,15 +304,11 @@ function generateStrengthSearches(exerciseName: string): string[] {
   ];
 }
 
-// Generate search terms for general exercises
+// Generate optimized search terms for general exercises
 function generateGeneralSearches(exerciseName: string): string[] {
-  const baseName = exerciseName.toLowerCase().replace(/[^\w\s]/g, '');
   return [
-    `${exerciseName} exercise tutorial`,
-    `how to do ${baseName}`,
-    `${exerciseName} proper form`,
-    `${baseName} technique`,
-    `${exerciseName} demonstration`
+    `intitle:"${exerciseName}" tutorial`,
+    `${exerciseName} proper form technique`
   ];
 }
 
@@ -436,9 +432,10 @@ export async function searchExerciseVideo(exerciseName: string, exerciseType?: s
 async function searchVideos(query: string, category: string = 'general'): Promise<YouTubeVideo | null> {
   const searchUrl = `${YOUTUBE_BASE_URL}/search?` +
     `part=snippet&type=video&q=${encodeURIComponent(query)}&` +
-    `maxResults=10&` +
-    `videoDefinition=any&videoDuration=medium&` +
-    `relevanceLanguage=en&safeSearch=strict`;
+    `maxResults=25&` +
+    `videoDefinition=any&videoDuration=short&` +
+    `videoEmbeddable=true&videoSyndicated=true&` +
+    `relevanceLanguage=en&safeSearch=strict&order=relevance`;
 
   const data = await makeYouTubeRequest(searchUrl);
   
