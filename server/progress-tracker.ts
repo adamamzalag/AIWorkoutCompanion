@@ -45,6 +45,9 @@ export function completeProgress(operationId: string) {
       status: 'completed',
       currentStep: 'Complete'
     });
+    
+    // Don't auto-clear completed progress - let user click to dismiss
+    console.log(`✅ Progress completed [${operationId}] - waiting for user interaction`);
   }
 }
 

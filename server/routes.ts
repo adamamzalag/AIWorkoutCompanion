@@ -81,7 +81,7 @@ async function searchVideosForNewExercises(workoutPlanId: number): Promise<void>
       return;
     }
     
-    // Search for videos with rate limiting
+    // Search for videos with rate limiting and improved error handling
     let successCount = 0;
     for (let i = 0; i < uniqueExercises.length; i++) {
       const exercise = uniqueExercises[i];
@@ -101,19 +101,17 @@ async function searchVideosForNewExercises(workoutPlanId: number): Promise<void>
           console.log(`❌ No video found for ${exercise.name}`);
         }
         
-        // Rate limiting: wait 2 seconds between searches
+        // Rate limiting: wait 1 second between searches (reduced from 2 seconds)
         if (i < uniqueExercises.length - 1) {
-          await new Promise(resolve => setTimeout(resolve, 2000));
+          await new Promise(resolve => setTimeout(resolve, 1000));
         }
         
       } catch (error) {
         console.error(`❌ Error searching video for ${exercise.name}:`, error);
         
-        // If quota exceeded, stop searching
-        if (error instanceof Error && error.message.includes('quotaExceeded')) {
-          console.log("⚠️ YouTube API quota exceeded, stopping video search");
-          break;
-        }
+        // Continue with next exercise instead of stopping on errors
+        // The key rotation is handled automatically in the YouTube search function
+        console.log(`⚠️ Continuing with next exercise despite error for ${exercise.name}`);
       }
     }
     
