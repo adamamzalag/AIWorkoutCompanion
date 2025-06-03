@@ -10,7 +10,8 @@ import {
   insertChatMessageSchema 
 } from "@shared/schema";
 import { 
-  generateWorkoutPlan, 
+  generateWorkoutFramework,
+  generateWeeklyWorkouts,
   generateCoachingTip, 
   generateChatResponse, 
   analyzeWorkoutProgress,
@@ -20,83 +21,70 @@ import {
 } from "./openai";
 import { updateAllExerciseTypes, searchExerciseVideo } from "./youtube";
 
-// Extract all unique exercise names from all workout sections
-function extractAllExerciseNames(workouts: any[]): string[] {
-  const allExerciseNames = new Set<string>();
-  
-  for (const workout of workouts) {
-    // Main exercises
-    if (workout.exercises) {
-      for (const exercise of workout.exercises) {
-        allExerciseNames.add(exercise.name);
-      }
-    }
-    
-    // Warm-up activities
-    if (workout.warmUp && workout.warmUp.activities) {
-      for (const activity of workout.warmUp.activities) {
-        if (activity.exercise) {
-          allExerciseNames.add(activity.exercise);
-        }
-      }
-    }
-    
-    // Cardio activities
-    if (workout.cardio && workout.cardio.activities) {
-      for (const activity of workout.cardio.activities) {
-        if (activity.exercise) {
-          allExerciseNames.add(activity.exercise);
-        }
-      }
-    }
-    
-    // Cool-down activities
-    if (workout.coolDown && workout.coolDown.activities) {
-      for (const activity of workout.coolDown.activities) {
-        if (activity.exercise) {
-          allExerciseNames.add(activity.exercise);
-        }
-      }
-    }
-  }
-  
-  return Array.from(allExerciseNames);
-}
-
 // Search for videos for exercises that don't have them yet
 async function searchVideosForNewExercises(workoutPlanId: number): Promise<void> {
   try {
     console.log(`🎥 Starting video search for workout plan ${workoutPlanId}`);
     
-    // Get all workouts and extract ALL exercise names from all sections
+    // Get all exercises from workouts in this plan that don't have videos
     const workouts = await storage.getWorkouts(workoutPlanId);
-    const allExerciseNames = extractAllExerciseNames(workouts);
-    
-    console.log(`📝 Found ${allExerciseNames.length} unique activities across all workout sections`);
-    
     const exercisesNeedingVideos: any[] = [];
     
-    // Check each unique exercise name to see if it exists and needs a video
-    for (const exerciseName of allExerciseNames) {
-      const exerciseRecord = await storage.getExerciseByName(exerciseName);
-      if (exerciseRecord && !exerciseRecord.youtubeId) {
-        exercisesNeedingVideos.push({
-          id: exerciseRecord.id,
-          name: exerciseRecord.name
-        });
-      } else if (!exerciseRecord) {
-        // Create exercise record if it doesn't exist
-        const newExercise = await storage.createExercise({
-          name: exerciseName,
-          description: `Exercise: ${exerciseName}`,
-          muscleGroups: [], // Will be updated when video is found
-          equipment: [],
-          instructions: []
-        });
-        exercisesNeedingVideos.push({
-          id: newExercise.id,
-          name: newExercise.name
-        });
+    for (const workout of workouts) {
+      // Process main exercises
+      if (workout.exercises) {
+        for (const exercise of workout.exercises) {
+          const exerciseRecord = await storage.getExercise(exercise.exerciseId);
+          if (exerciseRecord && !exerciseRecord.youtubeId) {
+            exercisesNeedingVideos.push({
+              id: exerciseRecord.id,
+              name: exerciseRecord.name
+            });
+          }
+        }
+      }
+      
+      // Process warm-up, cardio, and cool-down activities
+      const workoutData = typeof workout.exercises === 'string' ? JSON.parse(workout.exercises) : workout.exercises;
+      const sections = ['warmUp', 'cardio', 'coolDown'];
+      
+      for (const sectionName of sections) {
+        const section = workoutData?.[sectionName];
+        if (section?.activities) {
+          for (const activity of section.activities) {
+            if (activity.exercise) {
+              // Search for existing exercise by name
+              const existingExercises = await storage.searchExercises(activity.exercise);
+              const exactMatch = existingExercises.find(ex => ex.name.toLowerCase() === activity.exercise.toLowerCase());
+              
+              if (exactMatch && !exactMatch.youtubeId) {
+                exercisesNeedingVideos.push({
+                  id: exactMatch.id,
+                  name: exactMatch.name
+                });
+              } else if (!exactMatch) {
+                // Create exercise record if it doesn't exist
+                try {
+                  const newExercise = await storage.createExercise({
+                    name: activity.exercise,
+                    slug: slugify(activity.exercise),
+                    description: `Exercise: ${activity.exercise}`,
+                    muscle_groups: [],
+                    equipment: [],
+                    instructions: [],
+                    difficulty: 'intermediate'
+                  });
+                  exercisesNeedingVideos.push({
+                    id: newExercise.id,
+                    name: newExercise.name
+                  });
+                } catch (error) {
+                  console.log(`⚠️ Could not create exercise record for ${activity.exercise}:`, error);
+                }
+              }
+            }
+          }
+        }
       }
     }
     

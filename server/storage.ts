@@ -33,7 +33,6 @@ export interface IStorage {
   // Exercises
   getExercises(): Promise<Exercise[]>;
   getExercise(id: number): Promise<Exercise | undefined>;
-  getExerciseByName(name: string): Promise<Exercise | undefined>;
   createExercise(exercise: InsertExercise): Promise<Exercise>;
   updateExercise(id: number, updates: Partial<InsertExercise>): Promise<Exercise | undefined>;
   searchExercises(query: string): Promise<Exercise[]>;
@@ -159,11 +158,6 @@ export class DatabaseStorage implements IStorage {
 
   async getExercise(id: number): Promise<Exercise | undefined> {
     const [exercise] = await db.select().from(exercises).where(eq(exercises.id, id));
-    return exercise || undefined;
-  }
-
-  async getExerciseByName(name: string): Promise<Exercise | undefined> {
-    const [exercise] = await db.select().from(exercises).where(eq(exercises.name, name));
     return exercise || undefined;
   }
 
