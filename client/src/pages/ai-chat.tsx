@@ -188,22 +188,23 @@ export default function AIChatPage() {
 
   return (
     <div className="flex flex-col h-screen bg-background">
-      {/* Enhanced Header with Renaming */}
+      {/* Enhanced Header with Smart Layout */}
       {chatSessions && chatSessions.length > 0 && (
-        <div className="flex items-center justify-between py-3 px-4 border-b border-border/20">
-          {/* AI Avatar + Chat Title/Editor */}
-          <div className="flex items-center space-x-3 flex-1 min-w-0">
-            <div className="w-8 h-8 bg-gradient-to-r from-accent to-primary rounded-full flex items-center justify-center flex-shrink-0">
-              <MessageCircle className="text-white" size={14} />
-            </div>
-            
+        <div className="flex items-center py-3 px-4 border-b border-border/20 gap-3">
+          {/* AI Avatar */}
+          <div className="w-8 h-8 bg-gradient-to-r from-accent to-primary rounded-full flex items-center justify-center flex-shrink-0">
+            <MessageCircle className="text-white" size={14} />
+          </div>
+          
+          {/* Title Section - Constrained Width */}
+          <div className="flex items-center min-w-0 flex-1 max-w-[calc(100vw-140px)]">
             {editingSessionId === currentSessionId ? (
               // Editing Mode
-              <div className="flex items-center space-x-2 flex-1">
+              <div className="flex items-center space-x-2 w-full">
                 <Input
                   value={editingTitle}
                   onChange={(e) => setEditingTitle(e.target.value)}
-                  className="h-8 text-sm border-accent/50 focus:border-accent"
+                  className="h-8 text-sm border-accent/50 focus:border-accent flex-1 min-w-0"
                   maxLength={20}
                   autoFocus
                   onKeyDown={(e) => {
@@ -215,7 +216,7 @@ export default function AIChatPage() {
                   onClick={saveTitle}
                   size="sm"
                   variant="ghost"
-                  className="h-6 w-6 p-0 hover:bg-accent/10"
+                  className="h-6 w-6 p-0 hover:bg-accent/10 flex-shrink-0"
                   disabled={!editingTitle.trim() || editingTitle.length > 20}
                 >
                   <Check size={12} className="text-accent" />
@@ -224,36 +225,38 @@ export default function AIChatPage() {
                   onClick={cancelEditing}
                   size="sm"
                   variant="ghost"
-                  className="h-6 w-6 p-0 hover:bg-destructive/10"
+                  className="h-6 w-6 p-0 hover:bg-destructive/10 flex-shrink-0"
                 >
                   <X size={12} className="text-muted-foreground" />
                 </Button>
               </div>
             ) : (
               // Display Mode
-              <div className="flex items-center space-x-2 flex-1">
-                {chatSessions.length > 1 ? (
-                  <select 
-                    value={currentSessionId || ''} 
-                    onChange={(e) => setCurrentSessionId(Number(e.target.value))}
-                    className="bg-transparent text-base font-medium text-foreground border-none outline-none cursor-pointer hover:text-accent transition-colors min-w-0 flex-1"
-                  >
-                    {chatSessions.map((session) => (
-                      <option key={session.id} value={session.id}>
-                        {session.title}
-                      </option>
-                    ))}
-                  </select>
-                ) : (
-                  <span className="text-base font-medium text-foreground">
-                    {chatSessions.find(s => s.id === currentSessionId)?.title || 'New Chat'}
-                  </span>
-                )}
+              <div className="flex items-center w-full min-w-0">
+                <div className="flex-1 min-w-0 mr-2">
+                  {chatSessions.length > 1 ? (
+                    <select 
+                      value={currentSessionId || ''} 
+                      onChange={(e) => setCurrentSessionId(Number(e.target.value))}
+                      className="bg-transparent text-base font-medium text-foreground border-none outline-none cursor-pointer hover:text-accent transition-colors w-full truncate"
+                    >
+                      {chatSessions.map((session) => (
+                        <option key={session.id} value={session.id}>
+                          {session.title}
+                        </option>
+                      ))}
+                    </select>
+                  ) : (
+                    <span className="text-base font-medium text-foreground truncate block">
+                      {chatSessions.find(s => s.id === currentSessionId)?.title || 'New Chat'}
+                    </span>
+                  )}
+                </div>
                 <Button
                   onClick={() => startEditing(currentSessionId!, chatSessions.find(s => s.id === currentSessionId)?.title || 'New Chat')}
                   size="sm"
                   variant="ghost"
-                  className="h-6 w-6 p-0 hover:bg-accent/10 opacity-70 hover:opacity-100"
+                  className="h-6 w-6 p-0 hover:bg-accent/10 opacity-70 hover:opacity-100 flex-shrink-0"
                 >
                   <Edit3 size={12} className="text-muted-foreground" />
                 </Button>
@@ -261,11 +264,11 @@ export default function AIChatPage() {
             )}
           </div>
 
-          {/* Enhanced New Chat Button */}
+          {/* New Chat Button - Fixed Right */}
           <Button
             onClick={createNewSession}
             size="sm"
-            className="h-9 w-9 bg-accent hover:bg-accent/90 text-accent-foreground rounded-full"
+            className="h-9 w-9 bg-accent hover:bg-accent/90 text-accent-foreground rounded-full flex-shrink-0"
             disabled={createSessionMutation.isPending}
           >
             <Plus size={20} />
