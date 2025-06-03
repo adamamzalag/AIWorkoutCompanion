@@ -40,7 +40,6 @@ export function GenerationProgress({ operationId, onComplete, showViewPlansButto
           if (data.status === 'completed') {
             if (interval) clearInterval(interval);
             isActive = false;
-            localStorage.removeItem('activeGenerationId'); // Clear global tracking
             
             // Show browser notification
             if (Notification.permission === 'granted') {
@@ -50,7 +49,7 @@ export function GenerationProgress({ operationId, onComplete, showViewPlansButto
               });
             }
             
-            onComplete(true, data.result);
+            // Don't auto-close modal or clear tracking - let user interact
             return;
           } else if (data.status === 'failed' || data.status === 'error') {
             if (interval) clearInterval(interval);
