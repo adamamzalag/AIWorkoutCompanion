@@ -834,8 +834,8 @@ export async function registerRoutes(app: Express): Promise<Server> {
         }
 
         // Helper function to process and create exercise records with intelligent matching
-        const processExercise = async (exerciseName: string, isWarmupCooldown = false) => {
-          console.log(`🏋️ Processing exercise: ${exerciseName}${isWarmupCooldown ? ' (warmup/cooldown)' : ''}`);
+        const processExercise = async (exerciseName: string, exerciseType: "main" | "warmup" | "cardio" | "cooldown" = "main") => {
+          console.log(`🏋️ Processing exercise: ${exerciseName} (type: ${exerciseType})`);
           
           // Get existing exercises for similarity matching
           const existingExercises = await storage.getExercises();
@@ -946,11 +946,11 @@ export async function registerRoutes(app: Express): Promise<Server> {
               slug: slugify(exerciseName),
               name: exerciseName,
               difficulty: "beginner", // Default for warmup/cooldown exercises
-              muscle_groups: isWarmupCooldown ? ["general"] : ["general"],
+              muscle_groups: ["general"],
               instructions: [`Perform ${exerciseName.toLowerCase()} as instructed`],
               equipment: ["none"],
               youtubeId: null,
-              type: "main"
+              type: exerciseType
             });
             exerciseId = newExercise.id;
             finalExerciseName = newExercise.name;
@@ -966,7 +966,7 @@ export async function registerRoutes(app: Express): Promise<Server> {
           console.log(`🔥 Processing ${workout.warmUp.activities.length} warmup activities...`);
           const processedActivities = [];
           for (const activity of workout.warmUp.activities) {
-            const { exerciseId, name } = await processExercise(activity.exercise, true);
+            const { exerciseId, name } = await processExercise(activity.exercise, "warmup");
             processedActivities.push({
               ...activity,
               exerciseId,
@@ -985,7 +985,7 @@ export async function registerRoutes(app: Express): Promise<Server> {
           console.log(`❄️ Processing ${workout.coolDown.activities.length} cooldown activities...`);
           const processedActivities = [];
           for (const activity of workout.coolDown.activities) {
-            const { exerciseId, name } = await processExercise(activity.exercise, true);
+            const { exerciseId, name } = await processExercise(activity.exercise, "cooldown");
             processedActivities.push({
               ...activity,
               exerciseId,
@@ -994,6 +994,25 @@ export async function registerRoutes(app: Express): Promise<Server> {
           }
           processedCoolDown = {
             ...workout.coolDown,
+            activities: processedActivities
+          };
+        }
+
+        // Process cardio activities to create exercise records
+        let processedCardio = workout.cardio;
+        if (workout.cardio && workout.cardio.activities) {
+          console.log(`🏃 Processing ${workout.cardio.activities.length} cardio activities...`);
+          const processedActivities = [];
+          for (const activity of workout.cardio.activities) {
+            const { exerciseId, name } = await processExercise(activity.exercise, "cardio");
+            processedActivities.push({
+              ...activity,
+              exerciseId,
+              exercise: name // Use the final exercise name
+            });
+          }
+          processedCardio = {
+            ...workout.cardio,
             activities: processedActivities
           };
         }
@@ -1065,6 +1084,7 @@ export async function registerRoutes(app: Express): Promise<Server> {
           estimatedDuration: workout.estimatedDuration || req.body.timePerWorkout,
           exercises: processedExercises,
           warmUp: processedWarmUp, // Use processed warmup with exercise IDs
+          cardio: processedCardio, // Use processed cardio with exercise IDs
           coolDown: processedCoolDown, // Use processed cooldown with exercise IDs
           orderIndex: i
         });
