@@ -366,12 +366,32 @@ function generateCardioSearches(exerciseName: string): string[] {
   ];
 }
 
-// Generate optimized search terms for strength exercises with smart name parsing
+// Extract core exercise name by removing parenthetical information and modifiers
+function extractCoreExerciseName(exerciseName: string): string {
+  // Remove everything in parentheses
+  let coreName = exerciseName.replace(/\([^)]*\)/g, '').trim();
+  
+  // Remove common modifiers that might confuse searches
+  const modifiersToRemove = [
+    'using', 'with', 'and', 'or', 'for', 'in', 'on', 'at', 'to'
+  ];
+  
+  const words = coreName.split(' ');
+  const filteredWords = words.filter(word => 
+    !modifiersToRemove.includes(word.toLowerCase()) && word.length > 0
+  );
+  
+  return filteredWords.join(' ').trim();
+}
+
+// Generate optimized search terms for strength exercises with core-name-first approach
 function generateStrengthSearches(exerciseName: string): string[] {
+  const coreExerciseName = extractCoreExerciseName(exerciseName);
   const { simplifiedName, equipment } = parseExerciseName(exerciseName);
   
-  // Two optimized queries only
+  // Three optimized queries: core name first, then fallbacks
   return [
+    `${coreExerciseName} tutorial`, // Core name first (most likely to succeed)
     `intitle:"${exerciseName}" tutorial`, // Exact phrase match
     `${simplifiedName} ${equipment} proper form technique`.trim() // Simplified with equipment
   ];
@@ -379,7 +399,10 @@ function generateStrengthSearches(exerciseName: string): string[] {
 
 // Generate optimized search terms for general exercises
 function generateGeneralSearches(exerciseName: string): string[] {
+  const coreExerciseName = extractCoreExerciseName(exerciseName);
+  
   return [
+    `${coreExerciseName} tutorial`, // Core name first
     `intitle:"${exerciseName}" tutorial`,
     `${exerciseName} proper form technique`
   ];
@@ -452,8 +475,8 @@ export async function searchExerciseVideo(exerciseName: string, exerciseType?: s
       break;
   }
 
-  // OPTIMIZATION: Reduced from 5 to 2 search attempts (60% quota reduction)
-  for (let i = 0; i < Math.min(2, searchQueries.length); i++) {
+  // OPTIMIZATION: Increased to 3 search attempts for core-name-first approach
+  for (let i = 0; i < Math.min(3, searchQueries.length); i++) {
     const query = searchQueries[i];
     console.log(`  📝 Trying search ${i + 1}/${searchQueries.length}: "${query}"`);
     
