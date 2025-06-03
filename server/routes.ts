@@ -592,22 +592,7 @@ export async function registerRoutes(app: Express): Promise<Server> {
     }
   });
 
-  // Chat routes
-  app.get("/api/chat", async (req, res) => {
-    try {
-      const userId = parseInt(req.query.userId as string);
-      if (!userId) {
-        return res.status(400).json({ error: "User ID is required" });
-      }
-      console.log('Getting chat messages for userId:', userId);
-      const messages = await storage.getChatMessages(userId);
-      console.log('Retrieved messages:', messages?.length || 0);
-      res.json(messages);
-    } catch (error) {
-      console.error('Chat retrieval error:', error);
-      res.status(400).json({ error: "Invalid user ID" });
-    }
-  });
+  // Chat routes - removed duplicate, using the sessionId-aware version below
 
   app.post("/api/chat", async (req, res) => {
     try {
@@ -621,10 +606,10 @@ export async function registerRoutes(app: Express): Promise<Server> {
       // Save user message
       const userMessage = await storage.createChatMessage(messageData);
       
-      // Get user context for AI response
+      // Get user context for AI response - ONLY from current session to maintain isolation
       const user = await storage.getUser(messageData.userId);
       const recentSessions = await storage.getRecentWorkoutSessions(messageData.userId, 5);
-      const chatHistory = await storage.getChatMessages(messageData.userId);
+      const chatHistory = await storage.getChatMessages(messageData.userId, messageData.sessionId);
       
       const userContext = {
         fitnessLevel: user?.fitnessLevel,
@@ -640,9 +625,10 @@ export async function registerRoutes(app: Express): Promise<Server> {
         chatHistory
       );
 
-      // Save AI response
+      // Save AI response to the same session for proper isolation
       const aiMessage = await storage.createChatMessage({
         userId: messageData.userId,
+        sessionId: messageData.sessionId,
         role: "assistant",
         content: aiResponse
       });
