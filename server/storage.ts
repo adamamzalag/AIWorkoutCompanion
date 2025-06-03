@@ -1,11 +1,12 @@
 import { 
-  users, workoutPlans, exercises, workouts, workoutSessions, chatMessages, userProgress,
+  users, workoutPlans, exercises, workouts, workoutSessions, chatSessions, chatMessages, userProgress,
   planWeeks, progressSnapshots,
   type User, type InsertUser, type UpsertUser,
   type WorkoutPlan, type InsertWorkoutPlan,
   type Exercise, type InsertExercise,
   type Workout, type InsertWorkout,
   type WorkoutSession, type InsertWorkoutSession,
+  type ChatSession, type InsertChatSession,
   type ChatMessage, type InsertChatMessage,
   type UserProgress, type InsertUserProgress,
   type PlanWeek, type InsertPlanWeek,
@@ -50,8 +51,15 @@ export interface IStorage {
   updateWorkoutSession(id: number, updates: Partial<InsertWorkoutSession>): Promise<WorkoutSession | undefined>;
   getRecentWorkoutSessions(userId: number, limit: number): Promise<WorkoutSession[]>;
 
+  // Chat Sessions
+  getChatSessions(userId: number): Promise<ChatSession[]>;
+  getChatSession(id: number, userId: number): Promise<ChatSession | undefined>;
+  createChatSession(session: InsertChatSession): Promise<ChatSession>;
+  updateChatSession(id: number, userId: number, updates: Partial<InsertChatSession>): Promise<ChatSession | undefined>;
+  deleteChatSession(id: number, userId: number): Promise<boolean>;
+
   // Chat Messages
-  getChatMessages(userId: number): Promise<ChatMessage[]>;
+  getChatMessages(userId: number, sessionId?: number): Promise<ChatMessage[]>;
   createChatMessage(message: InsertChatMessage): Promise<ChatMessage>;
 
   // User Progress
