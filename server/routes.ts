@@ -38,50 +38,29 @@ async function searchVideosForNewExercises(workoutPlanId: number): Promise<void>
           if (exerciseRecord && !exerciseRecord.youtubeId) {
             exercisesNeedingVideos.push({
               id: exerciseRecord.id,
-              name: exerciseRecord.name
+              name: exerciseRecord.name,
+              type: exerciseRecord.type
             });
           }
         }
       }
       
-      // Process warm-up, cardio, and cool-down activities
-      const workoutData = typeof workout.exercises === 'string' ? JSON.parse(workout.exercises) : workout.exercises;
+      // Process warm-up, cardio, and cool-down activities (now with exerciseId references)
       const sections = ['warmUp', 'cardio', 'coolDown'];
       
       for (const sectionName of sections) {
-        const section = workoutData?.[sectionName];
+        const section = workout[sectionName];
         if (section?.activities) {
           for (const activity of section.activities) {
-            if (activity.exercise) {
-              // Search for existing exercise by name
-              const existingExercises = await storage.searchExercises(activity.exercise);
-              const exactMatch = existingExercises.find(ex => ex.name.toLowerCase() === activity.exercise.toLowerCase());
-              
-              if (exactMatch && !exactMatch.youtubeId) {
+            if (activity.exerciseId) {
+              // Get exercise record by ID
+              const exerciseRecord = await storage.getExercise(activity.exerciseId);
+              if (exerciseRecord && !exerciseRecord.youtubeId) {
                 exercisesNeedingVideos.push({
-                  id: exactMatch.id,
-                  name: exactMatch.name
+                  id: exerciseRecord.id,
+                  name: exerciseRecord.name,
+                  type: exerciseRecord.type
                 });
-              } else if (!exactMatch) {
-                // Create exercise record if it doesn't exist
-                try {
-                  const newExercise = await storage.createExercise({
-                    name: activity.exercise,
-                    slug: slugify(activity.exercise),
-                    description: `Exercise: ${activity.exercise}`,
-                    muscle_groups: [],
-                    equipment: [],
-                    instructions: [],
-                    difficulty: 'intermediate',
-                    type: sectionName === 'warmUp' ? 'warmup' : sectionName === 'cardio' ? 'cardio' : 'cooldown'
-                  });
-                  exercisesNeedingVideos.push({
-                    id: newExercise.id,
-                    name: newExercise.name
-                  });
-                } catch (error) {
-                  console.log(`⚠️ Could not create exercise record for ${activity.exercise}:`, error);
-                }
               }
             }
           }
