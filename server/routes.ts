@@ -592,12 +592,18 @@ export async function registerRoutes(app: Express): Promise<Server> {
   });
 
   // Chat routes
-  app.get("/api/chat/:userId", async (req, res) => {
+  app.get("/api/chat", async (req, res) => {
     try {
-      const userId = parseInt(req.params.userId);
+      const userId = parseInt(req.query.userId as string);
+      if (!userId) {
+        return res.status(400).json({ error: "User ID is required" });
+      }
+      console.log('Getting chat messages for userId:', userId);
       const messages = await storage.getChatMessages(userId);
+      console.log('Retrieved messages:', messages?.length || 0);
       res.json(messages);
     } catch (error) {
+      console.error('Chat retrieval error:', error);
       res.status(400).json({ error: "Invalid user ID" });
     }
   });

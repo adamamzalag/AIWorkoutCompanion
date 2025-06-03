@@ -22,6 +22,12 @@ export default function AIChatPage() {
 
   const { data: messages, isLoading } = useQuery<ChatMessage[]>({
     queryKey: ['/api/chat', (userProfile as any)?.id],
+    queryFn: async () => {
+      const userId = (userProfile as any)?.id;
+      const response = await fetch(`/api/chat?userId=${userId}`);
+      if (!response.ok) throw new Error('Failed to fetch chat messages');
+      return response.json();
+    },
     enabled: !!(userProfile as any)?.id,
   });
 
