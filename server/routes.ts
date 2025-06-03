@@ -1339,6 +1339,54 @@ export async function registerRoutes(app: Express): Promise<Server> {
     }
   });
 
+  app.post("/api/debug-video-search", async (req, res) => {
+    try {
+      const { query } = req.body;
+      
+      // Import YouTube functions
+      const YOUTUBE_BASE_URL = 'https://www.googleapis.com/youtube/v3';
+      const { getCurrentApiKey, makeYouTubeRequest } = await import('./youtube');
+      
+      const apiKey = getCurrentApiKey();
+      if (!apiKey) {
+        return res.status(500).json({ error: "No API key available" });
+      }
+
+      const searchUrl = `${YOUTUBE_BASE_URL}/search?` +
+        `part=snippet&type=video&q=${encodeURIComponent(query)}&` +
+        `maxResults=25&` +
+        `videoDefinition=any&videoDuration=short&` +
+        `videoEmbeddable=true&videoSyndicated=true&` +
+        `relevanceLanguage=en&safeSearch=strict&order=relevance&key=${apiKey}`;
+
+      const response = await fetch(searchUrl);
+      const data = await response.json();
+      
+      if (!response.ok) {
+        return res.status(500).json({ error: data.error?.message || 'API error' });
+      }
+
+      const videos = data.items?.map((item: any, index: number) => ({
+        rank: index + 1,
+        videoId: item.id.videoId,
+        title: item.snippet.title,
+        channel: item.snippet.channelTitle,
+        description: item.snippet.description?.substring(0, 200) + '...',
+        publishedAt: item.snippet.publishedAt,
+        thumbnailUrl: item.snippet.thumbnails.medium?.url
+      })) || [];
+
+      res.json({
+        query,
+        totalResults: videos.length,
+        videos
+      });
+    } catch (error) {
+      console.error("Error in debug video search:", error);
+      res.status(500).json({ error: "Failed to debug video search" });
+    }
+  });
+
   const httpServer = createServer(app);
   return httpServer;
 }

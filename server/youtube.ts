@@ -410,6 +410,10 @@ export async function searchExerciseVideo(exerciseName: string, exerciseType?: s
         }
       } else {
         console.log(`  ❌ No suitable video found for this search`);
+        // Force logging for analysis when no video found
+        if (query.includes('calf raises')) {
+          console.log(`  🔍 DEBUG: Investigating why calf raises search failed...`);
+        }
       }
     } catch (error) {
       console.error(`  ❌ Error searching for "${query}":`, error);
@@ -452,6 +456,14 @@ async function searchVideos(query: string, category: string = 'general'): Promis
 
   // Sort by preliminary score and only fetch details for top 3 candidates
   preliminaryScores.sort((a, b) => b.preliminaryScore - a.preliminaryScore);
+  
+  // DEBUG: Log all videos for analysis
+  console.log(`\n📋 DEBUG: All ${data.items.length} videos found for query: "${query}"`);
+  preliminaryScores.forEach((scored, index) => {
+    console.log(`  ${index + 1}. [Score: ${scored.preliminaryScore}] "${scored.item.snippet.title}" by ${scored.item.snippet.channelTitle}`);
+  });
+  console.log(`\n🎯 DEBUG: Top 3 candidates selected for detailed analysis`);
+  
   const topCandidates = preliminaryScores.slice(0, 3);
 
   // Fetch detailed information only for top candidates
