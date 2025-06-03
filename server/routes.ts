@@ -1307,6 +1307,38 @@ export async function registerRoutes(app: Express): Promise<Server> {
     }
   });
 
+  app.get("/api/admin/youtube-api-status", async (req, res) => {
+    try {
+      const { getApiKeyStatus } = await import('./youtube');
+      const status = getApiKeyStatus();
+      res.json(status);
+    } catch (error) {
+      console.error("Error getting YouTube API status:", error);
+      res.status(500).json({ error: "Failed to get API status" });
+    }
+  });
+
+  app.post("/api/test-video-search", async (req, res) => {
+    try {
+      const { exerciseName, exerciseType } = req.body;
+      const { searchExerciseVideo } = await import('./youtube');
+      
+      console.log(`Testing video search for: ${exerciseName} (${exerciseType})`);
+      const result = await searchExerciseVideo(exerciseName, exerciseType);
+      
+      res.json({
+        success: !!result,
+        exerciseName,
+        exerciseType,
+        videoId: result?.id || null,
+        thumbnailUrl: result?.thumbnailUrl || null
+      });
+    } catch (error) {
+      console.error("Error testing video search:", error);
+      res.status(500).json({ error: "Failed to test video search" });
+    }
+  });
+
   const httpServer = createServer(app);
   return httpServer;
 }

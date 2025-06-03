@@ -83,6 +83,18 @@ function rotateToNextKey(): boolean {
   return true;
 }
 
+// Get current API key status for monitoring
+export function getApiKeyStatus() {
+  return {
+    totalKeys: YOUTUBE_API_KEYS.length,
+    currentKeyIndex: currentKeyIndex,
+    activeKey: currentKeyIndex + 1,
+    keysRemaining: YOUTUBE_API_KEYS.length - currentKeyIndex,
+    quotaResetTime: 'Midnight Pacific Time',
+    lastReset: lastQuotaReset.toISOString()
+  };
+}
+
 // Enhanced API call with failover logic
 async function makeYouTubeRequest(url: string, retryCount = 0): Promise<any> {
   const apiKey = getCurrentApiKey();
