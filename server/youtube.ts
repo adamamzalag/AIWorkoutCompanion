@@ -352,7 +352,8 @@ export async function searchExerciseVideo(exerciseName: string, exerciseType?: s
       break;
   }
 
-  for (let i = 0; i < searchQueries.length; i++) {
+  // OPTIMIZATION: Reduced from 5 to 2 search attempts (60% quota reduction)
+  for (let i = 0; i < Math.min(2, searchQueries.length); i++) {
     const query = searchQueries[i];
     console.log(`  📝 Trying search ${i + 1}/${searchQueries.length}: "${query}"`);
     
@@ -414,11 +415,22 @@ async function searchVideos(query: string, category: string = 'general'): Promis
     return null;
   }
 
-  // Score and filter videos
+  // OPTIMIZATION: Pre-filter videos and only fetch details for top candidates
+  // Calculate preliminary scores without video details (saves API calls)
+  const preliminaryScores = data.items.map((item: any) => {
+    const preliminaryScore = calculateVideoScore(item, null, category);
+    return { item, preliminaryScore };
+  });
+
+  // Sort by preliminary score and only fetch details for top 3 candidates
+  preliminaryScores.sort((a, b) => b.preliminaryScore - a.preliminaryScore);
+  const topCandidates = preliminaryScores.slice(0, 3);
+
+  // Fetch detailed information only for top candidates
   const scoredVideos = await Promise.all(
-    data.items.map(async (item) => {
+    topCandidates.map(async ({ item }) => {
       const details = await getVideoDetails(item.id.videoId);
-      const score = calculateVideoScore(item, details, category);
+      const finalScore = calculateVideoScore(item, details, category);
       
       return {
         video: {
@@ -429,12 +441,12 @@ async function searchVideos(query: string, category: string = 'general'): Promis
           duration: details?.duration || '',
           viewCount: details?.viewCount || 0
         },
-        score
+        score: finalScore
       };
     })
   );
 
-  // Filter out videos that exceed 5 minutes and sort by score
+  // Filter out videos that exceed 5 minutes and sort by final score
   const validVideos = scoredVideos.filter(v => v.score > 0);
   validVideos.sort((a, b) => b.score - a.score);
   const bestVideo = validVideos[0];
@@ -468,6 +480,7 @@ function calculateVideoScore(item: any, details: any, exerciseCategory: string =
   const channelTitle = item.snippet.channelTitle;
   
   // STRICT 5-minute maximum enforcement - reject anything longer
+  // Only check duration if details are available (not in preliminary scoring)
   if (details?.duration) {
     const duration = parseDuration(details.duration);
     if (duration > 300) return -100; // Immediate rejection for videos over 5 minutes
