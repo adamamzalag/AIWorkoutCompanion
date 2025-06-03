@@ -5,7 +5,7 @@ import { Input } from '@/components/ui/input';
 import { Textarea } from '@/components/ui/textarea';
 import { Card, CardContent } from '@/components/ui/card';
 import { Skeleton } from '@/components/ui/skeleton';
-import { MessageCircle, Send, TrendingUp, Dumbbell, Target, Plus, ChevronDown, Edit3, Check, X } from 'lucide-react';
+import { MessageCircle, Send, TrendingUp, Dumbbell, Target, Plus, ChevronDown, Edit3, Check, X, Trash2 } from 'lucide-react';
 import { apiRequest } from '@/lib/queryClient';
 import type { ChatMessage, ChatSession, User } from '@shared/schema';
 import { useAuth } from '@/hooks/useAuth';
@@ -134,6 +134,27 @@ export default function AIChatPage() {
     }
   });
 
+  // Delete chat session mutation
+  const deleteChatMutation = useMutation({
+    mutationFn: async (sessionId: number) => {
+      const userId = (userProfile as any)?.id;
+      const response = await apiRequest('DELETE', `/api/chat-sessions/${sessionId}/${userId}`);
+      return response.json();
+    },
+    onSuccess: () => {
+      queryClient.invalidateQueries({ queryKey: ['/api/chat-sessions', (userProfile as any)?.id] });
+      // If we deleted the current session, switch to the first available session
+      if (currentSessionId && chatSessions) {
+        const remainingSessions = chatSessions.filter(s => s.id !== currentSessionId);
+        if (remainingSessions.length > 0) {
+          setCurrentSessionId(remainingSessions[0].id);
+        } else {
+          setCurrentSessionId(null);
+        }
+      }
+    }
+  });
+
   const createNewSession = () => {
     createSessionMutation.mutate();
   };
@@ -152,6 +173,12 @@ export default function AIChatPage() {
   const cancelEditing = () => {
     setEditingSessionId(null);
     setEditingTitle('');
+  };
+
+  const deleteChat = (sessionId: number) => {
+    if (window.confirm('Are you sure you want to delete this chat? This action cannot be undone.')) {
+      deleteChatMutation.mutate(sessionId);
+    }
   };
 
   const handleSendMessage = (e: React.FormEvent) => {
@@ -252,14 +279,27 @@ export default function AIChatPage() {
                     </span>
                   )}
                 </div>
-                <Button
-                  onClick={() => startEditing(currentSessionId!, chatSessions.find(s => s.id === currentSessionId)?.title || 'New Chat')}
-                  size="sm"
-                  variant="ghost"
-                  className="h-6 w-6 p-0 hover:bg-accent/10 opacity-70 hover:opacity-100 flex-shrink-0"
-                >
-                  <Edit3 size={12} className="text-muted-foreground" />
-                </Button>
+                <div className="flex items-center space-x-1 flex-shrink-0">
+                  <Button
+                    onClick={() => startEditing(currentSessionId!, chatSessions.find(s => s.id === currentSessionId)?.title || 'New Chat')}
+                    size="sm"
+                    variant="ghost"
+                    className="h-6 w-6 p-0 hover:bg-accent/10 opacity-70 hover:opacity-100"
+                  >
+                    <Edit3 size={12} className="text-muted-foreground" />
+                  </Button>
+                  {chatSessions.length > 1 && (
+                    <Button
+                      onClick={() => deleteChat(currentSessionId!)}
+                      size="sm"
+                      variant="ghost"
+                      className="h-6 w-6 p-0 hover:bg-destructive/10 opacity-70 hover:opacity-100"
+                      disabled={deleteChatMutation.isPending}
+                    >
+                      <Trash2 size={12} className="text-muted-foreground hover:text-destructive" />
+                    </Button>
+                  )}
+                </div>
               </div>
             )}
           </div>
