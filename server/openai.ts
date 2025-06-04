@@ -193,8 +193,8 @@ You MUST design workout patterns that only use equipment from the user's availab
 Do NOT suggest workout focuses or patterns that require unavailable equipment.
 
 CREATIVITY REQUIREMENTS:
-Across different plan generations, aim for variety in split style, exercise selection and sequencing while still meeting the goals.
-Provide a unique, descriptive plan title each time that reflects your specific training approach.
+Design a unique training approach that avoids common cookie-cutter programs.
+Provide a unique, descriptive plan title each time that reflects your specific training philosophy.
 
 Think through your coaching strategy:
 1. What workout split maximizes results for this goal and schedule?
@@ -202,7 +202,14 @@ Think through your coaching strategy:
 3. What equipment selection strategy best serves the training goals?
 4. How will each workout complement others in the weekly structure?
 
-Return only valid JSON with this schema structure:
+REQUIRED JSON STRUCTURE VALIDATION:
+- weeklyStructure MUST be an array with exactly ${request.duration} weeks
+- Each week MUST have workoutDays array with exactly ${request.workoutsPerWeek} workouts
+- Each workoutDay MUST have: dayNumber, goal, targetMuscles, workoutType, estimatedDuration
+- progressionRules MUST have all three fields: weightProgression, volumeProgression, intensityProgression
+- All arrays must contain actual data, not empty brackets
+
+Return only valid JSON with this exact structure:
 {
   "title": "Unique descriptive plan name",
   "description": "Plan overview", 
@@ -211,7 +218,20 @@ Return only valid JSON with this schema structure:
   "difficulty": "${request.fitnessLevel}",
   "equipment": ${JSON.stringify(request.equipment)},
   "weeklyStructure": [
-    // Generate ${request.duration} weeks with your chosen training split and progression
+    {
+      "week": 1,
+      "focus": "Your chosen focus",
+      "intensityLevel": "Your intensity level",
+      "workoutDays": [
+        {
+          "dayNumber": 1,
+          "goal": "Your workout goal",
+          "targetMuscles": ["muscle1", "muscle2"],
+          "workoutType": "strength|cardio|flexibility|hybrid",
+          "estimatedDuration": ${request.timePerWorkout}
+        }
+      ]
+    }
   ],
   "progressionRules": {
     "weightProgression": "Your progression strategy",
@@ -229,9 +249,9 @@ Return only valid JSON with this schema structure:
       { role: "user", content: prompt }
     ],
     response_format: { type: "json_object" },
-    temperature: 0.8,
-    top_p: 0.9,
-    presence_penalty: 0.8,
+    temperature: 0.6,
+    top_p: 0.85,
+    presence_penalty: 0.4,
     seed: Date.now() + Math.floor(Math.random() * 10000),
     max_tokens: 2000,
   });
@@ -244,9 +264,9 @@ Return only valid JSON with this schema structure:
         { role: "user", content: prompt }
       ],
       response_format: { type: "json_object" },
-      temperature: 0.8,
-      top_p: 0.9,
-      presence_penalty: 0.8,
+      temperature: 0.6,
+      top_p: 0.85,
+      presence_penalty: 0.4,
       seed: Date.now() + Math.floor(Math.random() * 10000),
       max_tokens: 2000,
     });
@@ -295,43 +315,59 @@ You do not need to use ALL available equipment - select the most appropriate equ
 If an exercise typically requires unavailable equipment, substitute with alternatives using only the available equipment or bodyweight movements.
 
 CREATIVITY REQUIREMENTS:
-Across different plan generations, aim for variety in exercise selection, workout structure, and training methods while meeting the week's focus.
-Be creative with workout titles and descriptions that reflect your specific training approach.
+Design unique workout approaches that avoid generic templates while meeting the week's focus.
+Be creative with workout titles and descriptions that reflect your specific training philosophy.
 
 IMPORTANT REQUIREMENTS:
 1. Within each individual workout: No exercise should appear more than once across warmUp, main exercises, and coolDown sections
 2. Each workout should have unique exercises in its warmUp and coolDown (no repeats within that single workout)
 3. Different workouts in the plan CAN share the same exercises - this constraint only applies within each individual workout
 
+REQUIRED JSON STRUCTURE VALIDATION:
+- workouts MUST be an array with exactly ${currentWeek.workoutDays.length} workouts
+- Each workout MUST have: title, description, estimatedDuration, warmUp, cardio, coolDown, exercises
+- warmUp, cardio, coolDown MUST each have durationMinutes and activities array
+- exercises MUST be an array with actual exercise objects
+- Each exercise MUST have: name, sets, reps, weight, restTime, instructions, muscleGroups, equipment
+
 Design ${currentWeek.workoutDays.length} intelligent workouts for ${timePerWorkout || 45} minutes each that maximize training effectiveness within the time constraints.
 
-Return JSON with this schema structure:
+Return JSON with this exact structure:
 {
   "workouts": [
     {
-      "title": "Creative workout name",
+      "title": "Descriptive workout name",
       "description": "Specific focus description",
       "estimatedDuration": ${timePerWorkout || 45},
       "warmUp": {
         "durationMinutes": 5,
         "activities": [
-          // Generate appropriate warm-up activities
+          {"exercise": "warm-up activity", "durationSeconds": 30}
         ]
       },
       "cardio": {
         "durationMinutes": 10,
         "activities": [
-          // Generate cardio activities using available equipment
+          {"exercise": "cardio activity", "durationSeconds": 60}
         ]
       },
       "coolDown": {
         "durationMinutes": 5,
         "activities": [
-          // Generate cool-down activities
+          {"exercise": "cool-down activity", "durationSeconds": 60}
         ]
       },
       "exercises": [
-        // Generate main exercises with all required fields
+        {
+          "name": "Exercise name",
+          "sets": 3,
+          "reps": "8-12",
+          "weight": "moderate|null",
+          "restTime": "60 seconds",
+          "instructions": ["instruction1", "instruction2"],
+          "muscleGroups": ["muscle1", "muscle2"],
+          "equipment": ["equipment1"]
+        }
       ]
     }
   ]
@@ -350,9 +386,9 @@ Use null for weight on bodyweight exercises, specific weights for loaded exercis
       { role: "user", content: prompt }
     ],
     response_format: { type: "json_object" },
-    temperature: 0.8,
-    top_p: 0.9,
-    presence_penalty: 0.8,
+    temperature: 0.6,
+    top_p: 0.85,
+    presence_penalty: 0.4,
     seed: Date.now() + Math.floor(Math.random() * 10000),
     max_tokens: 3000,
   });
@@ -365,9 +401,9 @@ Use null for weight on bodyweight exercises, specific weights for loaded exercis
         { role: "user", content: prompt }
       ],
       response_format: { type: "json_object" },
-      temperature: 0.8,
-      top_p: 0.9,
-      presence_penalty: 0.8,
+      temperature: 0.6,
+      top_p: 0.85,
+      presence_penalty: 0.4,
       seed: Date.now() + Math.floor(Math.random() * 10000),
       max_tokens: 3000,
     });
