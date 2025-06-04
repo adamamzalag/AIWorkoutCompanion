@@ -37,12 +37,20 @@ async function searchVideosForNewExercises(workoutPlanId: number): Promise<void>
       if (workout.exercises) {
         for (const exercise of workout.exercises) {
           const exerciseRecord = await storage.getExercise(exercise.exerciseId);
+          console.log(`🔍 Checking exercise ID ${exercise.exerciseId}: ${exerciseRecord?.name}`);
+          console.log(`   YouTube ID: "${exerciseRecord?.youtubeId}" (type: ${typeof exerciseRecord?.youtubeId})`);
+          console.log(`   Has youtube_id field: ${exerciseRecord && 'youtube_id' in exerciseRecord}`);
+          console.log(`   Has youtubeId field: ${exerciseRecord && 'youtubeId' in exerciseRecord}`);
+          
           if (exerciseRecord && !exerciseRecord.youtubeId) {
+            console.log(`   ➕ Adding to search list (no video)`);
             exercisesNeedingVideos.push({
               id: exerciseRecord.id,
               name: exerciseRecord.name,
               type: exerciseRecord.type
             });
+          } else {
+            console.log(`   ✅ Skipping (has video or not found)`);
           }
         }
       }
