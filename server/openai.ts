@@ -6,6 +6,21 @@ const openai = new OpenAI({
 
 const UNIFIED_COACH_SYSTEM_PROMPT = "You are an expert personal trainer and exercise physiologist with 15+ years of experience designing effective fitness programs. You have deep knowledge of exercise physiology, biomechanics, periodization, and evidence-based training principles. Apply intelligent coaching decisions and maintain a supportive, knowledgeable approach in all fitness-related interactions.";
 
+const WEEKLY_STRUCTURE_TEMPLATE = {
+  "week": 1,
+  "focus": "",
+  "intensityLevel": "",
+  "workoutDays": [
+    {
+      "dayNumber": 1,
+      "goal": "",
+      "targetMuscles": [],
+      "workoutType": "",
+      "estimatedDuration": 0
+    }
+  ]
+};
+
 const WORKOUT_STRUCTURE_RULES = `
 WORKOUT STRUCTURE PRINCIPLES:
 • Each workout includes: Warm-up → Main Training → Cardio Component → Cool-down
@@ -205,22 +220,7 @@ Return only valid JSON with this exact structure: {
   "totalWorkouts": ${request.workoutsPerWeek * request.duration},
   "difficulty": "${request.fitnessLevel}",
   "equipment": ${JSON.stringify(request.equipment)},
-  "weeklyStructure": [
-    {
-      "week": 1,
-      "focus": "",
-      "intensityLevel": "",
-      "workoutDays": [
-        {
-          "dayNumber": 1,
-          "goal": "",
-          "targetMuscles": [],
-          "workoutType": "",
-          "estimatedDuration": ${request.timePerWorkout}
-        }
-      ]
-    }
-  ],
+  "weeklyStructure": ${JSON.stringify([WEEKLY_STRUCTURE_TEMPLATE])},
   "progressionRules": {
     "weightProgression": "",
     "volumeProgression": "",
@@ -233,7 +233,7 @@ Return only valid JSON with this exact structure: {
   const response = await openai.chat.completions.create({
     model: "gpt-4.1-mini",
     messages: [
-      { role: "system", content: UNIFIED_COACH_SYSTEM_PROMPT + " " + JSON_RESPONSE_RULES + " Return valid JSON only. Do not wrap in markdown, code fences, or add explanatory text." },
+      { role: "system", content: UNIFIED_COACH_SYSTEM_PROMPT + " " + JSON_RESPONSE_RULES + " Use the weekly structure template format: " + JSON.stringify(WEEKLY_STRUCTURE_TEMPLATE) + " Return valid JSON only. Do not wrap in markdown, code fences, or add explanatory text." },
       { role: "user", content: prompt }
     ],
     response_format: { type: "json_object" },
@@ -246,7 +246,7 @@ Return only valid JSON with this exact structure: {
     return await openai.chat.completions.create({
       model: "gpt-4.1-mini",
       messages: [
-        { role: "system", content: UNIFIED_COACH_SYSTEM_PROMPT + " " + JSON_RESPONSE_RULES + " Return valid JSON only. Do not wrap in markdown, code fences, or add explanatory text." },
+        { role: "system", content: UNIFIED_COACH_SYSTEM_PROMPT + " " + JSON_RESPONSE_RULES + " Use the weekly structure template format: " + JSON.stringify(WEEKLY_STRUCTURE_TEMPLATE) + " Return valid JSON only. Do not wrap in markdown, code fences, or add explanatory text." },
         { role: "user", content: prompt }
       ],
       response_format: { type: "json_object" },
