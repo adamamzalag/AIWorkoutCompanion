@@ -247,7 +247,7 @@ Return only valid JSON with this exact structure: {
   const response = await openai.chat.completions.create({
     model: "gpt-4.1-mini",
     messages: [
-      { role: "system", content: UNIFIED_COACH_SYSTEM_PROMPT + " " + JSON_RESPONSE_RULES },
+      { role: "system", content: UNIFIED_COACH_SYSTEM_PROMPT + " " + JSON_RESPONSE_RULES + " Return valid JSON only. Do not wrap in markdown, code fences, or add explanatory text." },
       { role: "user", content: prompt }
     ],
     response_format: { type: "json_object" },
@@ -260,7 +260,7 @@ Return only valid JSON with this exact structure: {
     return await openai.chat.completions.create({
       model: "gpt-4.1-mini",
       messages: [
-        { role: "system", content: UNIFIED_COACH_SYSTEM_PROMPT + " " + JSON_RESPONSE_RULES + " Please return valid JSON only." },
+        { role: "system", content: UNIFIED_COACH_SYSTEM_PROMPT + " " + JSON_RESPONSE_RULES + " Return valid JSON only. Do not wrap in markdown, code fences, or add explanatory text." },
         { role: "user", content: prompt }
       ],
       response_format: { type: "json_object" },
@@ -374,7 +374,7 @@ Use null for weight on bodyweight exercises, specific weights for loaded exercis
   const response = await openai.chat.completions.create({
     model: "gpt-4.1-mini",
     messages: [
-      { role: "system", content: UNIFIED_COACH_SYSTEM_PROMPT + " " + WORKOUT_STRUCTURE_RULES + " " + JSON_RESPONSE_RULES },
+      { role: "system", content: UNIFIED_COACH_SYSTEM_PROMPT + " " + WORKOUT_STRUCTURE_RULES + " " + JSON_RESPONSE_RULES + " Return valid JSON only. Do not wrap in markdown, code fences, or add explanatory text." },
       { role: "user", content: prompt }
     ],
     response_format: { type: "json_object" },
@@ -387,7 +387,7 @@ Use null for weight on bodyweight exercises, specific weights for loaded exercis
     return await openai.chat.completions.create({
       model: "gpt-4.1-mini",
       messages: [
-        { role: "system", content: UNIFIED_COACH_SYSTEM_PROMPT + " " + WORKOUT_STRUCTURE_RULES + " " + JSON_RESPONSE_RULES + " Please return valid JSON only." },
+        { role: "system", content: UNIFIED_COACH_SYSTEM_PROMPT + " " + WORKOUT_STRUCTURE_RULES + " " + JSON_RESPONSE_RULES + " Return valid JSON only. Do not wrap in markdown, code fences, or add explanatory text." },
         { role: "user", content: prompt }
       ],
       response_format: { type: "json_object" },
