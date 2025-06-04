@@ -34,8 +34,8 @@ async function searchVideosForNewExercises(workoutPlanId: number): Promise<void>
     
     for (const workout of workouts) {
       // Process main exercises
-      if (workout.exercises) {
-        for (const exercise of workout.exercises) {
+      if (workout.exercises && Array.isArray(workout.exercises)) {
+        for (const exercise of workout.exercises as any[]) {
           const exerciseRecord = await storage.getExercise(exercise.exerciseId);
           console.log(`🔍 Checking exercise ID ${exercise.exerciseId}: ${exerciseRecord?.name}`);
           console.log(`   YouTube ID: "${exerciseRecord?.youtubeId}" (type: ${typeof exerciseRecord?.youtubeId})`);
@@ -59,8 +59,8 @@ async function searchVideosForNewExercises(workoutPlanId: number): Promise<void>
       const sections = ['warmUp', 'cardio', 'coolDown'];
       
       for (const sectionName of sections) {
-        const section = workout[sectionName];
-        if (section?.activities) {
+        const section = (workout as any)[sectionName];
+        if (section?.activities && Array.isArray(section.activities)) {
           for (const activity of section.activities) {
             if (activity.exerciseId) {
               // Get exercise record by ID
