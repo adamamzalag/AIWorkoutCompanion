@@ -192,53 +192,31 @@ STRICT EQUIPMENT CONSTRAINT:
 You MUST design workout patterns that only use equipment from the user's available equipment list.
 Do NOT suggest workout focuses or patterns that require unavailable equipment.
 
+CREATIVITY REQUIREMENTS:
+Across different plan generations, aim for variety in split style, exercise selection and sequencing while still meeting the goals.
+Provide a unique, descriptive plan title each time that reflects your specific training approach.
+
 Think through your coaching strategy:
 1. What workout split maximizes results for this goal and schedule?
 2. How should training intensity and volume progress over ${request.duration} weeks?
 3. What equipment selection strategy best serves the training goals?
 4. How will each workout complement others in the weekly structure?
 
-Return only valid JSON with this exact structure: {
-  "title": "Plan name",
+Return only valid JSON with this schema structure:
+{
+  "title": "Unique descriptive plan name",
   "description": "Plan overview", 
   "duration": ${request.duration},
   "totalWorkouts": ${request.workoutsPerWeek * request.duration},
   "difficulty": "${request.fitnessLevel}",
   "equipment": ${JSON.stringify(request.equipment)},
   "weeklyStructure": [
-    {
-      "week": 1,
-      "focus": "Foundation Building",
-      "intensityLevel": "moderate",
-      "workoutDays": [
-        {
-          "dayNumber": 1,
-          "goal": "Upper Body Strength",
-          "targetMuscles": ["chest", "shoulders", "triceps"],
-          "workoutType": "strength",
-          "estimatedDuration": ${request.timePerWorkout}
-        },
-        {
-          "dayNumber": 2,
-          "goal": "Lower Body Power",
-          "targetMuscles": ["quadriceps", "glutes", "hamstrings"],
-          "workoutType": "strength",
-          "estimatedDuration": ${request.timePerWorkout}
-        },
-        {
-          "dayNumber": 3,
-          "goal": "Core & Flexibility",
-          "targetMuscles": ["core", "back"],
-          "workoutType": "flexibility",
-          "estimatedDuration": ${request.timePerWorkout}
-        }
-      ]
-    }
+    // Generate ${request.duration} weeks with your chosen training split and progression
   ],
   "progressionRules": {
-    "weightProgression": "Increase by 5-10% when completing all sets",
-    "volumeProgression": "Add 1 set after 2 weeks of same weight",
-    "intensityProgression": "Week 1: 60-70%, Week 2: 70-75%, Week 3: 75-80%, Week 4: 70-75%"
+    "weightProgression": "Your progression strategy",
+    "volumeProgression": "Your volume strategy", 
+    "intensityProgression": "Your intensity strategy"
   }
 }`;
 
@@ -251,7 +229,11 @@ Return only valid JSON with this exact structure: {
       { role: "user", content: prompt }
     ],
     response_format: { type: "json_object" },
-    temperature: 0.5,
+    temperature: 0.8,
+    top_p: 0.9,
+    presence_penalty: 0.8,
+    seed: Date.now() + Math.floor(Math.random() * 10000),
+    max_tokens: 2000,
   });
 
   return await parseJSONWithRetry(response.choices[0].message.content || "{}", async () => {
@@ -262,7 +244,11 @@ Return only valid JSON with this exact structure: {
         { role: "user", content: prompt }
       ],
       response_format: { type: "json_object" },
-      temperature: 0.5,
+      temperature: 0.8,
+      top_p: 0.9,
+      presence_penalty: 0.8,
+      seed: Date.now() + Math.floor(Math.random() * 10000),
+      max_tokens: 2000,
     });
   });
 }
@@ -308,6 +294,10 @@ Do NOT use any equipment not explicitly available to the user.
 You do not need to use ALL available equipment - select the most appropriate equipment for each exercise from what's available.
 If an exercise typically requires unavailable equipment, substitute with alternatives using only the available equipment or bodyweight movements.
 
+CREATIVITY REQUIREMENTS:
+Across different plan generations, aim for variety in exercise selection, workout structure, and training methods while meeting the week's focus.
+Be creative with workout titles and descriptions that reflect your specific training approach.
+
 IMPORTANT REQUIREMENTS:
 1. Within each individual workout: No exercise should appear more than once across warmUp, main exercises, and coolDown sections
 2. Each workout should have unique exercises in its warmUp and coolDown (no repeats within that single workout)
@@ -315,47 +305,33 @@ IMPORTANT REQUIREMENTS:
 
 Design ${currentWeek.workoutDays.length} intelligent workouts for ${timePerWorkout || 45} minutes each that maximize training effectiveness within the time constraints.
 
-CRITICAL: Return JSON with this EXACT structure:
+Return JSON with this schema structure:
 {
   "workouts": [
     {
-      "title": "Upper Body Push",
-      "description": "Focus on chest, shoulders, and triceps development",
+      "title": "Creative workout name",
+      "description": "Specific focus description",
       "estimatedDuration": ${timePerWorkout || 45},
       "warmUp": {
         "durationMinutes": 5,
         "activities": [
-          {"exercise": "Arm circles", "durationSeconds": 30},
-          {"exercise": "Light cardio", "durationSeconds": 120}
+          // Generate appropriate warm-up activities
         ]
       },
       "cardio": {
         "durationMinutes": 10,
         "activities": [
-          {"exercise": "Jumping jacks", "durationSeconds": 60}
+          // Generate cardio activities using available equipment
         ]
       },
       "coolDown": {
         "durationMinutes": 5,
         "activities": [
-          {"exercise": "Chest stretch", "durationSeconds": 60},
-          {"exercise": "Deep breathing", "durationSeconds": 60}
+          // Generate cool-down activities
         ]
       },
       "exercises": [
-        {
-          "name": "Push-ups",
-          "sets": 3,
-          "reps": "8-12",
-          "weight": null,
-          "restTime": "60 seconds",
-          "instructions": ["Start in plank position", "Lower chest to floor", "Push back up"],
-          "muscleGroups": ["chest", "triceps", "shoulders"],
-          "equipment": ["none"],
-          "tempo": "2-1-2-1",
-          "modifications": ["knee push-ups", "wall push-ups"],
-          "progressions": ["diamond push-ups", "weighted push-ups"]
-        }
+        // Generate main exercises with all required fields
       ]
     }
   ]
@@ -374,7 +350,11 @@ Use null for weight on bodyweight exercises, specific weights for loaded exercis
       { role: "user", content: prompt }
     ],
     response_format: { type: "json_object" },
-    temperature: 0.5,
+    temperature: 0.8,
+    top_p: 0.9,
+    presence_penalty: 0.8,
+    seed: Date.now() + Math.floor(Math.random() * 10000),
+    max_tokens: 3000,
   });
 
   const result = await parseJSONWithRetry(response.choices[0].message.content || "{}", async () => {
@@ -385,7 +365,11 @@ Use null for weight on bodyweight exercises, specific weights for loaded exercis
         { role: "user", content: prompt }
       ],
       response_format: { type: "json_object" },
-      temperature: 0.5,
+      temperature: 0.8,
+      top_p: 0.9,
+      presence_penalty: 0.8,
+      seed: Date.now() + Math.floor(Math.random() * 10000),
+      max_tokens: 3000,
     });
   });
   return result.workouts || [];
