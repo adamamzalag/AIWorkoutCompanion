@@ -119,12 +119,11 @@ export function GenerationProgress({ operationId, onComplete, showViewPlansButto
                 </p>
                 
                 <Button 
-                  variant="outline" 
                   size="sm"
                   onClick={() => {
-                    window.open('/ai-chat', '_blank');
+                    setLocation('/ai-chat');
                   }}
-                  className="text-primary border-primary/20 hover:bg-primary/5"
+                  className="glass-effect border-border/50 bg-background/80 hover:bg-background/90 text-foreground hover:text-primary transition-all duration-200"
                 >
                   <MessageCircle className="h-4 w-4 mr-2" />
                   Chat with AI Coach
