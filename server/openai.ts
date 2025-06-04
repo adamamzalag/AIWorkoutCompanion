@@ -398,11 +398,11 @@ export async function generateChatTitle(firstMessage: string): Promise<string> {
     const prompt = `Generate a concise, descriptive title for a fitness coaching chat based on this first message: "${firstMessage}"
 
 Rules:
-- Maximum 35 characters
-- Focus on the fitness topic or question
+- Maximum 25 characters
+- Focus on core topic, be specific
 - Use title case
 - No special characters or punctuation
-- Examples: "Busy Parent Workout Tips", "Building Massive Biceps", "Form Check Guidance", "Meal Planning Advice"
+- Examples: "Dad Workout Tips", "Bicep Building", "Form Check", "Meal Planning"
 
 If the message isn't fitness-related, create a general but concise title.`;
 
@@ -418,9 +418,9 @@ If the message isn't fitness-related, create a general but concise title.`;
 
     let title = response.choices[0].message.content?.trim() || "New Chat";
     
-    // Ensure 20 character limit
-    if (title.length > 20) {
-      title = title.substring(0, 20).trim();
+    // Ensure 25 character limit
+    if (title.length > 25) {
+      title = title.substring(0, 25).trim();
     }
     
     // Remove quotes if present
@@ -525,7 +525,9 @@ User Context:
 - Equipment: ${JSON.stringify(userContext.equipment?.join(", ") || "None")}
 - Recent workouts: ${JSON.stringify(userContext.recentWorkouts || "None")}
 
-Provide helpful advice, motivation, and answer fitness-related questions. Keep responses conversational and encouraging.`;
+Provide helpful advice, motivation, and answer fitness-related questions. Keep responses conversational and encouraging.
+
+IMPORTANT: Be concise and to-the-point. Aim for 2-3 sentences maximum unless the user specifically asks for detailed information. Focus on actionable advice rather than lengthy explanations.`;
 
   // Build conversation history as proper message format
   const messages: Array<{role: 'system' | 'user' | 'assistant', content: string}> = [
