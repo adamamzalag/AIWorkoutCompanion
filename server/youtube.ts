@@ -301,7 +301,7 @@ function getCategoryBonus(title: string, category: string): number {
 // Generate optimized search terms for flexibility/stretching exercises
 function generateFlexibilitySearches(exerciseName: string): string[] {
   return [
-    `intitle:"${exerciseName}" stretch`,
+    `"${exerciseName}" stretch`,
     `${exerciseName} flexibility tutorial`
   ];
 }
@@ -353,7 +353,7 @@ function parseExerciseName(exerciseName: string): { simplifiedName: string; equi
 // Generate optimized search terms for warm-up exercises
 function generateWarmupSearches(exerciseName: string): string[] {
   return [
-    `intitle:"${exerciseName}" warm up`,
+    `"${exerciseName}" warm up`,
     `${exerciseName} warmup exercise tutorial`
   ];
 }
@@ -361,7 +361,7 @@ function generateWarmupSearches(exerciseName: string): string[] {
 // Generate optimized search terms for cardio exercises
 function generateCardioSearches(exerciseName: string): string[] {
   return [
-    `intitle:"${exerciseName}" cardio`,
+    `"${exerciseName}" cardio`,
     `${exerciseName} technique tutorial`
   ];
 }
@@ -392,7 +392,7 @@ function generateStrengthSearches(exerciseName: string): string[] {
   // Three optimized queries: core name first, then fallbacks
   return [
     `${coreExerciseName} tutorial`, // Core name first (most likely to succeed)
-    `intitle:"${exerciseName}" tutorial`, // Exact phrase match
+    `"${exerciseName}" tutorial`, // Exact phrase match
     `${simplifiedName} ${equipment} proper form technique`.trim() // Simplified with equipment
   ];
 }
@@ -403,7 +403,7 @@ function generateGeneralSearches(exerciseName: string): string[] {
   
   return [
     `${coreExerciseName} tutorial`, // Core name first
-    `intitle:"${exerciseName}" tutorial`,
+    `"${exerciseName}" tutorial`,
     `${exerciseName} proper form technique`
   ];
 }
@@ -574,7 +574,8 @@ async function searchVideos(query: string, category: string = 'general'): Promis
   );
 
   // Filter out videos that exceed 5 minutes and sort by final score
-  const validVideos = scoredVideos.filter(v => v.score > 0);
+  // Raised quality threshold to 50 to eliminate poor matches
+  const validVideos = scoredVideos.filter(v => v.score >= 50);
   validVideos.sort((a, b) => b.score - a.score);
   const bestVideo = validVideos[0];
   
