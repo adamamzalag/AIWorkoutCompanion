@@ -138,6 +138,9 @@ function findBestExerciseMatch(exerciseName: string, exercises: any[]) {
       .replace(/\b(stretch|stretching)\b/g, 'stretch') // Standardize stretch
       .replace(/\b(breathing|breath)\b/g, 'breathing') // Standardize breathing
       .replace(/\b(circles?|circle)\b/g, 'circles') // Standardize circles
+      .replace(/\b(air bike|assault bike)\b/g, 'air bike') // Standardize air bike references
+      .replace(/\([^)]*\)/g, '') // Remove parenthetical details like "(40s sprint / 20s easy pedaling)"
+      .replace(/\b(sprint|intervals?|interval training)\b/g, 'sprint intervals') // Normalize interval training
       .replace(/\s+/g, ' ') // Clean up spaces
       .trim();
   };
@@ -185,6 +188,16 @@ function findBestExerciseMatch(exerciseName: string, exercises: any[]) {
     if (isStretchExercise && !targetIsStretch) return 0;
     if (isCardioExercise && !targetIsCardio) return 0;
     if (isArmExercise && !targetIsArm && wordOverlapRatio < 0.5) return 0;
+    
+    // Enhanced scoring for cardio equipment exercises
+    const isCardioEquipmentExercise = normalizedTarget.includes('air bike') || normalizedTarget.includes('treadmill') || normalizedTarget.includes('rowing');
+    const exerciseIsCardioEquipment = exNormalized.includes('air bike') || exNormalized.includes('treadmill') || exNormalized.includes('rowing');
+    
+    // Boost score for cardio equipment matches
+    if (isCardioEquipmentExercise && exerciseIsCardioEquipment) {
+      if (wordOverlapRatio >= 0.6) return 90; // Higher score for equipment matches
+      if (wordOverlapRatio >= 0.4) return 80;
+    }
     
     // Score based on word overlap
     if (wordOverlapRatio >= 0.8) return 85;

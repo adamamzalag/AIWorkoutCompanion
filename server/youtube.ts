@@ -360,9 +360,38 @@ function generateWarmupSearches(exerciseName: string): string[] {
 
 // Generate optimized search terms for cardio exercises
 function generateCardioSearches(exerciseName: string): string[] {
+  const lowerName = exerciseName.toLowerCase();
+  
+  // Equipment-specific searches for better accuracy
+  if (lowerName.includes('treadmill')) {
+    return [
+      `treadmill ${extractCoreExerciseName(exerciseName)} tutorial`,
+      `"${exerciseName}" treadmill workout`,
+      `treadmill running sprint intervals technique`
+    ];
+  }
+  
+  if (lowerName.includes('air bike') || lowerName.includes('assault bike')) {
+    return [
+      `air bike ${extractCoreExerciseName(exerciseName)} tutorial`,
+      `"${exerciseName}" air bike workout`,
+      `assault bike sprint intervals technique`
+    ];
+  }
+  
+  if (lowerName.includes('rowing') || lowerName.includes('row machine')) {
+    return [
+      `rowing machine ${extractCoreExerciseName(exerciseName)} tutorial`,
+      `"${exerciseName}" rowing workout`,
+      `rowing technique tutorial`
+    ];
+  }
+  
+  // Default cardio searches
   return [
-    `"${exerciseName}" cardio`,
-    `${exerciseName} technique tutorial`
+    `"${exerciseName}" cardio tutorial`,
+    `${exerciseName} technique tutorial`,
+    `${extractCoreExerciseName(exerciseName)} cardio workout`
   ];
 }
 
