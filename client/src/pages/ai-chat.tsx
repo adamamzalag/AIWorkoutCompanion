@@ -115,6 +115,11 @@ export default function AIChatPage() {
       }
       // Scroll to bottom after new message
       setTimeout(() => scrollToBottom(), 100);
+      
+      // Refresh chat sessions after a delay to catch title updates from AI generation
+      setTimeout(() => {
+        queryClient.invalidateQueries({ queryKey: ['/api/chat-sessions', (userProfile as any)?.id] });
+      }, 2000);
     },
     onError: () => {
       setIsTyping(false);

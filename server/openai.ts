@@ -489,19 +489,19 @@ Give ONE practical tip related to today's potential workout. Focus on form, tech
 
   try {
     const response = await openai.chat.completions.create({
-      model: "gpt-4-turbo",
+      model: "gpt-4.1-mini",
       messages: [
         {
           role: "system",
-          content: "You are a fitness coach. Give exactly ONE practical tip in 1-2 short sentences only. No explanations."
+          content: "You are a fitness coach. Give exactly ONE practical tip in 1-2 short sentences only. No explanations or motivational speech."
         },
         {
           role: "user",
           content: prompt
         }
       ],
-      max_tokens: 30,
-      temperature: 0.2,
+      max_tokens: 60,
+      temperature: 0.3,
     });
 
     return response.choices[0].message.content || "Focus on controlled movements and proper breathing during your workout today.";
