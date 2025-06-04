@@ -199,8 +199,8 @@ Think through your coaching strategy:
 4. How will each workout complement others in the weekly structure?
 
 Return only valid JSON with this exact structure: {
-  "title": "Plan name",
-  "description": "Plan overview", 
+  "title": "",
+  "description": "", 
   "duration": ${request.duration},
   "totalWorkouts": ${request.workoutsPerWeek * request.duration},
   "difficulty": "${request.fitnessLevel}",
@@ -208,37 +208,23 @@ Return only valid JSON with this exact structure: {
   "weeklyStructure": [
     {
       "week": 1,
-      "focus": "Foundation Building",
-      "intensityLevel": "moderate",
+      "focus": "",
+      "intensityLevel": "",
       "workoutDays": [
         {
           "dayNumber": 1,
-          "goal": "Upper Body Strength",
-          "targetMuscles": ["chest", "shoulders", "triceps"],
-          "workoutType": "strength",
-          "estimatedDuration": ${request.timePerWorkout}
-        },
-        {
-          "dayNumber": 2,
-          "goal": "Lower Body Power",
-          "targetMuscles": ["quadriceps", "glutes", "hamstrings"],
-          "workoutType": "strength",
-          "estimatedDuration": ${request.timePerWorkout}
-        },
-        {
-          "dayNumber": 3,
-          "goal": "Core & Flexibility",
-          "targetMuscles": ["core", "back"],
-          "workoutType": "flexibility",
+          "goal": "",
+          "targetMuscles": [],
+          "workoutType": "",
           "estimatedDuration": ${request.timePerWorkout}
         }
       ]
     }
   ],
   "progressionRules": {
-    "weightProgression": "Increase by 5-10% when completing all sets",
-    "volumeProgression": "Add 1 set after 2 weeks of same weight",
-    "intensityProgression": "Week 1: 60-70%, Week 2: 70-75%, Week 3: 75-80%, Week 4: 70-75%"
+    "weightProgression": "",
+    "volumeProgression": "",
+    "intensityProgression": ""
   }
 }`;
 
@@ -323,42 +309,37 @@ CRITICAL: Return JSON with this EXACT structure:
 {
   "workouts": [
     {
-      "title": "Upper Body Push",
-      "description": "Focus on chest, shoulders, and triceps development",
+      "title": "",
+      "description": "",
       "estimatedDuration": ${timePerWorkout || 45},
       "warmUp": {
-        "durationMinutes": 5,
+        "durationMinutes": 0,
         "activities": [
-          {"exercise": "Arm circles", "durationSeconds": 30},
-          {"exercise": "Light cardio", "durationSeconds": 120}
+          {"exercise": "", "durationSeconds": 0}
         ]
       },
       "cardio": {
-        "durationMinutes": 10,
+        "durationMinutes": 0,
         "activities": [
-          {"exercise": "Jumping jacks", "durationSeconds": 60}
+          {"exercise": "", "durationSeconds": 0}
         ]
       },
       "coolDown": {
-        "durationMinutes": 5,
+        "durationMinutes": 0,
         "activities": [
-          {"exercise": "Chest stretch", "durationSeconds": 60},
-          {"exercise": "Deep breathing", "durationSeconds": 60}
+          {"exercise": "", "durationSeconds": 0}
         ]
       },
       "exercises": [
         {
-          "name": "Push-ups",
-          "sets": 3,
-          "reps": "8-12",
+          "name": "",
+          "sets": 0,
+          "reps": "",
           "weight": null,
-          "restTime": "60 seconds",
-          "instructions": ["Start in plank position", "Lower chest to floor", "Push back up"],
-          "muscleGroups": ["chest", "triceps", "shoulders"],
-          "equipment": ["none"],
-          "tempo": "2-1-2-1",
-          "modifications": ["knee push-ups", "wall push-ups"],
-          "progressions": ["diamond push-ups", "weighted push-ups"]
+          "restTime": "",
+          "instructions": [],
+          "muscleGroups": [],
+          "equipment": []
         }
       ]
     }
