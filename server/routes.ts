@@ -1120,23 +1120,24 @@ export async function registerRoutes(app: Express): Promise<Server> {
         console.log(`✅ Workout created with ID: ${createdWorkout.id}`);
       }
 
-      updateProgress(req.body.userId, operationId, 6, 'processing', 'Finding exercise videos...');
-      
-      // Search for videos for exercises that don't have them (background process)
-      console.log("🎥 Starting background video search for new exercises...");
-      try {
-        await searchVideosForNewExercises(workoutPlan.id);
-      } catch (error) {
-        console.error("Video search failed:", error);
-      }
-      
-      updateProgress(req.body.userId, operationId, 7, 'completed', 'Workout plan generation complete!');
+      updateProgress(req.body.userId, operationId, 6, 'completed', 'Workout plan generation complete!');
       
       // Update progress with final result
       const { completeProgress } = await import("./progress-tracker.js");
       completeProgress(operationId);
       
       console.log("🎉 Workout plan generation completed successfully!");
+      
+      // Trigger automatic video search in background after plan completion
+      console.log("🎥 Triggering automatic video search for new exercises...");
+      setImmediate(async () => {
+        try {
+          await searchVideosForNewExercises(workoutPlan.id);
+          console.log("✅ Background video search completed");
+        } catch (error) {
+          console.error("❌ Background video search failed:", error);
+        }
+      });
       
       // Process continues in background, client will get result via progress tracking
     } catch (error) {
