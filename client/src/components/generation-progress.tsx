@@ -1,7 +1,7 @@
 import { useState, useEffect } from 'react';
 import { useLocation } from 'wouter';
 import { Button } from '@/components/ui/button';
-import { Loader2, CheckCircle, XCircle } from 'lucide-react';
+import { Loader2, CheckCircle, XCircle, MessageCircle } from 'lucide-react';
 
 interface GenerationProgressProps {
   operationId: string;
@@ -101,14 +101,36 @@ export function GenerationProgress({ operationId, onComplete, showViewPlansButto
           </p>
           
           {!error && status !== 'completed' && (
-            <div className="text-center space-y-2">
-              <div className="text-primary font-medium">
-                AI Coach is designing your workout plan...
+            <>
+              <div className="text-center space-y-2">
+                <div className="text-primary font-medium">
+                  AI Coach is designing your workout plan...
+                </div>
+                <div className="text-sm text-muted-foreground">
+                  You will be notified when it's ready!
+                </div>
               </div>
-              <div className="text-sm text-muted-foreground">
-                You will be notified when it's ready!
+              
+              {/* Patience message and AI coach button */}
+              <div className="border-t border-border/20 pt-4 mt-4 text-center space-y-3">
+                <p className="text-sm text-muted-foreground leading-relaxed max-w-sm">
+                  Plan generation can take 3-5 minutes. We appreciate your patience. 
+                  You can check back for completion or speak to the AI coach if you have questions in the meantime.
+                </p>
+                
+                <Button 
+                  variant="outline" 
+                  size="sm"
+                  onClick={() => {
+                    window.open('/ai-chat', '_blank');
+                  }}
+                  className="text-primary border-primary/20 hover:bg-primary/5"
+                >
+                  <MessageCircle className="h-4 w-4 mr-2" />
+                  Chat with AI Coach
+                </Button>
               </div>
-            </div>
+            </>
           )}
           
           {status === 'completed' && showViewPlansButton && (
