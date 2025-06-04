@@ -398,11 +398,11 @@ export async function generateChatTitle(firstMessage: string): Promise<string> {
     const prompt = `Generate a concise, descriptive title for a fitness coaching chat based on this first message: "${firstMessage}"
 
 Rules:
-- Maximum 20 characters
+- Maximum 35 characters
 - Focus on the fitness topic or question
 - Use title case
 - No special characters or punctuation
-- Examples: "Arm Building", "Cardio Tips", "Form Check", "Meal Planning"
+- Examples: "Busy Parent Workout Tips", "Building Massive Biceps", "Form Check Guidance", "Meal Planning Advice"
 
 If the message isn't fitness-related, create a general but concise title.`;
 
