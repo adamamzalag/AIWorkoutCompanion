@@ -192,26 +192,14 @@ STRICT EQUIPMENT CONSTRAINT:
 You MUST design workout patterns that only use equipment from the user's available equipment list.
 Do NOT suggest workout focuses or patterns that require unavailable equipment.
 
-CREATIVITY REQUIREMENTS:
-Design a unique training approach that avoids common cookie-cutter programs.
-Provide a unique, descriptive plan title each time that reflects your specific training philosophy.
-
 Think through your coaching strategy:
 1. What workout split maximizes results for this goal and schedule?
 2. How should training intensity and volume progress over ${request.duration} weeks?
 3. What equipment selection strategy best serves the training goals?
 4. How will each workout complement others in the weekly structure?
 
-REQUIRED JSON STRUCTURE VALIDATION:
-- weeklyStructure MUST be an array with exactly ${request.duration} weeks
-- Each week MUST have workoutDays array with exactly ${request.workoutsPerWeek} workouts
-- Each workoutDay MUST have: dayNumber, goal, targetMuscles, workoutType, estimatedDuration
-- progressionRules MUST have all three fields: weightProgression, volumeProgression, intensityProgression
-- All arrays must contain actual data, not empty brackets
-
-Return only valid JSON with this exact structure:
-{
-  "title": "Unique descriptive plan name",
+Return only valid JSON with this exact structure: {
+  "title": "Plan name",
   "description": "Plan overview", 
   "duration": ${request.duration},
   "totalWorkouts": ${request.workoutsPerWeek * request.duration},
@@ -220,23 +208,37 @@ Return only valid JSON with this exact structure:
   "weeklyStructure": [
     {
       "week": 1,
-      "focus": "Your chosen focus",
-      "intensityLevel": "Your intensity level",
+      "focus": "Foundation Building",
+      "intensityLevel": "moderate",
       "workoutDays": [
         {
           "dayNumber": 1,
-          "goal": "Your workout goal",
-          "targetMuscles": ["muscle1", "muscle2"],
-          "workoutType": "strength|cardio|flexibility|hybrid",
+          "goal": "Upper Body Strength",
+          "targetMuscles": ["chest", "shoulders", "triceps"],
+          "workoutType": "strength",
+          "estimatedDuration": ${request.timePerWorkout}
+        },
+        {
+          "dayNumber": 2,
+          "goal": "Lower Body Power",
+          "targetMuscles": ["quadriceps", "glutes", "hamstrings"],
+          "workoutType": "strength",
+          "estimatedDuration": ${request.timePerWorkout}
+        },
+        {
+          "dayNumber": 3,
+          "goal": "Core & Flexibility",
+          "targetMuscles": ["core", "back"],
+          "workoutType": "flexibility",
           "estimatedDuration": ${request.timePerWorkout}
         }
       ]
     }
   ],
   "progressionRules": {
-    "weightProgression": "Your progression strategy",
-    "volumeProgression": "Your volume strategy", 
-    "intensityProgression": "Your intensity strategy"
+    "weightProgression": "Increase by 5-10% when completing all sets",
+    "volumeProgression": "Add 1 set after 2 weeks of same weight",
+    "intensityProgression": "Week 1: 60-70%, Week 2: 70-75%, Week 3: 75-80%, Week 4: 70-75%"
   }
 }`;
 
@@ -249,11 +251,7 @@ Return only valid JSON with this exact structure:
       { role: "user", content: prompt }
     ],
     response_format: { type: "json_object" },
-    temperature: 0.6,
-    top_p: 0.85,
-    presence_penalty: 0.4,
-    seed: Date.now() + Math.floor(Math.random() * 10000),
-    max_tokens: 2000,
+    temperature: 0.5,
   });
 
   return await parseJSONWithRetry(response.choices[0].message.content || "{}", async () => {
@@ -264,11 +262,7 @@ Return only valid JSON with this exact structure:
         { role: "user", content: prompt }
       ],
       response_format: { type: "json_object" },
-      temperature: 0.6,
-      top_p: 0.85,
-      presence_penalty: 0.4,
-      seed: Date.now() + Math.floor(Math.random() * 10000),
-      max_tokens: 2000,
+      temperature: 0.5,
     });
   });
 }
@@ -314,59 +308,53 @@ Do NOT use any equipment not explicitly available to the user.
 You do not need to use ALL available equipment - select the most appropriate equipment for each exercise from what's available.
 If an exercise typically requires unavailable equipment, substitute with alternatives using only the available equipment or bodyweight movements.
 
-CREATIVITY REQUIREMENTS:
-Design unique workout approaches that avoid generic templates while meeting the week's focus.
-Be creative with workout titles and descriptions that reflect your specific training philosophy.
-
 IMPORTANT REQUIREMENTS:
 1. Within each individual workout: No exercise should appear more than once across warmUp, main exercises, and coolDown sections
 2. Each workout should have unique exercises in its warmUp and coolDown (no repeats within that single workout)
 3. Different workouts in the plan CAN share the same exercises - this constraint only applies within each individual workout
 
-REQUIRED JSON STRUCTURE VALIDATION:
-- workouts MUST be an array with exactly ${currentWeek.workoutDays.length} workouts
-- Each workout MUST have: title, description, estimatedDuration, warmUp, cardio, coolDown, exercises
-- warmUp, cardio, coolDown MUST each have durationMinutes and activities array
-- exercises MUST be an array with actual exercise objects
-- Each exercise MUST have: name, sets, reps, weight, restTime, instructions, muscleGroups, equipment
-
 Design ${currentWeek.workoutDays.length} intelligent workouts for ${timePerWorkout || 45} minutes each that maximize training effectiveness within the time constraints.
 
-Return JSON with this exact structure:
+CRITICAL: Return JSON with this EXACT structure:
 {
   "workouts": [
     {
-      "title": "Descriptive workout name",
-      "description": "Specific focus description",
+      "title": "Upper Body Push",
+      "description": "Focus on chest, shoulders, and triceps development",
       "estimatedDuration": ${timePerWorkout || 45},
       "warmUp": {
         "durationMinutes": 5,
         "activities": [
-          {"exercise": "warm-up activity", "durationSeconds": 30}
+          {"exercise": "Arm circles", "durationSeconds": 30},
+          {"exercise": "Light cardio", "durationSeconds": 120}
         ]
       },
       "cardio": {
         "durationMinutes": 10,
         "activities": [
-          {"exercise": "cardio activity", "durationSeconds": 60}
+          {"exercise": "Jumping jacks", "durationSeconds": 60}
         ]
       },
       "coolDown": {
         "durationMinutes": 5,
         "activities": [
-          {"exercise": "cool-down activity", "durationSeconds": 60}
+          {"exercise": "Chest stretch", "durationSeconds": 60},
+          {"exercise": "Deep breathing", "durationSeconds": 60}
         ]
       },
       "exercises": [
         {
-          "name": "Exercise name",
+          "name": "Push-ups",
           "sets": 3,
           "reps": "8-12",
-          "weight": "moderate|null",
+          "weight": null,
           "restTime": "60 seconds",
-          "instructions": ["instruction1", "instruction2"],
-          "muscleGroups": ["muscle1", "muscle2"],
-          "equipment": ["equipment1"]
+          "instructions": ["Start in plank position", "Lower chest to floor", "Push back up"],
+          "muscleGroups": ["chest", "triceps", "shoulders"],
+          "equipment": ["none"],
+          "tempo": "2-1-2-1",
+          "modifications": ["knee push-ups", "wall push-ups"],
+          "progressions": ["diamond push-ups", "weighted push-ups"]
         }
       ]
     }
@@ -386,11 +374,7 @@ Use null for weight on bodyweight exercises, specific weights for loaded exercis
       { role: "user", content: prompt }
     ],
     response_format: { type: "json_object" },
-    temperature: 0.6,
-    top_p: 0.85,
-    presence_penalty: 0.4,
-    seed: Date.now() + Math.floor(Math.random() * 10000),
-    max_tokens: 3000,
+    temperature: 0.5,
   });
 
   const result = await parseJSONWithRetry(response.choices[0].message.content || "{}", async () => {
@@ -401,11 +385,7 @@ Use null for weight on bodyweight exercises, specific weights for loaded exercis
         { role: "user", content: prompt }
       ],
       response_format: { type: "json_object" },
-      temperature: 0.6,
-      top_p: 0.85,
-      presence_penalty: 0.4,
-      seed: Date.now() + Math.floor(Math.random() * 10000),
-      max_tokens: 3000,
+      temperature: 0.5,
     });
   });
   return result.workouts || [];
