@@ -56,26 +56,46 @@ export function useWorkout(workoutId: number, userId: number) {
     startSessionMutation.mutate();
   }, [startSessionMutation]);
 
-  const completeSet = useCallback((exerciseIndex: number, setIndex: number, setData: { reps: number; weight?: number; duration?: number }) => {
+  const completeSet = useCallback((exerciseIndex: number, setIndex: number, setData: { reps: number; weight?: number; duration?: number; actualReps?: number; actualWeight?: number; actualDuration?: number }) => {
+    const completionTime = new Date();
+    
     setExercises(prev => {
       const updated = [...prev];
       if (updated[exerciseIndex]?.sets[setIndex]) {
+        const currentSet = updated[exerciseIndex].sets[setIndex];
         updated[exerciseIndex].sets[setIndex] = {
-          ...updated[exerciseIndex].sets[setIndex],
-          ...setData,
-          completed: true
+          ...currentSet,
+          // Update planned values if provided
+          ...(setData.reps !== undefined && { reps: setData.reps }),
+          ...(setData.weight !== undefined && { weight: setData.weight }),
+          ...(setData.duration !== undefined && { duration: setData.duration }),
+          // Track actual performance
+          actualReps: setData.actualReps ?? setData.reps,
+          actualWeight: setData.actualWeight ?? setData.weight,
+          actualDuration: setData.actualDuration ?? setData.duration,
+          completed: true,
+          completedAt: completionTime
         };
       }
       return updated;
     });
 
-    // Auto-save progress
+    // Auto-save progress with enhanced data
     const updatedExercises = [...exercises];
     if (updatedExercises[exerciseIndex]?.sets[setIndex]) {
+      const currentSet = updatedExercises[exerciseIndex].sets[setIndex];
       updatedExercises[exerciseIndex].sets[setIndex] = {
-        ...updatedExercises[exerciseIndex].sets[setIndex],
-        ...setData,
-        completed: true
+        ...currentSet,
+        // Update planned values if provided
+        ...(setData.reps !== undefined && { reps: setData.reps }),
+        ...(setData.weight !== undefined && { weight: setData.weight }),
+        ...(setData.duration !== undefined && { duration: setData.duration }),
+        // Track actual performance
+        actualReps: setData.actualReps ?? setData.reps,
+        actualWeight: setData.actualWeight ?? setData.weight,
+        actualDuration: setData.actualDuration ?? setData.duration,
+        completed: true,
+        completedAt: completionTime
       };
       
       updateSessionMutation.mutate({ exercises: updatedExercises });
@@ -93,6 +113,22 @@ export function useWorkout(workoutId: number, userId: number) {
       setCurrentExerciseIndex(prev => prev - 1);
     }
   }, [currentExerciseIndex]);
+
+  const completeExercise = useCallback((exerciseIndex: number, skipped: boolean = false) => {
+    const completionTime = new Date();
+    
+    setExercises(prev => {
+      const updated = [...prev];
+      if (updated[exerciseIndex]) {
+        updated[exerciseIndex] = {
+          ...updated[exerciseIndex],
+          completedAt: completionTime,
+          skipped
+        };
+      }
+      return updated;
+    });
+  }, []);
 
   const completeWorkout = useCallback(() => {
     if (startTime) {
@@ -136,6 +172,7 @@ export function useWorkout(workoutId: number, userId: number) {
     // Actions
     startWorkout,
     completeSet,
+    completeExercise,
     nextExercise,
     previousExercise,
     completeWorkout,

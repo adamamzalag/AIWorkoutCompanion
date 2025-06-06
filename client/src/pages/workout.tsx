@@ -165,7 +165,7 @@ export default function WorkoutPage() {
     currentExerciseIndex 
   });
 
-  const handleCompleteSet = (setData: { reps: number; weight?: number; duration?: number }) => {
+  const handleCompleteSet = (setData: { reps: number; weight?: number; duration?: number; actualReps?: number; actualWeight?: number; actualDuration?: number }) => {
     if (currentExercise) {
       // Find the next incomplete set
       const currentExerciseLog = exerciseLogs[currentExerciseIndex];

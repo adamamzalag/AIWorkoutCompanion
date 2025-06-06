@@ -34,8 +34,18 @@ export function ExerciseCard({
   coachingTip,
   isLoading = false
 }: ExerciseCardProps) {
-  const [reps, setReps] = useState(12);
-  const [weight, setWeight] = useState(15);
+  // Initialize with planned values or user preferences from localStorage
+  const getStoredValue = (key: string, defaultValue: number) => {
+    const stored = localStorage.getItem(`workout_${key}`);
+    return stored ? parseInt(stored) : defaultValue;
+  };
+
+  const [reps, setReps] = useState(() => 
+    exerciseLog?.sets[currentSetIndex]?.reps || getStoredValue('reps', 12)
+  );
+  const [weight, setWeight] = useState(() => 
+    exerciseLog?.sets[currentSetIndex]?.weight || getStoredValue('weight', 15)
+  );
   const [duration, setDuration] = useState(30);
   const [showTutorial, setShowTutorial] = useState(false);
   
@@ -116,11 +126,29 @@ export function ExerciseCard({
 
   const handleCompleteSet = () => {
     if (isTimeBased) {
-      onCompleteSet({ reps: 0, duration });
+      // For time-based exercises, track actual duration vs planned
+      const actualDuration = exerciseLog?.duration ? (exerciseLog.duration - timeRemaining) : duration;
+      onCompleteSet({ 
+        reps: 0, 
+        duration: exerciseLog?.duration || duration,
+        actualDuration 
+      });
     } else {
+      // For rep-based exercises, allow tracking actual vs planned values
+      const plannedReps = currentSet?.reps || reps;
+      const plannedWeight = currentSet?.weight || weight;
+      
+      // Save user preferences to localStorage
+      localStorage.setItem('workout_reps', reps.toString());
+      if (exercise.equipment && !exercise.equipment.includes('none')) {
+        localStorage.setItem('workout_weight', weight.toString());
+      }
+      
       onCompleteSet({
-        reps,
-        weight: exercise.equipment && !exercise.equipment.includes('none') ? weight : undefined
+        reps: plannedReps,
+        weight: exercise.equipment && !exercise.equipment.includes('none') ? plannedWeight : undefined,
+        actualReps: reps, // User's input becomes actual
+        actualWeight: exercise.equipment && !exercise.equipment.includes('none') ? weight : undefined
       });
     }
   };
@@ -237,8 +265,24 @@ export function ExerciseCard({
               <>
                 <div className="text-4xl font-bold text-primary mb-2">{currentSet?.reps || reps}</div>
                 <div className="text-muted-foreground mb-2">reps</div>
-                <div className="text-sm">
+                <div className="text-sm mb-3">
                   <span className="text-accent font-medium">Set {currentSetIndex + 1}</span> of {totalSets}
+                </div>
+                
+                {/* Set Progress Indicators */}
+                <div className="flex justify-center space-x-2 mb-2">
+                  {exerciseLog?.sets.map((set, index) => (
+                    <div
+                      key={index}
+                      className={`w-3 h-3 rounded-full border-2 transition-colors ${
+                        set.completed
+                          ? 'bg-accent border-accent'
+                          : index === currentSetIndex
+                          ? 'border-accent bg-accent/20'
+                          : 'border-muted bg-transparent'
+                      }`}
+                    />
+                  ))}
                 </div>
               </>
             )}
