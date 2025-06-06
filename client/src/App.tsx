@@ -159,7 +159,7 @@ function App() {
             {!isAIChatPage && !isWorkoutPage && <TopNavigation />}
             <Toaster />
             <Router />
-            <BottomNavigation />
+            {!isWorkoutPage && <BottomNavigation />}
           </div>
         </OnboardingCheck>
       </TooltipProvider>
