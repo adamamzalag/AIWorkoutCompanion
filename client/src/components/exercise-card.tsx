@@ -74,42 +74,75 @@ export function ExerciseCard({
   
   // Dynamic measurement type detection based on exercise data structure
   const getMeasurementType = () => {
-    // Check if exercise has duration specified (time-based)
-    if (exerciseLog?.duration && exerciseLog.duration > 0) {
-      return 'time';
-    }
+    const exerciseName = exercise.name.toLowerCase();
     
-    // Check exercise name for interval patterns
-    if (exercise.name.toLowerCase().includes('interval') || 
+    // First check exercise name patterns (most reliable)
+    
+    // Check for interval patterns
+    if (exerciseName.includes('interval') || 
         exercise.name.includes('/') || 
-        exercise.name.includes('sprint') ||
-        exercise.name.includes('work') ||
-        exercise.name.includes('rest')) {
+        exerciseName.includes('sprint') ||
+        exerciseName.includes('work') ||
+        exerciseName.includes('rest')) {
       return 'interval';
     }
     
-    // Check for hold-based exercises (stretches)
-    if (exercise.name.toLowerCase().includes('stretch') ||
-        exercise.name.toLowerCase().includes('pose') ||
-        exercise.name.toLowerCase().includes('breathing') ||
-        exercise.name.toLowerCase().includes('hold')) {
+    // Check for hold-based exercises (stretches, poses)
+    if (exerciseName.includes('stretch') ||
+        exerciseName.includes('pose') ||
+        exerciseName.includes('breathing') ||
+        exerciseName.includes('hold')) {
       return 'hold';
     }
     
-    // Check for rep-based exercises
+    // Check for clearly rep-based exercises regardless of duration
+    if (exerciseName.includes('squats') ||
+        exerciseName.includes('lunges') ||
+        exerciseName.includes('push') ||
+        exerciseName.includes('pull') ||
+        exerciseName.includes('rows') ||
+        exerciseName.includes('press') ||
+        exerciseName.includes('deadlift') ||
+        exerciseName.includes('twists') ||
+        exerciseName.includes('hinges') ||
+        exerciseName.includes('circles') ||
+        exerciseName.includes('swings') ||
+        exerciseName.includes('burpees') ||
+        exerciseName.includes('jumps') ||
+        exerciseName.includes('jumping') ||
+        exerciseName.includes('rolls') ||
+        exerciseName.includes('raises') ||
+        exerciseName.includes('curls') ||
+        exerciseName.includes('kicks')) {
+      return 'reps';
+    }
+    
+    // Check for clearly time-based exercises
+    if (exerciseName.includes('walk') || 
+        exerciseName.includes('jog') || 
+        exerciseName.includes('bike') ||
+        exerciseName.includes('run') ||
+        exerciseName.includes('pace') ||
+        exerciseName.includes('treadmill')) {
+      return 'time';
+    }
+    
+    // Check if main exercise has rep data
     if (currentSet?.reps && currentSet.reps > 0) {
       return 'reps';
     }
     
-    // Default fallback based on exercise category
-    if (isCardio || isWarmup) {
-      return exercise.name.toLowerCase().includes('walk') || 
-             exercise.name.toLowerCase().includes('jog') || 
-             exercise.name.toLowerCase().includes('bike') ? 'time' : 'reps';
+    // Category-based fallbacks
+    if (isCardio) {
+      return 'time';
     }
     
     if (isCooldown) {
       return 'hold';
+    }
+    
+    if (isWarmup) {
+      return 'reps'; // Most warmup exercises are rep-based
     }
     
     return 'reps'; // Default for main exercises
