@@ -40,6 +40,7 @@ export default function WorkoutPage() {
     completeSet,
     nextExercise,
     previousExercise,
+    goToExercise,
     completeWorkout,
     getCoachingTip,
     isStarting,
@@ -337,20 +338,26 @@ export default function WorkoutPage() {
         />
       </div>
 
-      {/* Progress Indicator - moved to main content area */}
+      {/* Progress Indicator - clickable for direct navigation */}
       <div className="px-4 pb-20">
         <div className="flex justify-center space-x-2">
-          {exerciseLogs.map((_, index) => (
-            <div
+          {exerciseLogs.map((exercise, index) => (
+            <button
               key={index}
-              className={`w-2 h-2 rounded-full transition-all duration-300 ${
-                index === currentExerciseIndex
-                  ? 'bg-primary w-6'
-                  : index < currentExerciseIndex
-                  ? 'bg-accent'
-                  : 'bg-muted'
-              }`}
-            />
+              onClick={() => goToExercise(index)}
+              className={`relative p-2 touch-target cursor-pointer group`}
+              title={`Go to ${exercise.name}`}
+            >
+              <div
+                className={`w-2 h-2 rounded-full transition-all duration-300 group-hover:scale-150 ${
+                  index === currentExerciseIndex
+                    ? 'bg-primary w-6'
+                    : index < currentExerciseIndex
+                    ? 'bg-accent'
+                    : 'bg-muted group-hover:bg-muted-foreground'
+                }`}
+              />
+            </button>
           ))}
         </div>
       </div>

@@ -114,6 +114,12 @@ export function useWorkout(workoutId: number, userId: number) {
     }
   }, [currentExerciseIndex]);
 
+  const goToExercise = useCallback((index: number) => {
+    if (index >= 0 && index < exercises.length) {
+      setCurrentExerciseIndex(index);
+    }
+  }, [exercises.length]);
+
   const completeExercise = useCallback((exerciseIndex: number, skipped: boolean = false) => {
     const completionTime = new Date();
     
@@ -175,6 +181,7 @@ export function useWorkout(workoutId: number, userId: number) {
     completeExercise,
     nextExercise,
     previousExercise,
+    goToExercise,
     completeWorkout,
     getCoachingTip,
     
