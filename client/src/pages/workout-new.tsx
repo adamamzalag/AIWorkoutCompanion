@@ -176,9 +176,16 @@ export default function WorkoutNewPage() {
   const getCurrentPhase = () => {
     if (!workout || !currentExercise) return { phase: 'LOADING', position: '0 of 0' };
     
-    const warmUpCount = workout.warmUp ? JSON.parse(workout.warmUp as string).activities?.length || 0 : 0;
-    const mainCount = workout.exercises ? JSON.parse(workout.exercises as string).length || 0 : 0;
-    const cardioCount = workout.cardio ? JSON.parse(workout.cardio as string).activities?.length || 0 : 0;
+    const warmUpData = workout.warmUp ? 
+      (typeof workout.warmUp === 'string' ? JSON.parse(workout.warmUp) : workout.warmUp) : {};
+    const mainData = workout.exercises ? 
+      (typeof workout.exercises === 'string' ? JSON.parse(workout.exercises) : workout.exercises) : [];
+    const cardioData = workout.cardio ? 
+      (typeof workout.cardio === 'string' ? JSON.parse(workout.cardio) : workout.cardio) : {};
+    
+    const warmUpCount = warmUpData.activities?.length || 0;
+    const mainCount = mainData.length || 0;
+    const cardioCount = cardioData.activities?.length || 0;
     
     if (currentExerciseIndex < warmUpCount) {
       return { phase: 'WARMUP', position: `${currentExerciseIndex + 1} of ${warmUpCount}` };
