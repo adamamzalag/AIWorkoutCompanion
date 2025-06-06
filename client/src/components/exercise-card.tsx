@@ -71,7 +71,52 @@ export function ExerciseCard({
   const isWarmup = exerciseLog?.isWarmup;
   const isCooldown = exerciseLog?.isCooldown;
   const isCardio = exerciseLog?.isCardio;
-  const isTimeBased = isWarmup || isCooldown || isCardio;
+  
+  // Dynamic measurement type detection based on exercise data structure
+  const getMeasurementType = () => {
+    // Check if exercise has duration specified (time-based)
+    if (exerciseLog?.duration && exerciseLog.duration > 0) {
+      return 'time';
+    }
+    
+    // Check exercise name for interval patterns
+    if (exercise.name.toLowerCase().includes('interval') || 
+        exercise.name.includes('/') || 
+        exercise.name.includes('sprint') ||
+        exercise.name.includes('work') ||
+        exercise.name.includes('rest')) {
+      return 'interval';
+    }
+    
+    // Check for hold-based exercises (stretches)
+    if (exercise.name.toLowerCase().includes('stretch') ||
+        exercise.name.toLowerCase().includes('pose') ||
+        exercise.name.toLowerCase().includes('breathing') ||
+        exercise.name.toLowerCase().includes('hold')) {
+      return 'hold';
+    }
+    
+    // Check for rep-based exercises
+    if (currentSet?.reps && currentSet.reps > 0) {
+      return 'reps';
+    }
+    
+    // Default fallback based on exercise category
+    if (isCardio || isWarmup) {
+      return exercise.name.toLowerCase().includes('walk') || 
+             exercise.name.toLowerCase().includes('jog') || 
+             exercise.name.toLowerCase().includes('bike') ? 'time' : 'reps';
+    }
+    
+    if (isCooldown) {
+      return 'hold';
+    }
+    
+    return 'reps'; // Default for main exercises
+  };
+  
+  const measurementType = getMeasurementType();
+  const isTimeBased = measurementType === 'time' || measurementType === 'hold' || measurementType === 'interval';
   
   // Initialize timer when exercise changes
   useEffect(() => {
@@ -81,6 +126,22 @@ export function ExerciseCard({
       setHasTimerStarted(false);
     }
   }, [isTimeBased, exerciseLog?.duration]);
+
+  // Get appropriate duration for different measurement types
+  const getExerciseDuration = () => {
+    if (exerciseLog?.duration) return exerciseLog.duration;
+    
+    switch (measurementType) {
+      case 'hold':
+        return 30; // Default 30 seconds for stretches
+      case 'time':
+        return 60; // Default 60 seconds for time-based
+      case 'interval':
+        return 120; // Default 2 minutes for intervals
+      default:
+        return 60;
+    }
+  };
 
   // Timer countdown logic
   useEffect(() => {
@@ -140,7 +201,8 @@ export function ExerciseCard({
   };
 
   const resetTimer = () => {
-    setTimeRemaining(exerciseLog?.duration || 30);
+    const duration = getExerciseDuration();
+    setTimeRemaining(duration);
     setIsTimerRunning(false);
     setHasTimerStarted(false);
   };
@@ -193,10 +255,12 @@ export function ExerciseCard({
   const handleCompleteSet = () => {
     if (isTimeBased) {
       // For time-based exercises, track actual duration vs planned
-      const actualDuration = exerciseLog?.duration ? (exerciseLog.duration - timeRemaining) : duration;
+      const plannedDuration = getExerciseDuration();
+      const actualDuration = plannedDuration - timeRemaining;
+      
       onCompleteSet({ 
         reps: 0, 
-        duration: exerciseLog?.duration || duration,
+        duration: plannedDuration,
         actualDuration 
       });
     } else {
@@ -285,7 +349,8 @@ export function ExerciseCard({
                         {formatTime(timeRemaining)}
                       </div>
                       <div className="text-xs text-muted-foreground mt-1">
-                        seconds
+                        {measurementType === 'hold' ? 'hold' : 
+                         measurementType === 'interval' ? 'interval' : 'seconds'}
                       </div>
                     </div>
                   </div>
@@ -300,7 +365,8 @@ export function ExerciseCard({
                       className="glass-effect bg-accent hover:bg-accent/90 text-white"
                     >
                       <Play size={16} className="mr-1" />
-                      Start Timer
+                      {measurementType === 'hold' ? 'Start Hold' : 
+                       measurementType === 'interval' ? 'Start Interval' : 'Start Timer'}
                     </Button>
                   ) : (
                     <>
@@ -509,7 +575,13 @@ export function ExerciseCard({
           className="w-full glass-effect bg-gradient-to-r from-accent to-primary hover:from-accent/90 hover:to-primary/90 text-white py-4 touch-target font-medium border-0"
           disabled={isLoading || showRestTimer}
         >
-          {isLoading ? 'Completing...' : isTimeBased ? 'Complete Exercise' : showRestTimer ? 'Rest in Progress...' : 'Complete Set'}
+          {isLoading ? 'Completing...' : 
+           showRestTimer ? 'Rest in Progress...' :
+           isTimeBased ? (
+             measurementType === 'hold' ? 'Complete Hold' :
+             measurementType === 'interval' ? 'Complete Interval' :
+             'Complete Exercise'
+           ) : 'Complete Set'}
         </Button>
 
         {/* Get Coaching Tip Button */}
