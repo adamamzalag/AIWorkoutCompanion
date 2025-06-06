@@ -72,84 +72,28 @@ export function ExerciseCard({
   const isCooldown = exerciseLog?.isCooldown;
   const isCardio = exerciseLog?.isCardio;
   
-  // Dynamic measurement type detection based on exercise data structure
+  // OpenAI data structure-based measurement type detection
   const getMeasurementType = () => {
-    const exerciseName = exercise.name.toLowerCase();
-    
-    // First check exercise name patterns (most reliable)
-    
-    // Check for interval patterns
-    if (exerciseName.includes('interval') || 
-        exercise.name.includes('/') || 
-        exerciseName.includes('sprint') ||
-        exerciseName.includes('work') ||
-        exerciseName.includes('rest')) {
-      return 'interval';
-    }
-    
-    // Check for hold-based exercises (stretches, poses)
-    if (exerciseName.includes('stretch') ||
-        exerciseName.includes('pose') ||
-        exerciseName.includes('breathing') ||
-        exerciseName.includes('hold')) {
-      return 'hold';
-    }
-    
-    // Check for clearly rep-based exercises regardless of duration
-    if (exerciseName.includes('squats') ||
-        exerciseName.includes('lunges') ||
-        exerciseName.includes('push') ||
-        exerciseName.includes('pull') ||
-        exerciseName.includes('rows') ||
-        exerciseName.includes('press') ||
-        exerciseName.includes('deadlift') ||
-        exerciseName.includes('twists') ||
-        exerciseName.includes('hinges') ||
-        exerciseName.includes('circles') ||
-        exerciseName.includes('swings') ||
-        exerciseName.includes('burpees') ||
-        exerciseName.includes('jumps') ||
-        exerciseName.includes('jumping') ||
-        exerciseName.includes('rolls') ||
-        exerciseName.includes('raises') ||
-        exerciseName.includes('curls') ||
-        exerciseName.includes('kicks')) {
-      return 'reps';
-    }
-    
-    // Check for clearly time-based exercises
-    if (exerciseName.includes('walk') || 
-        exerciseName.includes('jog') || 
-        exerciseName.includes('bike') ||
-        exerciseName.includes('run') ||
-        exerciseName.includes('pace') ||
-        exerciseName.includes('treadmill')) {
+    // Check if exercise has duration from OpenAI (warmup/cardio/cooldown)
+    if (exerciseLog?.duration && exerciseLog.duration > 0) {
       return 'time';
     }
     
-    // Check if main exercise has rep data (but exclude time-based exercises with reps: 0)
+    // Check if exercise has rep data from OpenAI (main exercises)
     if (currentSet?.reps && currentSet.reps > 0) {
       return 'reps';
     }
     
-    // Category-based fallbacks
-    if (isCardio) {
-      return 'time';
+    // Check for hybrid exercises (both duration and reps)
+    if (exerciseLog?.duration && currentSet?.reps && currentSet.reps > 0) {
+      return 'hybrid';
     }
     
-    if (isCooldown) {
-      return 'hold';
-    }
-    
-    if (isWarmup) {
-      return 'reps'; // Most warmup exercises are rep-based
-    }
-    
-    return 'reps'; // Default for main exercises
+    return 'reps'; // Default fallback
   };
   
   const measurementType = getMeasurementType();
-  const isTimeBased = measurementType === 'time' || measurementType === 'hold' || measurementType === 'interval';
+  const isTimeBased = measurementType === 'time' || measurementType === 'hybrid';
   
   // Initialize timer when exercise changes
   useEffect(() => {
@@ -165,12 +109,10 @@ export function ExerciseCard({
     if (exerciseLog?.duration) return exerciseLog.duration;
     
     switch (measurementType) {
-      case 'hold':
-        return 30; // Default 30 seconds for stretches
       case 'time':
         return 60; // Default 60 seconds for time-based
-      case 'interval':
-        return 120; // Default 2 minutes for intervals
+      case 'hybrid':
+        return exerciseLog?.duration || 60; // Use provided duration or default
       default:
         return 60;
     }
@@ -382,8 +324,7 @@ export function ExerciseCard({
                         {formatTime(timeRemaining)}
                       </div>
                       <div className="text-xs text-muted-foreground mt-1">
-                        {measurementType === 'hold' ? 'hold' : 
-                         measurementType === 'interval' ? 'interval' : 'seconds'}
+                        seconds
                       </div>
                     </div>
                   </div>
