@@ -73,9 +73,13 @@ export default function WorkoutNewPage() {
 
   const [showCoachingTip, setShowCoachingTip] = useState(false);
 
-  const handleGetCoachingTip = async () => {
+  const handleGetCoachingTip = () => {
     if (!isGettingTip && currentExerciseData) {
-      await getCoachingTip(currentExerciseData.name);
+      const currentExerciseLog = exerciseLogs[currentExerciseIndex];
+      getCoachingTip(currentExerciseData.name, {
+        sets: currentExerciseLog?.sets || [],
+        exerciseType: currentExercise.isWarmup ? 'warmup' : currentExercise.isCooldown ? 'cooldown' : 'main'
+      });
       setShowCoachingTip(true);
     }
   };
@@ -397,11 +401,11 @@ export default function WorkoutNewPage() {
                 <Button
                   variant="outline"
                   size="sm"
-                  onClick={() => getCoachingTip(currentExerciseData.name, {})}
+                  onClick={handleGetCoachingTip}
                   disabled={isGettingTip}
                 >
                   <MessageCircle size={16} className="mr-1" />
-                  Tip
+                  {isGettingTip ? 'Loading...' : 'Tip'}
                 </Button>
                 <Button
                   variant="outline"
@@ -422,6 +426,31 @@ export default function WorkoutNewPage() {
               </div>
             </CardContent>
           </Card>
+
+          {/* Coaching Tip Display */}
+          {coachingTip && showCoachingTip && (
+            <Card className="glass-effect border-primary/20 bg-primary/5">
+              <CardContent className="p-4">
+                <div className="flex items-start space-x-3">
+                  <div className="flex-shrink-0 mt-0.5">
+                    <MessageCircle size={20} className="text-primary" />
+                  </div>
+                  <div className="flex-1">
+                    <h4 className="font-medium text-primary mb-2">AI Coach Tip</h4>
+                    <p className="text-sm text-foreground">{coachingTip}</p>
+                  </div>
+                  <Button
+                    variant="ghost"
+                    size="sm"
+                    onClick={() => setShowCoachingTip(false)}
+                    className="flex-shrink-0"
+                  >
+                    <X size={16} />
+                  </Button>
+                </div>
+              </CardContent>
+            </Card>
+          )}
 
           {/* Collapsible Instruction Panel */}
           <Collapsible open={instructionsOpen} onOpenChange={setInstructionsOpen}>
