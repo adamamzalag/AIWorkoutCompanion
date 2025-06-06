@@ -74,6 +74,11 @@ export function ExerciseCard({
   
   // OpenAI data structure-based measurement type detection
   const getMeasurementType = () => {
+    // Check for hybrid exercises first (both duration and reps)
+    if (exerciseLog?.duration && exerciseLog.duration > 0 && currentSet?.reps && currentSet.reps > 0) {
+      return 'hybrid';
+    }
+    
     // Check if exercise has duration from OpenAI (warmup/cardio/cooldown)
     if (exerciseLog?.duration && exerciseLog.duration > 0) {
       return 'time';
@@ -82,11 +87,6 @@ export function ExerciseCard({
     // Check if exercise has rep data from OpenAI (main exercises)
     if (currentSet?.reps && currentSet.reps > 0) {
       return 'reps';
-    }
-    
-    // Check for hybrid exercises (both duration and reps)
-    if (exerciseLog?.duration && currentSet?.reps && currentSet.reps > 0) {
-      return 'hybrid';
     }
     
     return 'reps'; // Default fallback
