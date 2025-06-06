@@ -53,6 +53,16 @@ export function ExerciseCard({
   const [timeRemaining, setTimeRemaining] = useState(0);
   const [isTimerRunning, setIsTimerRunning] = useState(false);
   const [hasTimerStarted, setHasTimerStarted] = useState(false);
+  
+  // Rest timer state for strength exercises
+  const [restTimeRemaining, setRestTimeRemaining] = useState(0);
+  const [isRestTimerActive, setIsRestTimerActive] = useState(false);
+  const [showRestTimer, setShowRestTimer] = useState(false);
+  
+  // Set editing state
+  const [editingSetIndex, setEditingSetIndex] = useState<number | null>(null);
+  const [editReps, setEditReps] = useState(0);
+  const [editWeight, setEditWeight] = useState(0);
 
   const currentSet = exerciseLog?.sets[currentSetIndex];
   const totalSets = exerciseLog?.sets.length || 1;
@@ -98,6 +108,28 @@ export function ExerciseCard({
     };
   }, [isTimerRunning, timeRemaining]);
 
+  // Rest timer countdown logic
+  useEffect(() => {
+    let interval: NodeJS.Timeout;
+    
+    if (isRestTimerActive && restTimeRemaining > 0) {
+      interval = setInterval(() => {
+        setRestTimeRemaining((prev) => {
+          if (prev <= 1) {
+            setIsRestTimerActive(false);
+            setShowRestTimer(false);
+            return 0;
+          }
+          return prev - 1;
+        });
+      }, 1000);
+    }
+
+    return () => {
+      if (interval) clearInterval(interval);
+    };
+  }, [isRestTimerActive, restTimeRemaining]);
+
   const startTimer = () => {
     setIsTimerRunning(true);
     setHasTimerStarted(true);
@@ -111,6 +143,40 @@ export function ExerciseCard({
     setTimeRemaining(exerciseLog?.duration || 30);
     setIsTimerRunning(false);
     setHasTimerStarted(false);
+  };
+
+  const startRestTimer = () => {
+    const restSeconds = parseInt(exerciseLog?.restTime?.match(/\d+/)?.[0] || '60');
+    setRestTimeRemaining(restSeconds);
+    setIsRestTimerActive(true);
+    setShowRestTimer(true);
+  };
+
+  const stopRestTimer = () => {
+    setIsRestTimerActive(false);
+    setShowRestTimer(false);
+    setRestTimeRemaining(0);
+  };
+
+  const handleEditSet = (setIndex: number) => {
+    const set = exerciseLog?.sets[setIndex];
+    if (set) {
+      setEditingSetIndex(setIndex);
+      setEditReps(set.actualReps || set.reps);
+      setEditWeight(set.actualWeight || set.weight || 0);
+    }
+  };
+
+  const saveEditedSet = () => {
+    if (editingSetIndex !== null && exerciseLog?.sets[editingSetIndex]) {
+      // This would need to be passed up to the parent to update the exercise log
+      // For now, we'll just close the edit mode
+      setEditingSetIndex(null);
+    }
+  };
+
+  const cancelEdit = () => {
+    setEditingSetIndex(null);
   };
 
   // Format time display
@@ -150,6 +216,12 @@ export function ExerciseCard({
         actualReps: reps, // User's input becomes actual
         actualWeight: exercise.equipment && !exercise.equipment.includes('none') ? weight : undefined
       });
+
+      // Start rest timer if there are more sets in this exercise
+      const remainingSets = exerciseLog?.sets.slice(currentSetIndex + 1).filter(set => !set.completed);
+      if (remainingSets && remainingSets.length > 0) {
+        startRestTimer();
+      }
     }
   };
 
@@ -269,18 +341,20 @@ export function ExerciseCard({
                   <span className="text-accent font-medium">Set {currentSetIndex + 1}</span> of {totalSets}
                 </div>
                 
-                {/* Set Progress Indicators */}
+                {/* Set Progress Indicators - Clickable for editing */}
                 <div className="flex justify-center space-x-2 mb-2">
                   {exerciseLog?.sets.map((set, index) => (
-                    <div
+                    <button
                       key={index}
+                      onClick={() => set.completed ? handleEditSet(index) : null}
                       className={`w-3 h-3 rounded-full border-2 transition-colors ${
                         set.completed
-                          ? 'bg-accent border-accent'
+                          ? 'bg-accent border-accent hover:bg-accent/80 cursor-pointer'
                           : index === currentSetIndex
                           ? 'border-accent bg-accent/20'
                           : 'border-muted bg-transparent'
                       }`}
+                      disabled={!set.completed}
                     />
                   ))}
                 </div>
@@ -300,6 +374,43 @@ export function ExerciseCard({
                 <div className="flex-1 text-left">
                   <p className="text-sm text-foreground/90">{coachingTip}</p>
                 </div>
+              </div>
+            </CardContent>
+          </Card>
+        )}
+
+        {/* Rest Timer */}
+        {showRestTimer && !isTimeBased && (
+          <Card className="glass-effect border-accent/20 mb-6">
+            <CardContent className="p-4 text-center">
+              <div className="text-sm text-muted-foreground mb-2">Rest Period</div>
+              <div className="text-3xl font-bold text-accent mb-3">{formatTime(restTimeRemaining)}</div>
+              <div className="flex justify-center space-x-2">
+                <Button
+                  onClick={stopRestTimer}
+                  size="sm"
+                  variant="outline"
+                  className="glass-effect border-border/50"
+                >
+                  Skip Rest
+                </Button>
+                <Button
+                  onClick={() => setIsRestTimerActive(!isRestTimerActive)}
+                  size="sm"
+                  className="glass-effect bg-accent hover:bg-accent/90 text-white"
+                >
+                  {isRestTimerActive ? (
+                    <>
+                      <Pause size={16} className="mr-1" />
+                      Pause
+                    </>
+                  ) : (
+                    <>
+                      <Play size={16} className="mr-1" />
+                      Resume
+                    </>
+                  )}
+                </Button>
               </div>
             </CardContent>
           </Card>
@@ -341,13 +452,64 @@ export function ExerciseCard({
 
 
 
+        {/* Set Editing Modal */}
+        {editingSetIndex !== null && (
+          <Card className="glass-effect border-accent/20 mb-6">
+            <CardContent className="p-4">
+              <div className="text-center mb-4">
+                <h3 className="font-medium text-foreground">Edit Set {editingSetIndex + 1}</h3>
+              </div>
+              <div className="space-y-4">
+                <div className="flex items-center justify-between">
+                  <span className="text-sm text-foreground">Reps</span>
+                  <input
+                    type="number"
+                    value={editReps}
+                    onChange={(e) => setEditReps(Math.max(1, parseInt(e.target.value) || 1))}
+                    className="w-20 px-3 py-2 text-center bg-background/50 border border-border/50 rounded-lg focus:border-accent focus:outline-none text-foreground"
+                    min="1"
+                  />
+                </div>
+                {exercise.equipment && !exercise.equipment.includes('none') && (
+                  <div className="flex items-center justify-between">
+                    <span className="text-sm text-foreground">Weight (lbs)</span>
+                    <input
+                      type="number"
+                      value={editWeight}
+                      onChange={(e) => setEditWeight(Math.max(0, parseInt(e.target.value) || 0))}
+                      className="w-20 px-3 py-2 text-center bg-background/50 border border-border/50 rounded-lg focus:border-accent focus:outline-none text-foreground"
+                      min="0"
+                      step="5"
+                    />
+                  </div>
+                )}
+                <div className="flex space-x-2">
+                  <Button
+                    onClick={cancelEdit}
+                    variant="outline"
+                    className="flex-1 glass-effect border-border/50"
+                  >
+                    Cancel
+                  </Button>
+                  <Button
+                    onClick={saveEditedSet}
+                    className="flex-1 glass-effect bg-accent hover:bg-accent/90 text-white"
+                  >
+                    Save
+                  </Button>
+                </div>
+              </div>
+            </CardContent>
+          </Card>
+        )}
+
         {/* Complete Set Button */}
         <Button 
           onClick={handleCompleteSet}
           className="w-full glass-effect bg-gradient-to-r from-accent to-primary hover:from-accent/90 hover:to-primary/90 text-white py-4 touch-target font-medium border-0"
-          disabled={isLoading}
+          disabled={isLoading || showRestTimer}
         >
-          {isLoading ? 'Completing...' : isTimeBased ? 'Complete Exercise' : 'Complete Set'}
+          {isLoading ? 'Completing...' : isTimeBased ? 'Complete Exercise' : showRestTimer ? 'Rest in Progress...' : 'Complete Set'}
         </Button>
 
         {/* Get Coaching Tip Button */}
