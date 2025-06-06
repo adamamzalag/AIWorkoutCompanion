@@ -72,7 +72,8 @@ export default function WorkoutNewPage() {
   } = useWorkout(workoutId, userProfile?.id || 0);
 
   const [showCoachingTip, setShowCoachingTip] = useState(false);
-
+  const [showWorkoutMenu, setShowWorkoutMenu] = useState(false);
+  const [activeSetIndex, setActiveSetIndex] = useState<number | null>(null);
   const handleGetCoachingTip = () => {
     if (!isGettingTip && currentExerciseData) {
       const currentExerciseLog = exerciseLogs[currentExerciseIndex];
@@ -80,9 +81,15 @@ export default function WorkoutNewPage() {
         sets: currentExerciseLog?.sets || [],
         exerciseType: currentExercise.isWarmup ? 'warmup' : currentExercise.isCooldown ? 'cooldown' : 'main'
       });
-      setShowCoachingTip(true);
     }
   };
+
+  // Auto-show coaching tip when it's received
+  useEffect(() => {
+    if (coachingTip && !isGettingTip) {
+      setShowCoachingTip(true);
+    }
+  }, [coachingTip, isGettingTip]);
 
   // Create exercise logs from workout data
   const exerciseLogs: ExerciseLog[] = [];
@@ -335,25 +342,26 @@ export default function WorkoutNewPage() {
                   <div className="space-y-2">
                     {currentExercise.sets.map((set, index) => {
                       const isCompleted = set.completed;
-                      const isCurrent = !isCompleted && currentExercise.sets.slice(0, index).every(s => s.completed);
+                      const isActive = activeSetIndex === index;
+                      const canInteract = !isCompleted;
                       
                       return (
-                        <Collapsible key={index} open={isCurrent} onOpenChange={() => {}}>
+                        <Collapsible key={index} open={isActive} onOpenChange={(open) => setActiveSetIndex(open ? index : null)}>
                           <CollapsibleTrigger asChild>
                             <Button
-                              variant={isCompleted ? "default" : isCurrent ? "outline" : "ghost"}
+                              variant={isCompleted ? "default" : isActive ? "outline" : "ghost"}
                               className="w-full justify-between h-12"
                               disabled={isCompleted}
                             >
                               <span>Set {index + 1}: {set.reps} reps</span>
                               <div className="flex items-center space-x-2">
                                 {isCompleted && <span className="text-green-500">✓</span>}
-                                {isCurrent && <ChevronDown size={16} />}
+                                {canInteract && <ChevronDown size={16} />}
                               </div>
                             </Button>
                           </CollapsibleTrigger>
                           
-                          {isCurrent && (
+                          {isActive && canInteract && (
                             <CollapsibleContent className="pt-3">
                               <div className="space-y-3 p-4 bg-muted/50 rounded-lg">
                                 <div className="grid grid-cols-2 gap-3">
@@ -527,7 +535,11 @@ export default function WorkoutNewPage() {
             <ChevronLeft size={16} />
           </Button>
           
-          <Button variant="outline" size="sm">
+          <Button 
+            variant="outline" 
+            size="sm"
+            onClick={() => setShowWorkoutMenu(true)}
+          >
             <Menu size={16} />
           </Button>
           
@@ -564,6 +576,56 @@ export default function WorkoutNewPage() {
                   Exit
                 </Button>
               </div>
+            </CardContent>
+          </Card>
+        </div>
+      )}
+
+      {/* Workout Menu Dialog */}
+      {showWorkoutMenu && (
+        <div className="fixed inset-0 bg-black/50 flex items-center justify-center z-50 p-4">
+          <Card className="w-full max-w-sm">
+            <CardContent className="p-6 space-y-4">
+              <h3 className="text-lg font-semibold text-center">Workout Menu</h3>
+              <div className="space-y-2">
+                <Button
+                  variant="outline"
+                  className="w-full justify-start"
+                  onClick={() => {
+                    setShowWorkoutMenu(false);
+                    setShowExitDialog(true);
+                  }}
+                >
+                  Exit Workout
+                </Button>
+                <Button
+                  variant="outline"
+                  className="w-full justify-start"
+                  onClick={() => {
+                    setShowWorkoutMenu(false);
+                    setInstructionsOpen(true);
+                  }}
+                >
+                  View Instructions
+                </Button>
+                <Button
+                  variant="outline"
+                  className="w-full justify-start"
+                  onClick={() => {
+                    setShowWorkoutMenu(false);
+                    handleGetCoachingTip();
+                  }}
+                >
+                  Get Coaching Tip
+                </Button>
+              </div>
+              <Button
+                variant="default"
+                onClick={() => setShowWorkoutMenu(false)}
+                className="w-full"
+              >
+                Continue Workout
+              </Button>
             </CardContent>
           </Card>
         </div>
