@@ -264,9 +264,9 @@ export default function WorkoutNewPage() {
       </header>
 
       {/* Main Content */}
-      <main className="flex-1 pt-16 pb-24">
+      <main className="flex-1 pt-16 pb-32">
         {/* Video Section - 30% of screen */}
-        <div className="relative h-[30vh] bg-muted px-4 pt-4">
+        <div className="relative h-[30vh] px-4 pt-4">
           <div className="relative h-full rounded-xl overflow-hidden">
             <YouTubeVideo
               videoId={currentExerciseData.youtubeId}
