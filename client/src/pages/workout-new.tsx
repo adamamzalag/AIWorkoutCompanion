@@ -72,7 +72,6 @@ export default function WorkoutNewPage() {
   } = useWorkout(workoutId, userProfile?.id || 0);
 
   const [showCoachingTip, setShowCoachingTip] = useState(false);
-  const [showWorkoutMenu, setShowWorkoutMenu] = useState(false);
   const [activeSetIndex, setActiveSetIndex] = useState<number | null>(null);
   const handleGetCoachingTip = () => {
     if (!isGettingTip && currentExerciseData) {
@@ -259,7 +258,7 @@ export default function WorkoutNewPage() {
   }
 
   return (
-    <div className="min-h-screen bg-background">
+    <div className="min-h-screen bg-background overflow-y-auto">
       {/* Header */}
       <header className="fixed top-0 left-0 right-0 z-50 bg-background/95 backdrop-blur-sm border-b border-border/20 h-16 flex items-center px-4">
         <div className="flex items-center justify-between w-full">
@@ -506,16 +505,6 @@ export default function WorkoutNewPage() {
                       className="min-h-20"
                     />
                   </div>
-
-                  {/* AI Coaching Tip */}
-                  {coachingTip && (
-                    <div className="bg-accent/10 p-3 rounded-lg border border-accent/20">
-                      <div className="flex items-start space-x-2">
-                        <MessageCircle className="text-accent mt-0.5" size={16} />
-                        <p className="text-sm">{coachingTip}</p>
-                      </div>
-                    </div>
-                  )}
                 </CardContent>
               </Card>
             </CollapsibleContent>
@@ -533,14 +522,6 @@ export default function WorkoutNewPage() {
             disabled={isFirstExercise || isUpdating}
           >
             <ChevronLeft size={16} />
-          </Button>
-          
-          <Button 
-            variant="outline" 
-            size="sm"
-            onClick={() => setShowWorkoutMenu(true)}
-          >
-            <Menu size={16} />
           </Button>
           
           <Button
@@ -581,55 +562,7 @@ export default function WorkoutNewPage() {
         </div>
       )}
 
-      {/* Workout Menu Dialog */}
-      {showWorkoutMenu && (
-        <div className="fixed inset-0 bg-black/50 flex items-center justify-center z-50 p-4">
-          <Card className="w-full max-w-sm">
-            <CardContent className="p-6 space-y-4">
-              <h3 className="text-lg font-semibold text-center">Workout Menu</h3>
-              <div className="space-y-2">
-                <Button
-                  variant="outline"
-                  className="w-full justify-start"
-                  onClick={() => {
-                    setShowWorkoutMenu(false);
-                    setShowExitDialog(true);
-                  }}
-                >
-                  Exit Workout
-                </Button>
-                <Button
-                  variant="outline"
-                  className="w-full justify-start"
-                  onClick={() => {
-                    setShowWorkoutMenu(false);
-                    setInstructionsOpen(true);
-                  }}
-                >
-                  View Instructions
-                </Button>
-                <Button
-                  variant="outline"
-                  className="w-full justify-start"
-                  onClick={() => {
-                    setShowWorkoutMenu(false);
-                    handleGetCoachingTip();
-                  }}
-                >
-                  Get Coaching Tip
-                </Button>
-              </div>
-              <Button
-                variant="default"
-                onClick={() => setShowWorkoutMenu(false)}
-                className="w-full"
-              >
-                Continue Workout
-              </Button>
-            </CardContent>
-          </Card>
-        </div>
-      )}
+
     </div>
   );
 }
