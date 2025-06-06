@@ -16,6 +16,10 @@ export interface ExerciseLog {
     weight?: number;
     duration?: number; // for time-based exercises
     completed: boolean;
+    completedAt?: Date; // when this set was completed
+    actualReps?: number; // what the user actually performed vs planned
+    actualWeight?: number; // actual weight used vs planned
+    actualDuration?: number; // actual time vs planned
     notes?: string;
   }>;
   restTime: string;
@@ -24,6 +28,8 @@ export interface ExerciseLog {
   isCardio?: boolean; // Identifies cardio exercises
   isCooldown?: boolean; // Identifies cool-down exercises
   duration?: number; // Duration in seconds for time-based exercises
+  completedAt?: Date; // when the entire exercise was completed
+  skipped?: boolean; // if the exercise was skipped entirely
 }
 
 export interface WorkoutSession {

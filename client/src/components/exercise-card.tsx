@@ -14,7 +14,7 @@ interface ExerciseCardProps {
   exerciseIndex?: number;
   totalExercises?: number;
   workoutTitle?: string;
-  onCompleteSet: (setData: { reps: number; weight?: number; duration?: number }) => void;
+  onCompleteSet: (setData: { reps: number; weight?: number; duration?: number; actualReps?: number; actualWeight?: number; actualDuration?: number }) => void;
   onShowTutorial: () => void;
   onGetCoachingTip: () => void;
   coachingTip?: string;
