@@ -264,29 +264,31 @@ export default function WorkoutNewPage() {
       </header>
 
       {/* Main Content */}
-      <main className="flex-1 pt-16 pb-20">
+      <main className="flex-1 pt-16 pb-24">
         {/* Video Section - 30% of screen */}
-        <div className="relative h-[30vh] bg-muted">
-          <YouTubeVideo
-            videoId={currentExerciseData.youtubeId}
-            exerciseName={currentExerciseData.name}
-            exerciseIndex={currentExerciseIndex + 1}
-            totalExercises={exerciseLogs.length}
-            workoutTitle={workout.title}
-            className="w-full h-full"
-          />
-          
-          {/* Video Overlay */}
-          <div className="absolute bottom-2 right-2 flex space-x-2">
-            {currentExerciseData.equipment && currentExerciseData.equipment.length > 0 && 
-             !currentExerciseData.equipment.includes('none') && (
-              <Badge variant="secondary" className="text-xs">
-                {currentExerciseData.equipment[0]}
+        <div className="relative h-[30vh] bg-muted px-4 pt-4">
+          <div className="relative h-full rounded-xl overflow-hidden">
+            <YouTubeVideo
+              videoId={currentExerciseData.youtubeId}
+              exerciseName={currentExerciseData.name}
+              exerciseIndex={currentExerciseIndex + 1}
+              totalExercises={exerciseLogs.length}
+              workoutTitle={workout.title}
+              className="w-full h-full"
+            />
+            
+            {/* Video Overlay */}
+            <div className="absolute bottom-2 right-2 flex space-x-2">
+              {currentExerciseData.equipment && currentExerciseData.equipment.length > 0 && 
+               !currentExerciseData.equipment.includes('none') && (
+                <Badge variant="secondary" className="text-xs">
+                  {currentExerciseData.equipment[0]}
+                </Badge>
+              )}
+              <Badge variant="outline" className="text-xs">
+                {currentExerciseData.difficulty}
               </Badge>
-            )}
-            <Badge variant="outline" className="text-xs">
-              {currentExerciseData.difficulty}
-            </Badge>
+            </div>
           </div>
         </div>
 
