@@ -339,8 +339,7 @@ export function ExerciseCard({
                       className="glass-effect bg-accent hover:bg-accent/90 text-white"
                     >
                       <Play size={16} className="mr-1" />
-                      {measurementType === 'hold' ? 'Start Hold' : 
-                       measurementType === 'interval' ? 'Start Interval' : 'Start Timer'}
+                      Start Timer
                     </Button>
                   ) : (
                     <>
@@ -551,11 +550,7 @@ export function ExerciseCard({
         >
           {isLoading ? 'Completing...' : 
            showRestTimer ? 'Rest in Progress...' :
-           isTimeBased ? (
-             measurementType === 'hold' ? 'Complete Hold' :
-             measurementType === 'interval' ? 'Complete Interval' :
-             'Complete Exercise'
-           ) : 'Complete Set'}
+           isTimeBased ? 'Complete Exercise' : 'Complete Set'}
         </Button>
 
         {/* Get Coaching Tip Button */}
