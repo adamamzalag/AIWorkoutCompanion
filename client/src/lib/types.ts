@@ -9,7 +9,7 @@ export interface WorkoutPlanRequest {
 }
 
 export interface ExerciseLog {
-  exerciseId: number | string; // Support both numeric IDs and string IDs for warm-up/cool-down
+  exerciseId: number; // Database exercise ID - all exercises must have valid database records
   name: string;
   sets: Array<{
     reps: number;

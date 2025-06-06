@@ -48,7 +48,7 @@ export default function WorkoutPage() {
     coachingTip
   } = useWorkout(workoutId, userProfile?.id || 0);
 
-  // Create exercise logs from the complete workout flow (warm-up + main + cool-down)
+  // Create exercise logs from the complete workout flow (warm-up + main + cool-down + cardio)
   const exerciseLogs: ExerciseLog[] = [];
   
   if (workout) {
@@ -56,62 +56,89 @@ export default function WorkoutPage() {
     const warmUp = workout.warmUp ? 
       (typeof workout.warmUp === 'string' ? JSON.parse(workout.warmUp) : workout.warmUp) : {};
     
-    // Add warm-up exercises (prioritize database records)
+    // Add warm-up exercises (use database IDs only)
     if (warmUp.activities) {
-      warmUp.activities.forEach((activity: any, index: number) => {
-        // Prioritize exerciseId from database if available
-        const exerciseId = activity.exerciseId || `warmup-${index}`;
-        const exerciseName = activity.exercise;
-        
-        exerciseLogs.push({
-          exerciseId,
-          name: exerciseName,
-          sets: [{ reps: 0, completed: false }], // Time-based exercise
-          restTime: '30 seconds',
-          isWarmup: true,
-          duration: activity.durationSeconds
-        });
+      warmUp.activities.forEach((activity: any) => {
+        // Only proceed if we have a valid database exerciseId
+        if (activity.exerciseId && typeof activity.exerciseId === 'number') {
+          exerciseLogs.push({
+            exerciseId: activity.exerciseId,
+            name: activity.exercise,
+            sets: [{ reps: 0, completed: false }], // Time-based exercise
+            restTime: '30 seconds',
+            isWarmup: true,
+            duration: activity.durationSeconds
+          });
+        } else {
+          console.warn(`Skipping warmup exercise "${activity.exercise}" - missing valid exerciseId`);
+        }
       });
     }
     
-    // Add main exercises
+    // Add main exercises (use database IDs only)
     const mainExercises = workout.exercises ? 
       (typeof workout.exercises === 'string' ? JSON.parse(workout.exercises) : workout.exercises) : [];
     
     mainExercises.forEach((exercise: any) => {
-      exerciseLogs.push({
-        exerciseId: exercise.exerciseId || exercise.name, // Use exerciseId if available, fallback to name
-        name: exercise.name,
-        sets: Array.from({ length: exercise.sets }, () => ({
-          reps: parseInt(exercise.reps.split('-')[0]) || 12,
-          weight: exercise.weight ? 0 : undefined,
-          completed: false
-        })),
-        restTime: exercise.restTime || '60 seconds'
-      });
+      // Only proceed if we have a valid database exerciseId
+      if (exercise.exerciseId && typeof exercise.exerciseId === 'number') {
+        exerciseLogs.push({
+          exerciseId: exercise.exerciseId,
+          name: exercise.name,
+          sets: Array.from({ length: exercise.sets }, () => ({
+            reps: parseInt(exercise.reps.split('-')[0]) || 12,
+            weight: exercise.weight ? 0 : undefined,
+            completed: false
+          })),
+          restTime: exercise.restTime || '60 seconds'
+        });
+      } else {
+        console.warn(`Skipping main exercise "${exercise.name}" - missing valid exerciseId`);
+      }
     });
     
-    // TODO: Add cardio exercises if available (will implement after testing warm-up flow)
+    // Add cardio exercises (use database IDs only)
+    const cardio = workout.cardio ? 
+      (typeof workout.cardio === 'string' ? JSON.parse(workout.cardio) : workout.cardio) : {};
+    
+    if (cardio.activities) {
+      cardio.activities.forEach((activity: any) => {
+        // Only proceed if we have a valid database exerciseId
+        if (activity.exerciseId && typeof activity.exerciseId === 'number') {
+          exerciseLogs.push({
+            exerciseId: activity.exerciseId,
+            name: activity.exercise,
+            sets: [{ reps: 0, completed: false }], // Time-based exercise
+            restTime: '30 seconds',
+            isCardio: true,
+            duration: activity.durationSeconds
+          });
+        } else {
+          console.warn(`Skipping cardio exercise "${activity.exercise}" - missing valid exerciseId`);
+        }
+      });
+    }
     
     // Parse cool-down activities
     const coolDown = workout.coolDown ? 
       (typeof workout.coolDown === 'string' ? JSON.parse(workout.coolDown) : workout.coolDown) : {};
     
-    // Add cool-down exercises (prioritize database records)
+    // Add cool-down exercises (use database IDs only)
     if (coolDown.activities) {
-      coolDown.activities.forEach((activity: any, index: number) => {
-        // Prioritize exerciseId from database if available
-        const exerciseId = activity.exerciseId || `cooldown-${index}`;
-        const exerciseName = activity.exercise;
-        
-        exerciseLogs.push({
-          exerciseId,
-          name: exerciseName,
-          sets: [{ reps: 0, completed: false }], // Time-based exercise
-          restTime: '30 seconds',
-          isCooldown: true,
-          duration: activity.durationSeconds
-        });
+      coolDown.activities.forEach((activity: any) => {
+        // Only proceed if we have a valid database exerciseId
+        if (activity.exerciseId && typeof activity.exerciseId === 'number') {
+          exerciseLogs.push({
+            exerciseId: activity.exerciseId,
+            name: activity.exercise,
+            sets: [{ reps: 0, completed: false }], // Time-based exercise
+            restTime: '30 seconds',
+            isCooldown: true,
+            duration: activity.durationSeconds
+          });
+        } else {
+          console.warn(`Skipping cooldown exercise "${activity.exercise}" - missing valid exerciseId`);
+        }
       });
     }
   }
@@ -170,15 +197,20 @@ export default function WorkoutPage() {
   const currentExerciseDetails = workout?.exercises && currentExercise ? 
     (typeof workout.exercises === 'string' ? JSON.parse(workout.exercises) : workout.exercises)[currentExerciseIndex] : null;
   
-  // For all exercises, try to look them up in the database first
-  // For warm-up, cardio, and cool-down exercises, search by name if not found by ID
+  // Standardized exercise lookup for all exercise types
   const currentExerciseData = (() => {
     if (!currentExercise || !exercises) return null;
     
-    // Prioritize exerciseId lookup for database records
+    // All exercises should now have valid database IDs
     if (typeof currentExercise.exerciseId === 'number') {
       const foundExercise = exercises.find(ex => ex.id === currentExercise.exerciseId);
-      if (foundExercise) return foundExercise;
+      if (foundExercise) {
+        return foundExercise;
+      } else {
+        console.error(`Exercise with ID ${currentExercise.exerciseId} not found in database`);
+      }
+    } else {
+      console.error(`Invalid exerciseId for "${currentExercise.name}": ${currentExercise.exerciseId}`);
     }
     
     return null;
