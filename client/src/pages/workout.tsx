@@ -48,6 +48,45 @@ export default function WorkoutPage() {
     coachingTip
   } = useWorkout(workoutId, userProfile?.id || 0);
 
+  // Helper function to determine measurement type during initialization
+  const getMeasurementTypeForExercise = (exerciseName: string, isWarmup: boolean, isCardio: boolean, isCooldown: boolean) => {
+    const name = exerciseName.toLowerCase();
+    
+    // Check for interval patterns
+    if (name.includes('interval') || exerciseName.includes('/') || name.includes('sprint') ||
+        name.includes('work') || name.includes('rest')) {
+      return 'interval';
+    }
+    
+    // Check for hold-based exercises (stretches, poses)
+    if (name.includes('stretch') || name.includes('pose') || name.includes('breathing') || name.includes('hold')) {
+      return 'hold';
+    }
+    
+    // Check for clearly rep-based exercises regardless of category
+    if (name.includes('squats') || name.includes('lunges') || name.includes('push') ||
+        name.includes('pull') || name.includes('rows') || name.includes('press') ||
+        name.includes('deadlift') || name.includes('twists') || name.includes('hinges') ||
+        name.includes('circles') || name.includes('swings') || name.includes('burpees') ||
+        name.includes('jumps') || name.includes('jumping') || name.includes('rolls') ||
+        name.includes('raises') || name.includes('curls') || name.includes('kicks')) {
+      return 'reps';
+    }
+    
+    // Check for clearly time-based exercises
+    if (name.includes('walk') || name.includes('jog') || name.includes('bike') ||
+        name.includes('run') || name.includes('pace') || name.includes('treadmill')) {
+      return 'time';
+    }
+    
+    // Category-based fallbacks
+    if (isCardio) return 'time';
+    if (isCooldown) return 'hold';
+    if (isWarmup) return 'reps'; // Most warmup exercises are rep-based
+    
+    return 'reps'; // Default for main exercises
+  };
+
   // Create exercise logs from the complete workout flow (warm-up + main + cool-down + cardio)
   const exerciseLogs: ExerciseLog[] = [];
   
@@ -61,10 +100,12 @@ export default function WorkoutPage() {
       warmUp.activities.forEach((activity: any) => {
         // Only proceed if we have a valid database exerciseId
         if (activity.exerciseId && typeof activity.exerciseId === 'number') {
+          const measurementType = getMeasurementTypeForExercise(activity.exercise, true, false, false);
+          
           exerciseLogs.push({
             exerciseId: activity.exerciseId,
             name: activity.exercise,
-            sets: [{ reps: 0, completed: false }], // Time-based exercise
+            sets: measurementType === 'reps' ? [{ reps: 12, completed: false }] : [{ reps: 0, completed: false }],
             restTime: '30 seconds',
             isWarmup: true,
             duration: activity.durationSeconds
@@ -105,10 +146,12 @@ export default function WorkoutPage() {
       cardio.activities.forEach((activity: any) => {
         // Only proceed if we have a valid database exerciseId
         if (activity.exerciseId && typeof activity.exerciseId === 'number') {
+          const measurementType = getMeasurementTypeForExercise(activity.exercise, false, true, false);
+          
           exerciseLogs.push({
             exerciseId: activity.exerciseId,
             name: activity.exercise,
-            sets: [{ reps: 0, completed: false }], // Time-based exercise
+            sets: measurementType === 'reps' ? [{ reps: 12, completed: false }] : [{ reps: 0, completed: false }],
             restTime: '30 seconds',
             isCardio: true,
             duration: activity.durationSeconds
@@ -128,10 +171,12 @@ export default function WorkoutPage() {
       coolDown.activities.forEach((activity: any) => {
         // Only proceed if we have a valid database exerciseId
         if (activity.exerciseId && typeof activity.exerciseId === 'number') {
+          const measurementType = getMeasurementTypeForExercise(activity.exercise, false, false, true);
+          
           exerciseLogs.push({
             exerciseId: activity.exerciseId,
             name: activity.exercise,
-            sets: [{ reps: 0, completed: false }], // Time-based exercise
+            sets: measurementType === 'reps' ? [{ reps: 12, completed: false }] : [{ reps: 0, completed: false }],
             restTime: '30 seconds',
             isCooldown: true,
             duration: activity.durationSeconds

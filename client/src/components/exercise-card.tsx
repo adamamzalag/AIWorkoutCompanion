@@ -127,7 +127,7 @@ export function ExerciseCard({
       return 'time';
     }
     
-    // Check if main exercise has rep data
+    // Check if main exercise has rep data (but exclude time-based exercises with reps: 0)
     if (currentSet?.reps && currentSet.reps > 0) {
       return 'reps';
     }
