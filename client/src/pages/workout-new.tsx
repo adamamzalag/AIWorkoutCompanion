@@ -71,6 +71,15 @@ export default function WorkoutNewPage() {
     coachingTip
   } = useWorkout(workoutId, userProfile?.id || 0);
 
+  const [showCoachingTip, setShowCoachingTip] = useState(false);
+
+  const handleGetCoachingTip = async () => {
+    if (!isGettingTip && currentExerciseData) {
+      await getCoachingTip(currentExerciseData.name);
+      setShowCoachingTip(true);
+    }
+  };
+
   // Create exercise logs from workout data
   const exerciseLogs: ExerciseLog[] = [];
   
@@ -239,7 +248,7 @@ export default function WorkoutNewPage() {
   }
 
   return (
-    <div className="min-h-screen bg-background flex flex-col">
+    <div className="min-h-screen bg-background">
       {/* Header */}
       <header className="fixed top-0 left-0 right-0 z-50 bg-background/95 backdrop-blur-sm border-b border-border/20 h-16 flex items-center px-4">
         <div className="flex items-center justify-between w-full">
@@ -264,7 +273,7 @@ export default function WorkoutNewPage() {
       </header>
 
       {/* Main Content */}
-      <main className="flex-1 pt-16 pb-24">
+      <main className="pt-16 pb-24">
         {/* Video Section - 30% of screen */}
         <div className="relative h-[30vh] px-4 pt-4">
           <div className="relative h-full rounded-xl overflow-hidden">
@@ -294,12 +303,6 @@ export default function WorkoutNewPage() {
 
         {/* Exercise Information Panel - 55% of screen */}
         <div className="flex-1 p-4 space-y-4">
-          {/* Exercise Identity */}
-          <div className="text-center">
-            <h2 className="text-xl font-semibold text-foreground">
-              {currentExerciseData.name}
-            </h2>
-          </div>
 
           {/* Primary Exercise Data */}
           <Card className="glass-effect">
