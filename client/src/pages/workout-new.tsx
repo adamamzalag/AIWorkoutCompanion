@@ -370,7 +370,7 @@ export default function WorkoutNewPage() {
                       const currentExerciseLog = exerciseLogs[currentExerciseIndex];
                       const repInfo = currentExerciseLog?.sets[index]?.repInfo;
                       const displayReps = repInfo ? 
-                        formatSetReps(repInfo, index, currentExercise.sets.length) : 
+                        repInfo.displayText : 
                         `${set.reps} reps`;
                       
                       return (
@@ -394,10 +394,13 @@ export default function WorkoutNewPage() {
                               <div className="space-y-3 p-4 bg-muted/50 rounded-lg">
                                 <div className="grid grid-cols-2 gap-3">
                                   <div>
-                                    <label className="text-sm font-medium">Reps</label>
+                                    <label className="text-sm font-medium">
+                                      Reps {repInfo && `(Target: ${repInfo.displayText})`}
+                                    </label>
                                     <Input
                                       type="number"
                                       defaultValue={set.reps}
+                                      placeholder={repInfo?.inputPlaceholder || `${set.reps}`}
                                       className="mt-1"
                                     />
                                   </div>
