@@ -141,15 +141,20 @@ textarea:focus-visible,
     transition: none !important;
   }
 
-  /* Prevent layout shift when modal opens by compensating for scrollbar */
-  body:has([data-state="open"]) {
+  /* Prevent layout shift when modal/dialog opens by compensating for scrollbar */
+  /* Only apply to actual modals and dialogs, not collapsible content */
+  body:has([data-radix-dialog-content][data-state="open"]),
+  body:has([data-radix-modal-content][data-state="open"]),
+  body:has([role="dialog"][data-state="open"]) {
     padding-right: 17px; /* Standard scrollbar width */
     overflow: hidden;
   }
   
   /* For webkit browsers, calculate actual scrollbar width */
   @supports selector(::-webkit-scrollbar) {
-    body:has([data-state="open"]) {
+    body:has([data-radix-dialog-content][data-state="open"]),
+    body:has([data-radix-modal-content][data-state="open"]),
+    body:has([role="dialog"][data-state="open"]) {
       padding-right: calc(100vw - 100%);
     }
   }
