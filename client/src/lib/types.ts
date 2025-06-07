@@ -21,6 +21,7 @@ export interface ExerciseLog {
     actualWeight?: number; // actual weight used vs planned
     actualDuration?: number; // actual time vs planned
     notes?: string;
+    repInfo?: any; // Rep parsing information for display
   }>;
   restTime: string;
   notes?: string;
@@ -30,6 +31,7 @@ export interface ExerciseLog {
   duration?: number; // Duration in seconds for time-based exercises
   completedAt?: Date; // when the entire exercise was completed
   skipped?: boolean; // if the exercise was skipped entirely
+  originalReps?: string; // Original rep string from database
 }
 
 export interface WorkoutSession {

@@ -9,6 +9,7 @@ import { Input } from '@/components/ui/input';
 import { Textarea } from '@/components/ui/textarea';
 import { YouTubeVideo } from '@/components/youtube-video';
 import { useWorkout } from '@/hooks/use-workout';
+import { parseRepString, formatSetReps, getTargetRepsForSet } from '@/utils/rep-parser';
 import { 
   ChevronLeft, 
   ChevronRight, 
@@ -121,15 +122,19 @@ export default function WorkoutNewPage() {
     
     mainExercises.forEach((exercise: any) => {
       if (exercise.exerciseId && typeof exercise.exerciseId === 'number') {
+        const repInfo = parseRepString(exercise.reps || '12');
+        
         exerciseLogs.push({
           exerciseId: exercise.exerciseId,
           name: exercise.name,
-          sets: Array.from({ length: exercise.sets }, () => ({
-            reps: parseInt(exercise.reps.split('-')[0]) || 12,
+          sets: Array.from({ length: exercise.sets }, (_, index) => ({
+            reps: getTargetRepsForSet(repInfo, index, exercise.sets),
             weight: exercise.weight ? 0 : undefined,
-            completed: false
+            completed: false,
+            repInfo: repInfo // Store rep info for display
           })),
-          restTime: exercise.restTime || '60 seconds'
+          restTime: exercise.restTime || '60 seconds',
+          originalReps: exercise.reps // Store original reps string
         });
       }
     });
@@ -361,6 +366,13 @@ export default function WorkoutNewPage() {
                       const isActive = activeSetIndex === index;
                       const canInteract = !isCompleted;
                       
+                      // Get rep info from current exercise log
+                      const currentExerciseLog = exerciseLogs[currentExerciseIndex];
+                      const repInfo = currentExerciseLog?.sets[index]?.repInfo;
+                      const displayReps = repInfo ? 
+                        formatSetReps(repInfo, index, currentExercise.sets.length) : 
+                        `${set.reps} reps`;
+                      
                       return (
                         <Collapsible key={index} open={isActive} onOpenChange={(open) => setActiveSetIndex(open ? index : null)}>
                           <CollapsibleTrigger asChild>
@@ -369,7 +381,7 @@ export default function WorkoutNewPage() {
                               className="w-full justify-between h-12"
                               disabled={isCompleted}
                             >
-                              <span>Set {index + 1}: {set.reps} reps</span>
+                              <span>Set {index + 1}: {displayReps}</span>
                               <div className="flex items-center space-x-2">
                                 {isCompleted && <span className="text-green-500">✓</span>}
                                 {canInteract && <ChevronDown size={16} />}
