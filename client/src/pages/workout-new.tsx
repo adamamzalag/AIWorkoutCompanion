@@ -63,6 +63,7 @@ export default function WorkoutNewPage() {
     completeSet,
     nextExercise,
     previousExercise,
+    goToExercise,
     completeWorkout,
     getCoachingTip,
     isStarting,
@@ -258,13 +259,9 @@ export default function WorkoutNewPage() {
   };
 
   const navigateToExercise = (targetIndex: number) => {
-    if (targetIndex >= 0 && targetIndex < exerciseLogs.length) {
-      // Navigate to the target exercise index
-      const targetExercise = exerciseLogs[targetIndex];
-      if (targetExercise && goToExercise) {
-        goToExercise(targetIndex);
-        setShowExerciseNavigation(false);
-      }
+    if (targetIndex >= 0 && targetIndex < exerciseLogs.length && goToExercise) {
+      goToExercise(targetIndex);
+      setShowExerciseNavigation(false);
     }
   };
 
