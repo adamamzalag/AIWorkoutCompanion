@@ -1,3 +1,5 @@
+import type { RepInfo } from '@/utils/rep-parser';
+
 export interface WorkoutPlanRequest {
   userId: number;
   fitnessLevel: 'beginner' | 'intermediate' | 'advanced';
@@ -21,7 +23,7 @@ export interface ExerciseLog {
     actualWeight?: number; // actual weight used vs planned
     actualDuration?: number; // actual time vs planned
     notes?: string;
-    repInfo?: any; // Rep parsing information for display
+    repInfo?: RepInfo; // Rep parsing information for display
   }>;
   restTime: string;
   notes?: string;
