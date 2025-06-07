@@ -73,6 +73,7 @@ export default function WorkoutNewPage() {
 
   const [showCoachingTip, setShowCoachingTip] = useState(false);
   const [activeSetIndex, setActiveSetIndex] = useState<number | null>(null);
+  const [showExerciseNavigation, setShowExerciseNavigation] = useState(false);
   const handleGetCoachingTip = () => {
     if (!isGettingTip && currentExerciseData) {
       const currentExerciseLog = exerciseLogs[currentExerciseIndex];
@@ -248,6 +249,25 @@ export default function WorkoutNewPage() {
     setLocation('/');
   };
 
+  // Group exercises by phase for navigation
+  const exercisesByPhase = {
+    warmup: exerciseLogs.filter(ex => ex.isWarmup),
+    main: exerciseLogs.filter(ex => !ex.isWarmup && !ex.isCooldown && !ex.isCardio),
+    cardio: exerciseLogs.filter(ex => ex.isCardio),
+    cooldown: exerciseLogs.filter(ex => ex.isCooldown)
+  };
+
+  const navigateToExercise = (targetIndex: number) => {
+    if (targetIndex >= 0 && targetIndex < exerciseLogs.length) {
+      // Navigate to the target exercise index
+      const targetExercise = exerciseLogs[targetIndex];
+      if (targetExercise && goToExercise) {
+        goToExercise(targetIndex);
+        setShowExerciseNavigation(false);
+      }
+    }
+  };
+
   // Show loading state
   if (!workout || exerciseLogs.length === 0 || isStarting || !isActive || !currentExercise || !currentExerciseData) {
     return (
@@ -258,7 +278,7 @@ export default function WorkoutNewPage() {
   }
 
   return (
-    <div className="min-h-screen bg-background overflow-y-auto">
+    <div className="min-h-screen bg-background flex flex-col">
       {/* Header */}
       <header className="fixed top-0 left-0 right-0 z-50 bg-background/95 backdrop-blur-sm border-b border-border/20 h-16 flex items-center px-4">
         <div className="flex items-center justify-between w-full">
@@ -283,7 +303,7 @@ export default function WorkoutNewPage() {
       </header>
 
       {/* Main Content */}
-      <main className="pt-16 pb-24">
+      <main className="flex-1 overflow-y-auto pt-16 pb-24">
         {/* Video Section - 30% of screen */}
         <div className="relative h-[30vh] px-4 pt-4">
           <div className="relative h-full rounded-xl overflow-hidden">
@@ -525,6 +545,14 @@ export default function WorkoutNewPage() {
           </Button>
           
           <Button
+            variant="outline"
+            size="sm"
+            onClick={() => setShowExerciseNavigation(true)}
+          >
+            <Menu size={16} />
+          </Button>
+          
+          <Button
             variant="default"
             size="sm"
             onClick={handleNextExercise}
@@ -562,6 +590,193 @@ export default function WorkoutNewPage() {
         </div>
       )}
 
+      {/* Exercise Navigation Modal */}
+      {showExerciseNavigation && (
+        <div className="fixed inset-0 bg-black/50 flex flex-col z-50">
+          <div className="bg-background h-full flex flex-col">
+            {/* Header */}
+            <div className="flex items-center justify-between p-4 border-b border-border/20">
+              <h2 className="text-lg font-semibold">Exercise Navigation</h2>
+              <Button
+                variant="ghost"
+                size="sm"
+                onClick={() => setShowExerciseNavigation(false)}
+              >
+                <X size={20} />
+              </Button>
+            </div>
+            
+            {/* Exercise List */}
+            <div className="flex-1 overflow-y-auto p-4 space-y-6">
+              {/* Warm-up Section */}
+              {exercisesByPhase.warmup.length > 0 && (
+                <div>
+                  <h3 className="text-sm font-medium text-muted-foreground uppercase tracking-wide mb-3">
+                    Warm-up ({exercisesByPhase.warmup.length})
+                  </h3>
+                  <div className="space-y-2">
+                    {exercisesByPhase.warmup.map((exercise, index) => {
+                      const globalIndex = exerciseLogs.findIndex(ex => ex === exercise);
+                      const isCurrentExercise = globalIndex === currentExerciseIndex;
+                      const isCompleted = exercise.sets.every(set => set.completed);
+                      
+                      return (
+                        <Button
+                          key={globalIndex}
+                          variant={isCurrentExercise ? "default" : "outline"}
+                          className="w-full justify-between h-14 p-4"
+                          onClick={() => navigateToExercise(globalIndex)}
+                        >
+                          <div className="flex items-center space-x-3">
+                            <div className="text-sm text-muted-foreground">
+                              {globalIndex + 1}
+                            </div>
+                            <div className="text-left">
+                              <div className="font-medium">{exercise.name}</div>
+                              <div className="text-xs text-muted-foreground">
+                                {exercise.duration ? `${Math.floor(exercise.duration / 60)}:${(exercise.duration % 60).toString().padStart(2, '0')}` : 'Duration based'}
+                              </div>
+                            </div>
+                          </div>
+                          <div className="flex items-center">
+                            {isCompleted && <span className="text-green-500">✓</span>}
+                            {isCurrentExercise && <Badge variant="secondary" className="text-xs">Current</Badge>}
+                          </div>
+                        </Button>
+                      );
+                    })}
+                  </div>
+                </div>
+              )}
+
+              {/* Main Exercises Section */}
+              {exercisesByPhase.main.length > 0 && (
+                <div>
+                  <h3 className="text-sm font-medium text-muted-foreground uppercase tracking-wide mb-3">
+                    Main Exercises ({exercisesByPhase.main.length})
+                  </h3>
+                  <div className="space-y-2">
+                    {exercisesByPhase.main.map((exercise, index) => {
+                      const globalIndex = exerciseLogs.findIndex(ex => ex === exercise);
+                      const isCurrentExercise = globalIndex === currentExerciseIndex;
+                      const completedSets = exercise.sets.filter(set => set.completed).length;
+                      const totalSets = exercise.sets.length;
+                      const isCompleted = completedSets === totalSets;
+                      
+                      return (
+                        <Button
+                          key={globalIndex}
+                          variant={isCurrentExercise ? "default" : "outline"}
+                          className="w-full justify-between h-14 p-4"
+                          onClick={() => navigateToExercise(globalIndex)}
+                        >
+                          <div className="flex items-center space-x-3">
+                            <div className="text-sm text-muted-foreground">
+                              {globalIndex + 1}
+                            </div>
+                            <div className="text-left">
+                              <div className="font-medium">{exercise.name}</div>
+                              <div className="text-xs text-muted-foreground">
+                                {completedSets}/{totalSets} sets completed
+                              </div>
+                            </div>
+                          </div>
+                          <div className="flex items-center">
+                            {isCompleted && <span className="text-green-500">✓</span>}
+                            {isCurrentExercise && <Badge variant="secondary" className="text-xs">Current</Badge>}
+                          </div>
+                        </Button>
+                      );
+                    })}
+                  </div>
+                </div>
+              )}
+
+              {/* Cardio Section */}
+              {exercisesByPhase.cardio.length > 0 && (
+                <div>
+                  <h3 className="text-sm font-medium text-muted-foreground uppercase tracking-wide mb-3">
+                    Cardio ({exercisesByPhase.cardio.length})
+                  </h3>
+                  <div className="space-y-2">
+                    {exercisesByPhase.cardio.map((exercise, index) => {
+                      const globalIndex = exerciseLogs.findIndex(ex => ex === exercise);
+                      const isCurrentExercise = globalIndex === currentExerciseIndex;
+                      const isCompleted = exercise.sets.every(set => set.completed);
+                      
+                      return (
+                        <Button
+                          key={globalIndex}
+                          variant={isCurrentExercise ? "default" : "outline"}
+                          className="w-full justify-between h-14 p-4"
+                          onClick={() => navigateToExercise(globalIndex)}
+                        >
+                          <div className="flex items-center space-x-3">
+                            <div className="text-sm text-muted-foreground">
+                              {globalIndex + 1}
+                            </div>
+                            <div className="text-left">
+                              <div className="font-medium">{exercise.name}</div>
+                              <div className="text-xs text-muted-foreground">
+                                {exercise.duration ? `${Math.floor(exercise.duration / 60)}:${(exercise.duration % 60).toString().padStart(2, '0')}` : 'Duration based'}
+                              </div>
+                            </div>
+                          </div>
+                          <div className="flex items-center">
+                            {isCompleted && <span className="text-green-500">✓</span>}
+                            {isCurrentExercise && <Badge variant="secondary" className="text-xs">Current</Badge>}
+                          </div>
+                        </Button>
+                      );
+                    })}
+                  </div>
+                </div>
+              )}
+
+              {/* Cool-down Section */}
+              {exercisesByPhase.cooldown.length > 0 && (
+                <div>
+                  <h3 className="text-sm font-medium text-muted-foreground uppercase tracking-wide mb-3">
+                    Cool-down ({exercisesByPhase.cooldown.length})
+                  </h3>
+                  <div className="space-y-2">
+                    {exercisesByPhase.cooldown.map((exercise, index) => {
+                      const globalIndex = exerciseLogs.findIndex(ex => ex === exercise);
+                      const isCurrentExercise = globalIndex === currentExerciseIndex;
+                      const isCompleted = exercise.sets.every(set => set.completed);
+                      
+                      return (
+                        <Button
+                          key={globalIndex}
+                          variant={isCurrentExercise ? "default" : "outline"}
+                          className="w-full justify-between h-14 p-4"
+                          onClick={() => navigateToExercise(globalIndex)}
+                        >
+                          <div className="flex items-center space-x-3">
+                            <div className="text-sm text-muted-foreground">
+                              {globalIndex + 1}
+                            </div>
+                            <div className="text-left">
+                              <div className="font-medium">{exercise.name}</div>
+                              <div className="text-xs text-muted-foreground">
+                                {exercise.duration ? `${Math.floor(exercise.duration / 60)}:${(exercise.duration % 60).toString().padStart(2, '0')}` : 'Duration based'}
+                              </div>
+                            </div>
+                          </div>
+                          <div className="flex items-center">
+                            {isCompleted && <span className="text-green-500">✓</span>}
+                            {isCurrentExercise && <Badge variant="secondary" className="text-xs">Current</Badge>}
+                          </div>
+                        </Button>
+                      );
+                    })}
+                  </div>
+                </div>
+              )}
+            </div>
+          </div>
+        </div>
+      )}
 
     </div>
   );
