@@ -256,7 +256,7 @@ export default function WorkoutNewPage() {
       console.log('Exercise completed:', currentExercise);
       
       // Force component re-render to show completion state immediately
-      forceUpdate();
+      setForceRenderKey(prev => prev + 1);
       
       // Show completion feedback for 2 seconds before moving to next exercise
       setTimeout(() => {
@@ -813,15 +813,15 @@ export default function WorkoutNewPage() {
                         <Button
                           key={globalIndex}
                           variant={isCurrentExercise ? "default" : "outline"}
-                          className={`w-full justify-between h-14 p-4 ${isCompleted ? 'bg-green-50 dark:bg-green-950 border-green-200 dark:border-green-800' : ''}`}
+                          className={`w-full justify-between h-14 p-4 ${isCompleted ? 'bg-green-100/20 dark:bg-green-900/20 border-green-400 dark:border-green-500' : ''}`}
                           onClick={() => navigateToExercise(globalIndex)}
                         >
                           <div className="flex items-center space-x-3">
-                            <div className="text-sm text-muted-foreground">
-                              {isCompleted ? <span className="text-green-500 font-bold text-lg">✓</span> : globalIndex + 1}
+                            <div className="text-sm">
+                              {isCompleted ? <span className="text-green-600 dark:text-green-400 font-bold text-lg">✓</span> : <span className="text-muted-foreground">{globalIndex + 1}</span>}
                             </div>
                             <div className="text-left">
-                              <div className="font-medium">{exercise.name}</div>
+                              <div className={`font-medium ${isCompleted ? 'text-foreground' : ''}`}>{exercise.name}</div>
                               <div className="text-xs text-muted-foreground">
                                 {exercise.duration ? `${Math.floor(exercise.duration / 60)}:${(exercise.duration % 60).toString().padStart(2, '0')}` : 'Duration based'}
                               </div>
@@ -829,7 +829,7 @@ export default function WorkoutNewPage() {
                           </div>
                           <div className="flex items-center space-x-2">
                             {isCompleted ? (
-                              <Badge variant="outline" className="text-xs bg-green-100 text-green-700 border-green-300 dark:bg-green-900 dark:text-green-300 dark:border-green-700">
+                              <Badge variant="outline" className="text-xs bg-green-600 text-white border-green-600 dark:bg-green-700 dark:text-white dark:border-green-700">
                                 Completed
                               </Badge>
                             ) : (
@@ -862,15 +862,15 @@ export default function WorkoutNewPage() {
                         <Button
                           key={globalIndex}
                           variant={isCurrentExercise ? "default" : "outline"}
-                          className={`w-full justify-between h-14 p-4 ${isCompleted ? 'bg-green-50 dark:bg-green-950 border-green-200 dark:border-green-800' : ''}`}
+                          className={`w-full justify-between h-14 p-4 ${isCompleted ? 'bg-green-100/20 dark:bg-green-900/20 border-green-400 dark:border-green-500' : ''}`}
                           onClick={() => navigateToExercise(globalIndex)}
                         >
                           <div className="flex items-center space-x-3">
-                            <div className="text-sm text-muted-foreground">
-                              {isCompleted ? <span className="text-green-500 font-bold text-lg">✓</span> : globalIndex + 1}
+                            <div className="text-sm">
+                              {isCompleted ? <span className="text-green-600 dark:text-green-400 font-bold text-lg">✓</span> : <span className="text-muted-foreground">{globalIndex + 1}</span>}
                             </div>
                             <div className="text-left">
-                              <div className="font-medium">{exercise.name}</div>
+                              <div className={`font-medium ${isCompleted ? 'text-foreground' : ''}`}>{exercise.name}</div>
                               <div className="text-xs text-muted-foreground">
                                 {exercise.duration ? `${Math.floor(exercise.duration / 60)}:${(exercise.duration % 60).toString().padStart(2, '0')}` : 'Duration based'}
                               </div>
@@ -878,7 +878,7 @@ export default function WorkoutNewPage() {
                           </div>
                           <div className="flex items-center space-x-2">
                             {isCompleted ? (
-                              <Badge variant="outline" className="text-xs bg-green-100 text-green-700 border-green-300 dark:bg-green-900 dark:text-green-300 dark:border-green-700">
+                              <Badge variant="outline" className="text-xs bg-green-600 text-white border-green-600 dark:bg-green-700 dark:text-white dark:border-green-700">
                                 Completed
                               </Badge>
                             ) : (
