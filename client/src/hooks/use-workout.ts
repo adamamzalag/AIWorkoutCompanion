@@ -9,19 +9,22 @@ export function useWorkout(workoutId: number, userId: number) {
   const [exercises, setExercises] = useState<ExerciseLog[]>([]);
   const [isActive, setIsActive] = useState(false);
   const [startTime, setStartTime] = useState<Date | null>(null);
+  const [completedExercises, setCompletedExercises] = useState<Set<number>>(new Set());
 
   const queryClient = useQueryClient();
 
-  const startSessionMutation = useMutation({
+  const findOrCreateSessionMutation = useMutation({
     mutationFn: async () => {
+      // Create new session - we'll add resumption logic separately
       const response = await apiRequest('POST', '/api/workout-sessions', {
         workoutId,
         userId,
         exercises: []
       });
-      return response.json();
+      const session = await response.json();
+      return { session, completions: [], isResume: false };
     },
-    onSuccess: (session) => {
+    onSuccess: ({ session }) => {
       setSessionId(session.id);
       setIsActive(true);
       setStartTime(new Date());
@@ -71,8 +74,8 @@ export function useWorkout(workoutId: number, userId: number) {
   const startWorkout = useCallback((initialExercises: ExerciseLog[]) => {
     setExercises(initialExercises);
     setCurrentExerciseIndex(0);
-    startSessionMutation.mutate();
-  }, [startSessionMutation]);
+    findOrCreateSessionMutation.mutate();
+  }, [findOrCreateSessionMutation]);
 
   const completeSet = useCallback((exerciseIndex: number, setIndex: number, setData: { reps: number; weight?: number; duration?: number; actualReps?: number; actualWeight?: number; actualDuration?: number }) => {
     const completionTime = new Date();
@@ -171,6 +174,13 @@ export function useWorkout(workoutId: number, userId: number) {
   }) => {
     const completionTime = new Date();
     
+    // Update local completion tracking
+    setCompletedExercises(prev => {
+      const updated = new Set(prev);
+      updated.add(currentExerciseIndex);
+      return updated;
+    });
+    
     // Update local state for immediate UI feedback
     setExercises(prev => {
       const updated = [...prev];
@@ -245,7 +255,7 @@ export function useWorkout(workoutId: number, userId: number) {
     getCoachingTip,
     
     // Loading states
-    isStarting: startSessionMutation.isPending,
+    isStarting: findOrCreateSessionMutation.isPending,
     isUpdating: updateSessionMutation.isPending,
     isCompletingExercise: completeExerciseMutation.isPending,
     isGettingTip: coachingTipMutation.isPending,
