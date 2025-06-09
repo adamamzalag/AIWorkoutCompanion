@@ -431,7 +431,7 @@ export default function PlanDetailPage() {
                             </DialogContent>
                           </Dialog>
                           {plan?.isActive && (
-                            <Link href={`/workout?id=${workout.id}`} className="flex-1">
+                            <Link href={`/workout-new?id=${workout.id}`} className="flex-1">
                               <Button className="w-full h-9 glass-effect bg-gradient-to-r from-emerald-600 to-green-600 hover:from-emerald-700 hover:to-green-700 border border-emerald-400/50 text-white shadow-lg hover:shadow-xl transition-all duration-200">
                                 <Play size={14} className="mr-1" />
                                 Start Workout

@@ -67,7 +67,7 @@ export default function Home() {
   const handleStartWorkout = () => {
     if (todaysWorkout) {
       // Navigate to workout session with workout ID using smooth routing
-      setLocation(`/workout?id=${todaysWorkout.id}`);
+      setLocation(`/workout-new?id=${todaysWorkout.id}`);
     }
   };
 

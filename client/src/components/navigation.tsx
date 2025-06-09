@@ -79,7 +79,7 @@ function WorkoutBottomControls() {
 
 export function BottomNavigation() {
   const [location] = useLocation();
-  const isWorkoutPage = location === '/workout';
+  const isWorkoutPage = location === '/workout-new' || location.startsWith('/workout-new?');
 
   // If we're on the workout page, show workout-specific controls instead
   if (isWorkoutPage) {
