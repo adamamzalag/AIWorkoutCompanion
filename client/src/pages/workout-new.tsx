@@ -70,6 +70,8 @@ export default function WorkoutNewPage() {
     goToExercise,
     completeWorkout,
     getCoachingTip,
+    isExerciseCompleted,
+    getCompletedCount,
     isStarting,
     isUpdating,
     isGettingTip,
@@ -694,12 +696,12 @@ export default function WorkoutNewPage() {
               <div className="space-y-2">
                 <div className="flex justify-between text-sm text-muted-foreground">
                   <span>Progress</span>
-                  <span>{workoutExerciseLogs.filter(ex => ex.completedAt).length} of {workoutExerciseLogs.length} completed</span>
+                  <span>{getCompletedCount()} of {workoutExerciseLogs.length} completed</span>
                 </div>
                 <div className="w-full bg-gray-200 dark:bg-gray-700 rounded-full h-2">
                   <div 
                     className="bg-green-500 h-2 rounded-full transition-all duration-300" 
-                    style={{ width: `${(workoutExerciseLogs.filter(ex => ex.completedAt).length / workoutExerciseLogs.length) * 100}%` }}
+                    style={{ width: `${(getCompletedCount() / workoutExerciseLogs.length) * 100}%` }}
                   ></div>
                 </div>
               </div>
@@ -717,7 +719,7 @@ export default function WorkoutNewPage() {
                     {exercisesByPhase.warmup.map((exercise: any, index: number) => {
                       const globalIndex = workoutExerciseLogs.findIndex((ex: any) => ex === exercise);
                       const isCurrentExercise = globalIndex === currentExerciseIndex;
-                      const isCompleted = !!exercise.completedAt;
+                      const isCompleted = isExerciseCompleted(globalIndex);
                       
                       return (
                         <Button
@@ -766,7 +768,7 @@ export default function WorkoutNewPage() {
                     {exercisesByPhase.main.map((exercise: any, index: number) => {
                       const globalIndex = workoutExerciseLogs.findIndex((ex: any) => ex === exercise);
                       const isCurrentExercise = globalIndex === currentExerciseIndex;
-                      const isCompleted = !!exercise.completedAt;
+                      const isCompleted = isExerciseCompleted(globalIndex);
                       
                       return (
                         <Button

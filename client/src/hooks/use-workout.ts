@@ -84,7 +84,7 @@ export function useWorkout(workoutId: number, userId: number) {
       const updated = [...prev];
       if (updated[exerciseIndex]?.sets[setIndex]) {
         const currentSet = updated[exerciseIndex].sets[setIndex];
-        updated[exerciseIndex].sets[setIndex] = {
+        const updatedSet = {
           ...currentSet,
           // Update planned values if provided
           ...(setData.reps !== undefined && { reps: setData.reps }),
@@ -93,31 +93,17 @@ export function useWorkout(workoutId: number, userId: number) {
           // Track actual performance
           actualReps: setData.actualReps ?? setData.reps,
           actualWeight: setData.actualWeight ?? setData.weight,
-          actualDuration: setData.actualDuration ?? setData.duration
+          actualDuration: setData.actualDuration ?? setData.duration,
+          completedAt: completionTime
         };
+        updated[exerciseIndex].sets[setIndex] = updatedSet;
+        
+        // Auto-save to database
+        updateSessionMutation.mutate({ exercises: updated });
       }
       return updated;
     });
-
-    // Auto-save progress with enhanced data
-    const updatedExercises = [...exercises];
-    if (updatedExercises[exerciseIndex]?.sets[setIndex]) {
-      const currentSet = updatedExercises[exerciseIndex].sets[setIndex];
-      updatedExercises[exerciseIndex].sets[setIndex] = {
-        ...currentSet,
-        // Update planned values if provided
-        ...(setData.reps !== undefined && { reps: setData.reps }),
-        ...(setData.weight !== undefined && { weight: setData.weight }),
-        ...(setData.duration !== undefined && { duration: setData.duration }),
-        // Track actual performance
-        actualReps: setData.actualReps ?? setData.reps,
-        actualWeight: setData.actualWeight ?? setData.weight,
-        actualDuration: setData.actualDuration ?? setData.duration
-      };
-      
-      updateSessionMutation.mutate({ exercises: updatedExercises });
-    }
-  }, [exercises, updateSessionMutation]);
+  }, [updateSessionMutation]);
 
   const nextExercise = useCallback(() => {
     if (currentExerciseIndex < exercises.length - 1) {
@@ -243,6 +229,7 @@ export function useWorkout(workoutId: number, userId: number) {
     startTime,
     isLastExercise,
     isFirstExercise,
+    completedExercises,
     
     // Actions
     startWorkout,
@@ -253,6 +240,10 @@ export function useWorkout(workoutId: number, userId: number) {
     goToExercise,
     completeWorkout,
     getCoachingTip,
+    
+    // Helper functions
+    isExerciseCompleted: (index: number) => completedExercises.has(index),
+    getCompletedCount: () => completedExercises.size,
     
     // Loading states
     isStarting: findOrCreateSessionMutation.isPending,
