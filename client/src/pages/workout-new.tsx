@@ -249,19 +249,15 @@ export default function WorkoutNewPage() {
 
   const handleCompleteExercise = () => {
     if (currentExercise) {
-      // Mark the exercise as completed
-      const updatedExercises = [...workoutExerciseLogs];
-      updatedExercises[currentExerciseIndex] = {
-        ...currentExercise,
-        completedAt: new Date()
-      };
+      // Mark the exercise as completed by updating the current exercise directly
+      currentExercise.completedAt = new Date();
       
-      // Update session with completed exercise
-      // For now, we'll just move to next exercise - proper session update will be added
-      console.log('Exercise completed:', updatedExercises[currentExerciseIndex]);
+      console.log('Exercise completed:', currentExercise);
       
-      // Move to next exercise
-      handleNextExercise();
+      // Show completion feedback for 2 seconds before moving to next exercise
+      setTimeout(() => {
+        handleNextExercise();
+      }, 2000);
     }
   };
 
@@ -586,11 +582,14 @@ export default function WorkoutNewPage() {
                 {isUpdating ? 'Saving...' : 'Mark Exercise as Complete'}
               </Button>
             ) : (
-              <div className="w-full bg-green-100 dark:bg-green-900 border border-green-300 dark:border-green-700 rounded-lg p-4">
+              <div className="w-full bg-green-100 dark:bg-green-900 border border-green-300 dark:border-green-700 rounded-lg p-4 animate-pulse">
                 <div className="flex items-center justify-center space-x-2 text-green-700 dark:text-green-300">
-                  <span className="text-lg">✓</span>
-                  <span className="font-medium">Exercise Completed</span>
+                  <span className="text-2xl">✓</span>
+                  <span className="font-bold text-lg">Exercise Completed!</span>
                 </div>
+                <p className="text-sm text-green-600 dark:text-green-400 text-center mt-2">
+                  Moving to next exercise in a moment...
+                </p>
                 <p className="text-xs text-green-600 dark:text-green-400 text-center mt-1">
                   Completed at {currentExercise.completedAt.toLocaleTimeString()}
                 </p>
@@ -698,12 +697,12 @@ export default function WorkoutNewPage() {
                         <Button
                           key={globalIndex}
                           variant={isCurrentExercise ? "default" : "outline"}
-                          className="w-full justify-between h-14 p-4"
+                          className={`w-full justify-between h-14 p-4 ${isCompleted ? 'bg-green-50 dark:bg-green-950 border-green-200 dark:border-green-800' : ''}`}
                           onClick={() => navigateToExercise(globalIndex)}
                         >
                           <div className="flex items-center space-x-3">
                             <div className="text-sm text-muted-foreground">
-                              {globalIndex + 1}
+                              {isCompleted ? <span className="text-green-500 font-bold text-lg">✓</span> : globalIndex + 1}
                             </div>
                             <div className="text-left">
                               <div className="font-medium">{exercise.name}</div>
@@ -712,8 +711,16 @@ export default function WorkoutNewPage() {
                               </div>
                             </div>
                           </div>
-                          <div className="flex items-center">
-                            {isCompleted && <span className="text-green-500">✓</span>}
+                          <div className="flex items-center space-x-2">
+                            {isCompleted ? (
+                              <Badge variant="outline" className="text-xs bg-green-100 text-green-700 border-green-300 dark:bg-green-900 dark:text-green-300 dark:border-green-700">
+                                Completed
+                              </Badge>
+                            ) : (
+                              <Badge variant="outline" className="text-xs">
+                                Pending
+                              </Badge>
+                            )}
                             {isCurrentExercise && <Badge variant="secondary" className="text-xs">Current</Badge>}
                           </div>
                         </Button>
@@ -739,22 +746,30 @@ export default function WorkoutNewPage() {
                         <Button
                           key={globalIndex}
                           variant={isCurrentExercise ? "default" : "outline"}
-                          className="w-full justify-between h-14 p-4"
+                          className={`w-full justify-between h-14 p-4 ${isCompleted ? 'bg-green-50 dark:bg-green-950 border-green-200 dark:border-green-800' : ''}`}
                           onClick={() => navigateToExercise(globalIndex)}
                         >
                           <div className="flex items-center space-x-3">
                             <div className="text-sm text-muted-foreground">
-                              {globalIndex + 1}
+                              {isCompleted ? <span className="text-green-500 font-bold text-lg">✓</span> : globalIndex + 1}
                             </div>
                             <div className="text-left">
                               <div className="font-medium">{exercise.name}</div>
                               <div className="text-xs text-muted-foreground">
-                                {exercise.sets.length} sets • {isCompleted ? 'Completed' : 'Pending'}
+                                {exercise.sets.length} sets
                               </div>
                             </div>
                           </div>
-                          <div className="flex items-center">
-                            {isCompleted && <span className="text-green-500">✓</span>}
+                          <div className="flex items-center space-x-2">
+                            {isCompleted ? (
+                              <Badge variant="outline" className="text-xs bg-green-100 text-green-700 border-green-300 dark:bg-green-900 dark:text-green-300 dark:border-green-700">
+                                Completed
+                              </Badge>
+                            ) : (
+                              <Badge variant="outline" className="text-xs">
+                                Pending
+                              </Badge>
+                            )}
                             {isCurrentExercise && <Badge variant="secondary" className="text-xs">Current</Badge>}
                           </div>
                         </Button>
@@ -780,12 +795,12 @@ export default function WorkoutNewPage() {
                         <Button
                           key={globalIndex}
                           variant={isCurrentExercise ? "default" : "outline"}
-                          className="w-full justify-between h-14 p-4"
+                          className={`w-full justify-between h-14 p-4 ${isCompleted ? 'bg-green-50 dark:bg-green-950 border-green-200 dark:border-green-800' : ''}`}
                           onClick={() => navigateToExercise(globalIndex)}
                         >
                           <div className="flex items-center space-x-3">
                             <div className="text-sm text-muted-foreground">
-                              {globalIndex + 1}
+                              {isCompleted ? <span className="text-green-500 font-bold text-lg">✓</span> : globalIndex + 1}
                             </div>
                             <div className="text-left">
                               <div className="font-medium">{exercise.name}</div>
@@ -794,8 +809,16 @@ export default function WorkoutNewPage() {
                               </div>
                             </div>
                           </div>
-                          <div className="flex items-center">
-                            {isCompleted && <span className="text-green-500">✓</span>}
+                          <div className="flex items-center space-x-2">
+                            {isCompleted ? (
+                              <Badge variant="outline" className="text-xs bg-green-100 text-green-700 border-green-300 dark:bg-green-900 dark:text-green-300 dark:border-green-700">
+                                Completed
+                              </Badge>
+                            ) : (
+                              <Badge variant="outline" className="text-xs">
+                                Pending
+                              </Badge>
+                            )}
                             {isCurrentExercise && <Badge variant="secondary" className="text-xs">Current</Badge>}
                           </div>
                         </Button>
@@ -821,12 +844,12 @@ export default function WorkoutNewPage() {
                         <Button
                           key={globalIndex}
                           variant={isCurrentExercise ? "default" : "outline"}
-                          className="w-full justify-between h-14 p-4"
+                          className={`w-full justify-between h-14 p-4 ${isCompleted ? 'bg-green-50 dark:bg-green-950 border-green-200 dark:border-green-800' : ''}`}
                           onClick={() => navigateToExercise(globalIndex)}
                         >
                           <div className="flex items-center space-x-3">
                             <div className="text-sm text-muted-foreground">
-                              {globalIndex + 1}
+                              {isCompleted ? <span className="text-green-500 font-bold text-lg">✓</span> : globalIndex + 1}
                             </div>
                             <div className="text-left">
                               <div className="font-medium">{exercise.name}</div>
@@ -835,8 +858,16 @@ export default function WorkoutNewPage() {
                               </div>
                             </div>
                           </div>
-                          <div className="flex items-center">
-                            {isCompleted && <span className="text-green-500">✓</span>}
+                          <div className="flex items-center space-x-2">
+                            {isCompleted ? (
+                              <Badge variant="outline" className="text-xs bg-green-100 text-green-700 border-green-300 dark:bg-green-900 dark:text-green-300 dark:border-green-700">
+                                Completed
+                              </Badge>
+                            ) : (
+                              <Badge variant="outline" className="text-xs">
+                                Pending
+                              </Badge>
+                            )}
                             {isCurrentExercise && <Badge variant="secondary" className="text-xs">Current</Badge>}
                           </div>
                         </Button>
