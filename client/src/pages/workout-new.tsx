@@ -229,7 +229,7 @@ export default function WorkoutNewPage() {
     } else if (currentExerciseIndex < warmUpCount + mainCount + cardioCount) {
       return { phase: 'CARDIO', position: `${currentExerciseIndex - warmUpCount - mainCount + 1} of ${cardioCount}` };
     } else {
-      const coolDownCount = exerciseLogs.length - warmUpCount - mainCount - cardioCount;
+      const coolDownCount = workoutExerciseLogs.length - warmUpCount - mainCount - cardioCount;
       return { phase: 'COOLDOWN', position: `${currentExerciseIndex - warmUpCount - mainCount - cardioCount + 1} of ${coolDownCount}` };
     }
   };
@@ -241,7 +241,7 @@ export default function WorkoutNewPage() {
 
   const handleCompleteSet = (setData: { reps: number; weight?: number; duration?: number; actualReps?: number; actualWeight?: number; actualDuration?: number }) => {
     if (currentExercise) {
-      const currentExerciseLog = exerciseLogs[currentExerciseIndex];
+      const currentExerciseLog = workoutExerciseLogs[currentExerciseIndex];
       const nextSetIndex = 0; // Always use first set for logging data
       completeSet(currentExerciseIndex, nextSetIndex, setData);
     }
@@ -250,14 +250,15 @@ export default function WorkoutNewPage() {
   const handleCompleteExercise = () => {
     if (currentExercise) {
       // Mark the exercise as completed
-      const updatedExercises = [...exerciseLogs];
+      const updatedExercises = [...workoutExerciseLogs];
       updatedExercises[currentExerciseIndex] = {
         ...currentExercise,
         completedAt: new Date()
       };
       
       // Update session with completed exercise
-      updateSessionMutation.mutate({ exercises: updatedExercises });
+      // For now, we'll just move to next exercise - proper session update will be added
+      console.log('Exercise completed:', updatedExercises[currentExerciseIndex]);
       
       // Move to next exercise
       handleNextExercise();
@@ -283,21 +284,21 @@ export default function WorkoutNewPage() {
 
   // Group exercises by phase for navigation
   const exercisesByPhase = {
-    warmup: exerciseLogs.filter(ex => ex.isWarmup),
-    main: exerciseLogs.filter(ex => !ex.isWarmup && !ex.isCooldown && !ex.isCardio),
-    cardio: exerciseLogs.filter(ex => ex.isCardio),
-    cooldown: exerciseLogs.filter(ex => ex.isCooldown)
+    warmup: workoutExerciseLogs.filter((ex: any) => ex.isWarmup),
+    main: workoutExerciseLogs.filter((ex: any) => !ex.isWarmup && !ex.isCooldown && !ex.isCardio),
+    cardio: workoutExerciseLogs.filter((ex: any) => ex.isCardio),
+    cooldown: workoutExerciseLogs.filter((ex: any) => ex.isCooldown)
   };
 
   const navigateToExercise = (targetIndex: number) => {
-    if (targetIndex >= 0 && targetIndex < exerciseLogs.length && goToExercise) {
+    if (targetIndex >= 0 && targetIndex < workoutExerciseLogs.length && goToExercise) {
       goToExercise(targetIndex);
       setShowExerciseNavigation(false);
     }
   };
 
   // Show loading state
-  if (!workout || exerciseLogs.length === 0 || isStarting || !isActive || !currentExercise || !currentExerciseData) {
+  if (!workout || workoutExerciseLogs.length === 0 || isStarting || !isActive || !currentExercise || !currentExerciseData) {
     return (
       <div className="min-h-screen flex items-center justify-center bg-background">
         <div className="loading-spinner" />
@@ -339,7 +340,7 @@ export default function WorkoutNewPage() {
               videoId={currentExerciseData.youtubeId}
               exerciseName={currentExerciseData.name}
               exerciseIndex={currentExerciseIndex + 1}
-              totalExercises={exerciseLogs.length}
+              totalExercises={workoutExerciseLogs.length}
               workoutTitle={workout.title}
               className="w-full h-full"
             />
@@ -395,7 +396,7 @@ export default function WorkoutNewPage() {
                       const canInteract = !isExerciseCompleted;
                       
                       // Get rep info from current exercise log
-                      const currentExerciseLog = exerciseLogs[currentExerciseIndex];
+                      const currentExerciseLog = workoutExerciseLogs[currentExerciseIndex];
                       const repInfo = currentExerciseLog?.sets[index]?.repInfo;
                       const displayReps = repInfo ? 
                         repInfo.displayText : 
