@@ -668,15 +668,29 @@ export default function WorkoutNewPage() {
         <div className="fixed inset-0 bg-black/50 flex flex-col z-50">
           <div className="bg-background h-full flex flex-col">
             {/* Header */}
-            <div className="flex items-center justify-between p-4 border-b border-border/20">
-              <h2 className="text-lg font-semibold">Exercise Navigation</h2>
-              <Button
-                variant="ghost"
-                size="sm"
-                onClick={() => setShowExerciseNavigation(false)}
-              >
-                <X size={20} />
-              </Button>
+            <div className="p-4 border-b border-border/20">
+              <div className="flex items-center justify-between mb-3">
+                <h2 className="text-lg font-semibold">Exercise Navigation</h2>
+                <Button
+                  variant="ghost"
+                  size="sm"
+                  onClick={() => setShowExerciseNavigation(false)}
+                >
+                  <X size={20} />
+                </Button>
+              </div>
+              <div className="space-y-2">
+                <div className="flex justify-between text-sm text-muted-foreground">
+                  <span>Progress</span>
+                  <span>{workoutExerciseLogs.filter(ex => ex.completedAt).length} of {workoutExerciseLogs.length} completed</span>
+                </div>
+                <div className="w-full bg-gray-200 dark:bg-gray-700 rounded-full h-2">
+                  <div 
+                    className="bg-green-500 h-2 rounded-full transition-all duration-300" 
+                    style={{ width: `${(workoutExerciseLogs.filter(ex => ex.completedAt).length / workoutExerciseLogs.length) * 100}%` }}
+                  ></div>
+                </div>
+              </div>
             </div>
             
             {/* Exercise List */}
