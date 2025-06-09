@@ -186,6 +186,12 @@ export default function WorkoutNewPage() {
     }
   }, [exerciseLogs.length, isActive, isStarting, startWorkout, exerciseLogs]);
 
+  // Clear tip and guide when switching exercises
+  useEffect(() => {
+    setShowCoachingTip(false);
+    setInstructionsOpen(false);
+  }, [currentExerciseIndex]);
+
   // Get current exercise data
   const currentExerciseData = (() => {
     if (!currentExercise || !exercises) return null;
@@ -395,34 +401,35 @@ export default function WorkoutNewPage() {
                           {isActive && canInteract && (
                             <CollapsibleContent className="pt-3">
                               <div className="space-y-3 p-4 bg-muted/50 rounded-lg">
-                                <div className="grid grid-cols-2 gap-3 items-end">
-                                  <div>
-                                    <label className="text-sm font-medium block h-10 flex items-end">
-                                      Reps
-                                    </label>
-                                    <Input
-                                      type="number"
-                                      defaultValue={0}
-                                      placeholder={repInfo?.displayText || `${set.reps}`}
-                                      className="mt-1"
-                                    />
-                                    {repInfo && (
-                                      <div className="text-xs text-muted-foreground mt-1">
-                                        Target: {repInfo.displayText}
-                                      </div>
-                                    )}
-                                  </div>
-                                  {set.weight !== undefined && (
+                                <div className="space-y-3">
+                                  <div className="grid grid-cols-2 gap-3">
                                     <div>
-                                      <label className="text-sm font-medium block h-10 flex items-end">
-                                        Weight
+                                      <label className="text-sm font-medium block">
+                                        Reps
                                       </label>
                                       <Input
                                         type="number"
                                         defaultValue={0}
-                                        placeholder="lbs"
                                         className="mt-1"
                                       />
+                                    </div>
+                                    {set.weight !== undefined && (
+                                      <div>
+                                        <label className="text-sm font-medium block">
+                                          Weight
+                                        </label>
+                                        <Input
+                                          type="number"
+                                          defaultValue={0}
+                                          placeholder="lbs"
+                                          className="mt-1"
+                                        />
+                                      </div>
+                                    )}
+                                  </div>
+                                  {repInfo && (
+                                    <div className="text-center text-xs text-muted-foreground">
+                                      Target: {repInfo.displayText}
                                     </div>
                                   )}
                                 </div>
