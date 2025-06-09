@@ -22,7 +22,7 @@ export default function WorkoutNewPage() {
 
   // Get workout details
   const { data: workout, isLoading: isWorkoutLoading } = useQuery({
-    queryKey: [`/api/workouts/${workoutId}`],
+    queryKey: [`/api/workout/${workoutId}`],
     enabled: !!workoutId,
   });
 
