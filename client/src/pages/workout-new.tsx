@@ -11,7 +11,7 @@ import type { ExerciseLog } from '@/lib/types';
 
 export default function WorkoutNewPage() {
   const [location] = useLocation();
-  const workoutId = new URLSearchParams(location.split('?')[1] || '').get('id');
+  const workoutId = new URLSearchParams(window.location.search).get('id');
   const [, setLocation] = useLocation();
   const [forceRenderKey, setForceRenderKey] = useState(0);
   
@@ -65,24 +65,25 @@ export default function WorkoutNewPage() {
     const workoutExercises = workout.exercises as any[] || [];
     
     workoutExercises.forEach((exerciseData: any) => {
-      const sets = exerciseData.sets?.map((set: any) => ({
-        reps: set.reps || 0,
-        weight: set.weight,
-        duration: set.duration,
-        actualReps: set.actualReps,
-        actualWeight: set.actualWeight,
-        actualDuration: set.actualDuration,
-        notes: set.notes,
-        repInfo: set.repInfo
-      })) || [{ reps: exerciseData.reps || 0 }];
+      // Create sets array from the exercise data structure
+      const numSets = exerciseData.sets || 3; // Default to 3 sets if not specified
+      const sets = Array.from({ length: numSets }, (_, index) => ({
+        reps: parseInt(exerciseData.reps) || 0,
+        weight: exerciseData.weight,
+        duration: exerciseData.duration,
+        actualReps: undefined,
+        actualWeight: undefined,
+        actualDuration: undefined,
+        notes: undefined,
+        repInfo: undefined
+      }));
 
       logs.push({
-        id: exerciseData.id || Math.random(),
+        exerciseId: exerciseData.exerciseId || Math.random(),
         name: exerciseData.name || 'Unknown Exercise',
-        exerciseId: exerciseData.id,
         sets: sets,
         type: exerciseData.type || 'main',
-        targetMuscles: exerciseData.targetMuscles || [],
+        targetMuscles: exerciseData.muscleGroups || [],
         equipment: exerciseData.equipment || [],
         instructions: exerciseData.instructions || [],
         videoUrl: exerciseData.videoUrl,
