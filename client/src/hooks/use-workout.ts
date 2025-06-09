@@ -72,9 +72,7 @@ export function useWorkout(workoutId: number, userId: number) {
           // Track actual performance
           actualReps: setData.actualReps ?? setData.reps,
           actualWeight: setData.actualWeight ?? setData.weight,
-          actualDuration: setData.actualDuration ?? setData.duration,
-          completed: true,
-          completedAt: completionTime
+          actualDuration: setData.actualDuration ?? setData.duration
         };
       }
       return updated;
@@ -93,9 +91,7 @@ export function useWorkout(workoutId: number, userId: number) {
         // Track actual performance
         actualReps: setData.actualReps ?? setData.reps,
         actualWeight: setData.actualWeight ?? setData.weight,
-        actualDuration: setData.actualDuration ?? setData.duration,
-        completed: true,
-        completedAt: completionTime
+        actualDuration: setData.actualDuration ?? setData.duration
       };
       
       updateSessionMutation.mutate({ exercises: updatedExercises });

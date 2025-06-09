@@ -239,7 +239,7 @@ export default function WorkoutNewPage() {
   const handleCompleteSet = (setData: { reps: number; weight?: number; duration?: number; actualReps?: number; actualWeight?: number; actualDuration?: number }) => {
     if (currentExercise) {
       const currentExerciseLog = exerciseLogs[currentExerciseIndex];
-      const nextSetIndex = currentExerciseLog?.sets.findIndex(set => !set.completed) || 0;
+      const nextSetIndex = 0; // Always use first set for logging data
       completeSet(currentExerciseIndex, nextSetIndex, setData);
     }
   };
@@ -370,9 +370,9 @@ export default function WorkoutNewPage() {
                   
                   <div className="space-y-2">
                     {currentExercise.sets.map((set, index) => {
-                      const isCompleted = set.completed;
+                      const isExerciseCompleted = currentExercise.completedAt;
                       const isActive = activeSetIndex === index;
-                      const canInteract = !isCompleted;
+                      const canInteract = !isExerciseCompleted;
                       
                       // Get rep info from current exercise log
                       const currentExerciseLog = exerciseLogs[currentExerciseIndex];
@@ -385,13 +385,13 @@ export default function WorkoutNewPage() {
                         <Collapsible key={index} open={isActive} onOpenChange={(open) => setActiveSetIndex(open ? index : null)}>
                           <CollapsibleTrigger asChild>
                             <Button
-                              variant={isCompleted ? "default" : isActive ? "outline" : "ghost"}
+                              variant={!!isExerciseCompleted ? "default" : isActive ? "outline" : "ghost"}
                               className="w-full justify-between h-12"
-                              disabled={isCompleted}
+                              disabled={!!isExerciseCompleted}
                             >
                               <span>Set {index + 1}: {displayReps}</span>
                               <div className="flex items-center space-x-2">
-                                {isCompleted && <span className="text-green-500">✓</span>}
+                                {isExerciseCompleted && <span className="text-green-500">✓</span>}
                                 {canInteract && <ChevronDown size={16} />}
                               </div>
                             </Button>
