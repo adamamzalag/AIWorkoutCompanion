@@ -17,8 +17,6 @@ export interface ExerciseLog {
     reps: number;
     weight?: number;
     duration?: number; // for time-based exercises
-    completed: boolean;
-    completedAt?: Date; // when this set was completed
     actualReps?: number; // what the user actually performed vs planned
     actualWeight?: number; // actual weight used vs planned
     actualDuration?: number; // actual time vs planned

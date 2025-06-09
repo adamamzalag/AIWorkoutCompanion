@@ -108,7 +108,7 @@ export default function WorkoutNewPage() {
           exerciseLogs.push({
             exerciseId: activity.exerciseId,
             name: activity.exercise,
-            sets: [{ reps: 0, completed: false }],
+            sets: [{ reps: 0 }],
             restTime: '30 seconds',
             isWarmup: true,
             duration: activity.durationSeconds
@@ -131,7 +131,6 @@ export default function WorkoutNewPage() {
           sets: Array.from({ length: exercise.sets }, (_, index) => ({
             reps: getTargetRepsForSet(repInfo, index, exercise.sets),
             weight: exercise.weight ? 0 : undefined,
-            completed: false,
             repInfo: repInfo // Store rep info for display
           })),
           restTime: exercise.restTime || '60 seconds',
@@ -150,7 +149,7 @@ export default function WorkoutNewPage() {
           exerciseLogs.push({
             exerciseId: activity.exerciseId,
             name: activity.exercise,
-            sets: [{ reps: 0, completed: false }],
+            sets: [{ reps: 0 }],
             restTime: '30 seconds',
             isCardio: true,
             duration: activity.durationSeconds
@@ -169,7 +168,7 @@ export default function WorkoutNewPage() {
           exerciseLogs.push({
             exerciseId: activity.exerciseId,
             name: activity.exercise,
-            sets: [{ reps: 0, completed: false }],
+            sets: [{ reps: 0 }],
             restTime: '30 seconds',
             isCooldown: true,
             duration: activity.durationSeconds

@@ -120,6 +120,36 @@ export function useWorkout(workoutId: number, userId: number) {
     }
   }, [exercises.length]);
 
+  const addSet = useCallback((exerciseIndex: number) => {
+    setExercises(prev => {
+      const updated = [...prev];
+      if (updated[exerciseIndex]) {
+        const lastSet = updated[exerciseIndex].sets[updated[exerciseIndex].sets.length - 1];
+        const newSet = {
+          reps: lastSet?.reps || 0,
+          weight: lastSet?.weight,
+          repInfo: lastSet?.repInfo
+        };
+        updated[exerciseIndex].sets.push(newSet);
+        
+        updateSessionMutation.mutate({ exercises: updated });
+      }
+      return updated;
+    });
+  }, [updateSessionMutation]);
+
+  const removeSet = useCallback((exerciseIndex: number, setIndex: number) => {
+    setExercises(prev => {
+      const updated = [...prev];
+      if (updated[exerciseIndex] && updated[exerciseIndex].sets.length > 1) {
+        updated[exerciseIndex].sets.splice(setIndex, 1);
+        
+        updateSessionMutation.mutate({ exercises: updated });
+      }
+      return updated;
+    });
+  }, [updateSessionMutation]);
+
   const completeExercise = useCallback((exerciseIndex: number, skipped: boolean = false) => {
     const completionTime = new Date();
     
@@ -131,10 +161,12 @@ export function useWorkout(workoutId: number, userId: number) {
           completedAt: completionTime,
           skipped
         };
+        
+        updateSessionMutation.mutate({ exercises: updated });
       }
       return updated;
     });
-  }, []);
+  }, [updateSessionMutation]);
 
   const completeWorkout = useCallback(() => {
     if (startTime) {
