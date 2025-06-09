@@ -1,4 +1,4 @@
-import { useState, useEffect } from 'react';
+import { useState, useEffect, useMemo } from 'react';
 import { useQuery } from '@tanstack/react-query';
 import { useLocation } from 'wouter';
 import { Button } from '@/components/ui/button';
@@ -95,9 +95,10 @@ export default function WorkoutNewPage() {
   }, [coachingTip, isGettingTip]);
 
   // Create exercise logs from workout data
-  const exerciseLogs: ExerciseLog[] = [];
-  
-  if (workout) {
+  const workoutExerciseLogs: ExerciseLog[] = useMemo(() => {
+    const logs: ExerciseLog[] = [];
+    
+    if (!workout) return logs;
     // Parse warm-up activities
     const warmUp = workout.warmUp ? 
       (typeof workout.warmUp === 'string' ? JSON.parse(workout.warmUp) : workout.warmUp) : {};
@@ -105,7 +106,7 @@ export default function WorkoutNewPage() {
     if (warmUp.activities) {
       warmUp.activities.forEach((activity: any) => {
         if (activity.exerciseId && typeof activity.exerciseId === 'number') {
-          exerciseLogs.push({
+          logs.push({
             exerciseId: activity.exerciseId,
             name: activity.exercise,
             sets: [{ reps: 0 }],
@@ -176,7 +177,9 @@ export default function WorkoutNewPage() {
         }
       });
     }
-  }
+    
+    return logs;
+  }, [workout]);
 
   // Auto-start workout
   useEffect(() => {
@@ -563,6 +566,35 @@ export default function WorkoutNewPage() {
                       className="min-h-20"
                     />
                   </div>
+
+                  {/* Exercise Completion */}
+                  {!currentExercise?.completedAt && (
+                    <div className="pt-4 border-t">
+                      <Button
+                        onClick={handleCompleteExercise}
+                        className="w-full"
+                        size="lg"
+                        disabled={isUpdating}
+                      >
+                        {isUpdating ? 'Saving...' : 'Mark Exercise as Complete'}
+                      </Button>
+                      <p className="text-xs text-muted-foreground text-center mt-2">
+                        This will save your progress and move to the next exercise
+                      </p>
+                    </div>
+                  )}
+
+                  {currentExercise?.completedAt && (
+                    <div className="pt-4 border-t">
+                      <div className="flex items-center justify-center space-x-2 text-green-600 dark:text-green-400">
+                        <span className="text-lg">✓</span>
+                        <span className="font-medium">Exercise Completed</span>
+                      </div>
+                      <p className="text-xs text-muted-foreground text-center mt-1">
+                        Completed at {currentExercise.completedAt.toLocaleTimeString()}
+                      </p>
+                    </div>
+                  )}
                 </CardContent>
               </Card>
             </CollapsibleContent>
