@@ -79,7 +79,7 @@ export default function WorkoutNewPage() {
   const [showExerciseNavigation, setShowExerciseNavigation] = useState(false);
   const handleGetCoachingTip = () => {
     if (!isGettingTip && currentExerciseData) {
-      const currentExerciseLog = exerciseLogs[currentExerciseIndex];
+      const currentExerciseLog = workoutExerciseLogs[currentExerciseIndex];
       getCoachingTip(currentExerciseData.name, {
         sets: currentExerciseLog?.sets || [],
         exerciseType: currentExercise.isWarmup ? 'warmup' : currentExercise.isCooldown ? 'cooldown' : 'main'
@@ -126,7 +126,7 @@ export default function WorkoutNewPage() {
       if (exercise.exerciseId && typeof exercise.exerciseId === 'number') {
         const repInfo = parseRepString(exercise.reps || '12');
         
-        exerciseLogs.push({
+        logs.push({
           exerciseId: exercise.exerciseId,
           name: exercise.name,
           sets: Array.from({ length: exercise.sets }, (_, index) => ({
@@ -147,7 +147,7 @@ export default function WorkoutNewPage() {
     if (cardio.activities) {
       cardio.activities.forEach((activity: any) => {
         if (activity.exerciseId && typeof activity.exerciseId === 'number') {
-          exerciseLogs.push({
+          logs.push({
             exerciseId: activity.exerciseId,
             name: activity.exercise,
             sets: [{ reps: 0 }],
@@ -166,7 +166,7 @@ export default function WorkoutNewPage() {
     if (coolDown.activities) {
       coolDown.activities.forEach((activity: any) => {
         if (activity.exerciseId && typeof activity.exerciseId === 'number') {
-          exerciseLogs.push({
+          logs.push({
             exerciseId: activity.exerciseId,
             name: activity.exercise,
             sets: [{ reps: 0 }],
@@ -183,10 +183,10 @@ export default function WorkoutNewPage() {
 
   // Auto-start workout
   useEffect(() => {
-    if (exerciseLogs.length > 0 && !isActive && !isStarting) {
-      startWorkout(exerciseLogs);
+    if (workoutExerciseLogs.length > 0 && !isActive && !isStarting) {
+      startWorkout(workoutExerciseLogs);
     }
-  }, [exerciseLogs.length, isActive, isStarting, startWorkout, exerciseLogs]);
+  }, [workoutExerciseLogs.length, isActive, isStarting, startWorkout, workoutExerciseLogs]);
 
   // Clear tip and guide when switching exercises
   useEffect(() => {
