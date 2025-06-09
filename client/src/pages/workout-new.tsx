@@ -73,7 +73,9 @@ export default function WorkoutNewPage() {
     isStarting,
     isUpdating,
     isGettingTip,
-    coachingTip
+    coachingTip,
+    exerciseCompletions,
+    isCheckingResumable
   } = useWorkout(workoutId, userProfile?.id || 0);
 
   const [showCoachingTip, setShowCoachingTip] = useState(false);
@@ -318,10 +320,17 @@ export default function WorkoutNewPage() {
   };
 
   // Show loading state
-  if (!workout || workoutExerciseLogs.length === 0 || isStarting || !isActive || !currentExercise || !currentExerciseData) {
+  if (!workout || workoutExerciseLogs.length === 0 || isStarting || isCheckingResumable || !isActive || !currentExercise || !currentExerciseData) {
     return (
       <div className="min-h-screen flex items-center justify-center bg-background">
-        <div className="loading-spinner" />
+        <div className="flex flex-col items-center space-y-4">
+          <div className="loading-spinner" />
+          <p className="text-muted-foreground">
+            {isCheckingResumable ? 'Checking for previous session...' : 
+             isStarting ? 'Starting workout...' : 
+             'Loading workout...'}
+          </p>
+        </div>
       </div>
     );
   }
@@ -411,7 +420,9 @@ export default function WorkoutNewPage() {
                   
                   <div className="space-y-2">
                     {currentExercise.sets.map((set, index) => {
-                      const isExerciseCompleted = currentExercise.completedAt || completedExercises.includes(currentExerciseIndex);
+                      const isExerciseCompleted = currentExercise.completedAt || 
+                        completedExercises.includes(currentExerciseIndex) ||
+                        exerciseCompletions.some(comp => comp.exerciseIndex === currentExerciseIndex);
                       const isActive = activeSetIndex === index;
                       const canInteract = !isExerciseCompleted;
                       
@@ -601,7 +612,9 @@ export default function WorkoutNewPage() {
 
           {/* Exercise Completion Button - Always Visible */}
           <div className="px-4 pb-4">
-            {!currentExercise?.completedAt && !completedExercises.includes(currentExerciseIndex) ? (
+            {!currentExercise?.completedAt && 
+             !completedExercises.includes(currentExerciseIndex) && 
+             !exerciseCompletions.some(comp => comp.exerciseIndex === currentExerciseIndex) ? (
               <Button
                 onClick={handleCompleteExercise}
                 className="w-full bg-green-600 hover:bg-green-700 text-white"
