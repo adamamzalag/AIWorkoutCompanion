@@ -568,38 +568,35 @@ export default function WorkoutNewPage() {
                     />
                   </div>
 
-                  {/* Exercise Completion */}
-                  {!currentExercise?.completedAt && (
-                    <div className="pt-4 border-t">
-                      <Button
-                        onClick={handleCompleteExercise}
-                        className="w-full"
-                        size="lg"
-                        disabled={isUpdating}
-                      >
-                        {isUpdating ? 'Saving...' : 'Mark Exercise as Complete'}
-                      </Button>
-                      <p className="text-xs text-muted-foreground text-center mt-2">
-                        This will save your progress and move to the next exercise
-                      </p>
-                    </div>
-                  )}
 
-                  {currentExercise?.completedAt && (
-                    <div className="pt-4 border-t">
-                      <div className="flex items-center justify-center space-x-2 text-green-600 dark:text-green-400">
-                        <span className="text-lg">✓</span>
-                        <span className="font-medium">Exercise Completed</span>
-                      </div>
-                      <p className="text-xs text-muted-foreground text-center mt-1">
-                        Completed at {currentExercise.completedAt.toLocaleTimeString()}
-                      </p>
-                    </div>
-                  )}
                 </CardContent>
               </Card>
             </CollapsibleContent>
           </Collapsible>
+
+          {/* Exercise Completion Button - Always Visible */}
+          <div className="px-4 pb-4">
+            {!currentExercise?.completedAt ? (
+              <Button
+                onClick={handleCompleteExercise}
+                className="w-full bg-green-600 hover:bg-green-700 text-white"
+                size="lg"
+                disabled={isUpdating}
+              >
+                {isUpdating ? 'Saving...' : 'Mark Exercise as Complete'}
+              </Button>
+            ) : (
+              <div className="w-full bg-green-100 dark:bg-green-900 border border-green-300 dark:border-green-700 rounded-lg p-4">
+                <div className="flex items-center justify-center space-x-2 text-green-700 dark:text-green-300">
+                  <span className="text-lg">✓</span>
+                  <span className="font-medium">Exercise Completed</span>
+                </div>
+                <p className="text-xs text-green-600 dark:text-green-400 text-center mt-1">
+                  Completed at {currentExercise.completedAt.toLocaleTimeString()}
+                </p>
+              </div>
+            )}
+          </div>
         </div>
       </main>
 
