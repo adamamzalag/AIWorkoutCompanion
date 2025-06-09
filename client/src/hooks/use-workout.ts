@@ -50,6 +50,24 @@ export function useWorkout(workoutId: number, userId: number) {
     }
   });
 
+  const completeExerciseMutation = useMutation({
+    mutationFn: async (data: { 
+      exerciseId: number; 
+      exerciseIndex: number; 
+      completedSets: any[]; 
+      completionNotes?: string;
+      skipped?: boolean;
+      autoCompleted?: boolean;
+    }) => {
+      if (!sessionId) throw new Error('No active session');
+      const response = await apiRequest('POST', `/api/workout-session/${sessionId}/complete-exercise`, data);
+      return response.json();
+    },
+    onSuccess: () => {
+      queryClient.invalidateQueries({ queryKey: ['/api/workout-sessions', userId] });
+    }
+  });
+
   const startWorkout = useCallback((initialExercises: ExerciseLog[]) => {
     setExercises(initialExercises);
     setCurrentExerciseIndex(0);
@@ -146,23 +164,36 @@ export function useWorkout(workoutId: number, userId: number) {
     });
   }, [updateSessionMutation]);
 
-  const completeExercise = useCallback((exerciseIndex: number, skipped: boolean = false) => {
+  const completeExercise = useCallback((exerciseId: number, completedSets: any[], options?: { 
+    skipped?: boolean; 
+    autoCompleted?: boolean; 
+    notes?: string 
+  }) => {
     const completionTime = new Date();
     
+    // Update local state for immediate UI feedback
     setExercises(prev => {
       const updated = [...prev];
-      if (updated[exerciseIndex]) {
-        updated[exerciseIndex] = {
-          ...updated[exerciseIndex],
+      if (updated[currentExerciseIndex]) {
+        updated[currentExerciseIndex] = {
+          ...updated[currentExerciseIndex],
           completedAt: completionTime,
-          skipped
+          skipped: options?.skipped || false
         };
-        
-        updateSessionMutation.mutate({ exercises: updated });
       }
       return updated;
     });
-  }, [updateSessionMutation]);
+
+    // Save to database via new API
+    completeExerciseMutation.mutate({
+      exerciseId,
+      exerciseIndex: currentExerciseIndex,
+      completedSets,
+      completionNotes: options?.notes,
+      skipped: options?.skipped || false,
+      autoCompleted: options?.autoCompleted || false
+    });
+  }, [completeExerciseMutation, currentExerciseIndex]);
 
   const completeWorkout = useCallback(() => {
     if (startTime) {
