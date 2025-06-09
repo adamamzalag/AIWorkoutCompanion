@@ -79,6 +79,8 @@ export default function WorkoutNewPage() {
   const [showCoachingTip, setShowCoachingTip] = useState(false);
   const [activeSetIndex, setActiveSetIndex] = useState<number | null>(null);
   const [showExerciseNavigation, setShowExerciseNavigation] = useState(false);
+  const [currentSetData, setCurrentSetData] = useState<{ reps: number; weight?: number }>({ reps: 0 });
+  const [completedExercises, setCompletedExercises] = useState<Set<number>>(new Set());
   const handleGetCoachingTip = () => {
     if (!isGettingTip && currentExerciseData) {
       const currentExerciseLog = workoutExerciseLogs[currentExerciseIndex];
@@ -241,11 +243,18 @@ export default function WorkoutNewPage() {
   // Get plan name
   const planName = workoutPlans?.find(plan => plan.id === workout?.planId)?.title || 'Workout Plan';
 
-  const handleCompleteSet = (setData: { reps: number; weight?: number; duration?: number; actualReps?: number; actualWeight?: number; actualDuration?: number }) => {
-    if (currentExercise) {
-      const currentExerciseLog = workoutExerciseLogs[currentExerciseIndex];
-      const nextSetIndex = 0; // Always use first set for logging data
-      completeSet(currentExerciseIndex, nextSetIndex, setData);
+  const handleCompleteSet = (setIndex: number) => {
+    if (currentExercise && currentSetData) {
+      completeSet(currentExerciseIndex, setIndex, {
+        reps: currentSetData.reps,
+        weight: currentSetData.weight,
+        actualReps: currentSetData.reps,
+        actualWeight: currentSetData.weight
+      });
+      
+      // Reset form for next set
+      setCurrentSetData({ reps: 0 });
+      setActiveSetIndex(null);
     }
   };
 
@@ -258,8 +267,11 @@ export default function WorkoutNewPage() {
       completeExercise(currentExerciseData.id, currentExerciseLog?.sets || [], {
         skipped: false,
         autoCompleted: false,
-        notes: undefined
+        notes: exerciseNotes
       });
+      
+      // Mark exercise as completed locally
+      setCompletedExercises(prev => new Set(Array.from(prev).concat([currentExerciseIndex])));
       
       console.log('Exercise completed and saved to database:', currentExercise);
       
@@ -437,7 +449,11 @@ export default function WorkoutNewPage() {
                                       </label>
                                       <Input
                                         type="number"
-                                        defaultValue={0}
+                                        value={currentSetData.reps}
+                                        onChange={(e) => setCurrentSetData(prev => ({ 
+                                          ...prev, 
+                                          reps: parseInt(e.target.value) || 0 
+                                        }))}
                                         className="mt-1"
                                       />
                                     </div>
@@ -448,7 +464,11 @@ export default function WorkoutNewPage() {
                                         </label>
                                         <Input
                                           type="number"
-                                          defaultValue={0}
+                                          value={currentSetData.weight || 0}
+                                          onChange={(e) => setCurrentSetData(prev => ({ 
+                                            ...prev, 
+                                            weight: parseInt(e.target.value) || 0 
+                                          }))}
                                           placeholder="lbs"
                                           className="mt-1"
                                         />
@@ -462,10 +482,7 @@ export default function WorkoutNewPage() {
                                   )}
                                 </div>
                                 <Button 
-                                  onClick={() => handleCompleteSet({ 
-                                    reps: set.reps, 
-                                    weight: set.weight 
-                                  })}
+                                  onClick={() => handleCompleteSet(index)}
                                   className="w-full"
                                   disabled={isUpdating}
                                 >
