@@ -8,6 +8,7 @@ import { Collapsible, CollapsibleContent, CollapsibleTrigger } from '@/component
 import { Input } from '@/components/ui/input';
 import { Textarea } from '@/components/ui/textarea';
 import { YouTubeVideo } from '@/components/youtube-video';
+import { ExerciseTimer } from '@/components/exercise-timer';
 import { useWorkout } from '@/hooks/use-workout';
 import { parseRepString, formatSetReps, getTargetRepsForSet } from '@/utils/rep-parser';
 import { 
@@ -341,16 +342,18 @@ export default function WorkoutNewPage() {
             <CardContent className="p-4">
               {currentExercise.isWarmup || currentExercise.isCooldown || currentExercise.isCardio ? (
                 /* Time-based exercise */
-                <div className="text-center space-y-4">
-                  <div className="text-4xl font-bold text-primary">
-                    {Math.floor((currentExercise.duration || 0) / 60)}:{((currentExercise.duration || 0) % 60).toString().padStart(2, '0')}
-                  </div>
-                  <div className="text-sm text-muted-foreground">Duration</div>
-                  <Button className="w-full">
-                    <Play size={16} className="mr-2" />
-                    Start Timer
-                  </Button>
-                </div>
+                <ExerciseTimer
+                  duration={currentExercise.duration || 60}
+                  onComplete={() => {
+                    // Auto-advance to next exercise when timer completes
+                    setTimeout(() => {
+                      if (!isLastExercise) {
+                        nextExercise();
+                      }
+                    }, 1000);
+                  }}
+                  isActive={isActive}
+                />
               ) : (
                 /* Rep-based exercise - Accordion */
                 <div className="space-y-3">
@@ -392,24 +395,32 @@ export default function WorkoutNewPage() {
                           {isActive && canInteract && (
                             <CollapsibleContent className="pt-3">
                               <div className="space-y-3 p-4 bg-muted/50 rounded-lg">
-                                <div className="grid grid-cols-2 gap-3">
+                                <div className="grid grid-cols-2 gap-3 items-end">
                                   <div>
-                                    <label className="text-sm font-medium">
-                                      Reps {repInfo && `(Target: ${repInfo.displayText})`}
+                                    <label className="text-sm font-medium block h-10 flex items-end">
+                                      Reps
                                     </label>
                                     <Input
                                       type="number"
-                                      defaultValue={set.reps}
-                                      placeholder={repInfo?.inputPlaceholder || `${set.reps}`}
+                                      defaultValue={0}
+                                      placeholder={repInfo?.displayText || `${set.reps}`}
                                       className="mt-1"
                                     />
+                                    {repInfo && (
+                                      <div className="text-xs text-muted-foreground mt-1">
+                                        Target: {repInfo.displayText}
+                                      </div>
+                                    )}
                                   </div>
                                   {set.weight !== undefined && (
                                     <div>
-                                      <label className="text-sm font-medium">Weight</label>
+                                      <label className="text-sm font-medium block h-10 flex items-end">
+                                        Weight
+                                      </label>
                                       <Input
                                         type="number"
-                                        defaultValue={set.weight || 0}
+                                        defaultValue={0}
+                                        placeholder="lbs"
                                         className="mt-1"
                                       />
                                     </div>
@@ -436,7 +447,7 @@ export default function WorkoutNewPage() {
               )}
 
               {/* Action Controls */}
-              <div className="flex justify-center space-x-2 mt-4">
+              <div className="flex justify-center space-x-4 mt-4">
                 <Button
                   variant="outline"
                   size="sm"
@@ -453,14 +464,6 @@ export default function WorkoutNewPage() {
                 >
                   <FileText size={16} className="mr-1" />
                   Guide
-                </Button>
-                <Button
-                  variant="outline"
-                  size="sm"
-                  onClick={handleNextExercise}
-                >
-                  <SkipForward size={16} className="mr-1" />
-                  Skip
                 </Button>
               </div>
             </CardContent>
@@ -560,8 +563,14 @@ export default function WorkoutNewPage() {
             variant="outline"
             size="sm"
             onClick={() => setShowExerciseNavigation(true)}
+            className="flex-1 max-w-xs mx-2"
           >
-            <Menu size={16} />
+            <div className="flex items-center space-x-2">
+              <span className="truncate text-xs">
+                {currentExercise?.name || 'Select Exercise'}
+              </span>
+              <ChevronDown size={12} />
+            </div>
           </Button>
           
           <Button
