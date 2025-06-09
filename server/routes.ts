@@ -543,7 +543,7 @@ export async function registerRoutes(app: Express): Promise<Server> {
       const workoutId = parseInt(req.params.workoutId);
       const userId = parseInt(req.params.userId);
       
-      const session = await storage.findResumableWorkoutSession(workoutId, userId);
+      const session = await storage.findResumableWorkoutSession(userId, workoutId);
       if (session) {
         res.json({ session });
       } else {
@@ -551,6 +551,72 @@ export async function registerRoutes(app: Express): Promise<Server> {
       }
     } catch (error) {
       res.status(400).json({ error: "Invalid parameters" });
+    }
+  });
+
+  // Resume a workout session
+  app.get("/api/workout-sessions/:sessionId/resume", async (req, res) => {
+    try {
+      const sessionId = parseInt(req.params.sessionId);
+      const session = await storage.getWorkoutSession(sessionId);
+      
+      if (!session) {
+        return res.status(404).json({ error: "Session not found" });
+      }
+      
+      // Update last active timestamp
+      await storage.updateWorkoutSession(sessionId, {
+        lastActiveAt: new Date()
+      });
+      
+      res.json(session);
+    } catch (error) {
+      res.status(400).json({ error: "Invalid session ID" });
+    }
+  });
+
+  // Update exercise progress in a session
+  app.patch("/api/workout-sessions/:sessionId/exercise-progress", async (req, res) => {
+    try {
+      const sessionId = parseInt(req.params.sessionId);
+      const { exerciseIndex, exerciseData } = req.body;
+      
+      const session = await storage.getWorkoutSession(sessionId);
+      if (!session) {
+        return res.status(404).json({ error: "Session not found" });
+      }
+      
+      // Parse current exercises data
+      const currentExercises = session.exercises as any[] || [];
+      
+      // Update the specific exercise
+      if (exerciseIndex >= 0 && exerciseIndex < currentExercises.length) {
+        currentExercises[exerciseIndex] = {
+          ...currentExercises[exerciseIndex],
+          ...exerciseData,
+          lastUpdated: new Date().toISOString()
+        };
+      }
+      
+      // Count completed and skipped exercises
+      const completedCount = currentExercises.filter(ex => 
+        ex.completed || (ex.sets && ex.sets.some((set: any) => set.completed))
+      ).length;
+      
+      const skippedCount = currentExercises.filter(ex => ex.skipped).length;
+      
+      // Update the session
+      const updatedSession = await storage.updateWorkoutSession(sessionId, {
+        exercises: currentExercises,
+        exercisesCompleted: completedCount,
+        exercisesSkipped: skippedCount,
+        lastActiveAt: new Date()
+      });
+      
+      res.json(updatedSession);
+    } catch (error) {
+      console.error("Error updating exercise progress:", error);
+      res.status(400).json({ error: "Failed to update exercise progress" });
     }
   });
 

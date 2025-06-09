@@ -15,19 +15,66 @@ export function useWorkout(workoutId: number, userId: number) {
 
   const findOrCreateSessionMutation = useMutation({
     mutationFn: async () => {
-      // Create new session - we'll add resumption logic separately
-      const response = await apiRequest('POST', '/api/workout-sessions', {
-        workoutId,
-        userId,
-        exercises: []
-      });
-      const session = await response.json();
-      return { session, completions: [], isResume: false };
+      // First, check for resumable session
+      const resumableResponse = await apiRequest('GET', `/api/workout-sessions/find-resumable/${workoutId}/${userId}`);
+      const { session: resumableSession } = await resumableResponse.json();
+      
+      if (resumableSession) {
+        // Resume existing session
+        const resumeResponse = await apiRequest('GET', `/api/workout-sessions/${resumableSession.id}/resume`);
+        const resumedSession = await resumeResponse.json();
+        return { session: resumedSession, isResume: true };
+      } else {
+        // Create new session
+        const response = await apiRequest('POST', '/api/workout-sessions', {
+          workoutId,
+          userId,
+          exercises: []
+        });
+        const session = await response.json();
+        return { session, isResume: false };
+      }
     },
-    onSuccess: ({ session }) => {
+    onSuccess: ({ session, isResume }) => {
       setSessionId(session.id);
       setIsActive(true);
-      setStartTime(new Date());
+      
+      if (isResume) {
+        // Restore session state
+        const sessionExercises = session.exercises || [];
+        setExercises(sessionExercises);
+        
+        // Find current exercise index based on completion status
+        const lastIncompleteIndex = sessionExercises.findIndex((ex: any) => 
+          !ex.completed && !ex.skipped
+        );
+        setCurrentExerciseIndex(lastIncompleteIndex >= 0 ? lastIncompleteIndex : 0);
+        
+        // Restore completed exercises set
+        const completed = new Set<number>();
+        sessionExercises.forEach((ex: any, index: number) => {
+          if (ex.completed) completed.add(index);
+        });
+        setCompletedExercises(completed);
+        
+        setStartTime(new Date(session.startedAt));
+      } else {
+        setStartTime(new Date());
+      }
+      
+      queryClient.invalidateQueries({ queryKey: ['/api/workout-sessions', userId] });
+    }
+  });
+
+  const updateExerciseProgressMutation = useMutation({
+    mutationFn: async (data: { exerciseIndex: number; exerciseData: any }) => {
+      if (!sessionId) throw new Error('No active session');
+      const response = await apiRequest('PATCH', `/api/workout-sessions/${sessionId}/exercise-progress`, data);
+      return response.json();
+    },
+    onSuccess: (updatedSession) => {
+      // Update local state with server response
+      setExercises(updatedSession.exercises || []);
       queryClient.invalidateQueries({ queryKey: ['/api/workout-sessions', userId] });
     }
   });
@@ -53,23 +100,23 @@ export function useWorkout(workoutId: number, userId: number) {
     }
   });
 
-  const completeExerciseMutation = useMutation({
-    mutationFn: async (data: { 
-      exerciseId: number; 
-      exerciseIndex: number; 
-      completedSets: any[]; 
-      completionNotes?: string;
-      skipped?: boolean;
-      autoCompleted?: boolean;
-    }) => {
-      if (!sessionId) throw new Error('No active session');
-      const response = await apiRequest('POST', `/api/workout-session/${sessionId}/complete-exercise`, data);
-      return response.json();
-    },
-    onSuccess: () => {
-      queryClient.invalidateQueries({ queryKey: ['/api/workout-sessions', userId] });
+  const completeExercise = useCallback((exerciseIndex: number, completed: boolean = true, skipped: boolean = false) => {
+    const exerciseData = {
+      completed,
+      skipped,
+      completedAt: completed ? new Date().toISOString() : null
+    };
+    
+    updateExerciseProgressMutation.mutate({ exerciseIndex, exerciseData });
+    
+    if (completed) {
+      setCompletedExercises(prev => new Set(prev).add(exerciseIndex));
     }
-  });
+  }, [updateExerciseProgressMutation]);
+
+  const skipExercise = useCallback((exerciseIndex: number) => {
+    completeExercise(exerciseIndex, false, true);
+  }, [completeExercise]);
 
   const startWorkout = useCallback((initialExercises: ExerciseLog[]) => {
     setExercises(initialExercises);
@@ -98,12 +145,15 @@ export function useWorkout(workoutId: number, userId: number) {
         };
         updated[exerciseIndex].sets[setIndex] = updatedSet;
         
-        // Auto-save to database
-        updateSessionMutation.mutate({ exercises: updated });
+        // Auto-save to database using new session-based tracking
+        updateExerciseProgressMutation.mutate({ 
+          exerciseIndex, 
+          exerciseData: updated[exerciseIndex] 
+        });
       }
       return updated;
     });
-  }, [updateSessionMutation]);
+  }, [updateExerciseProgressMutation]);
 
   const nextExercise = useCallback(() => {
     if (currentExerciseIndex < exercises.length - 1) {
@@ -131,15 +181,19 @@ export function useWorkout(workoutId: number, userId: number) {
         const newSet = {
           reps: lastSet?.reps || 0,
           weight: lastSet?.weight,
-          repInfo: lastSet?.repInfo
+          duration: lastSet?.duration
         };
         updated[exerciseIndex].sets.push(newSet);
         
-        updateSessionMutation.mutate({ exercises: updated });
+        // Auto-save to database
+        updateExerciseProgressMutation.mutate({ 
+          exerciseIndex, 
+          exerciseData: updated[exerciseIndex] 
+        });
       }
       return updated;
     });
-  }, [updateSessionMutation]);
+  }, [updateExerciseProgressMutation]);
 
   const removeSet = useCallback((exerciseIndex: number, setIndex: number) => {
     setExercises(prev => {
@@ -147,49 +201,15 @@ export function useWorkout(workoutId: number, userId: number) {
       if (updated[exerciseIndex] && updated[exerciseIndex].sets.length > 1) {
         updated[exerciseIndex].sets.splice(setIndex, 1);
         
-        updateSessionMutation.mutate({ exercises: updated });
+        // Auto-save to database
+        updateExerciseProgressMutation.mutate({ 
+          exerciseIndex, 
+          exerciseData: updated[exerciseIndex] 
+        });
       }
       return updated;
     });
-  }, [updateSessionMutation]);
-
-  const completeExercise = useCallback((exerciseId: number, completedSets: any[], options?: { 
-    skipped?: boolean; 
-    autoCompleted?: boolean; 
-    notes?: string 
-  }) => {
-    const completionTime = new Date();
-    
-    // Update local completion tracking
-    setCompletedExercises(prev => {
-      const updated = new Set(prev);
-      updated.add(currentExerciseIndex);
-      return updated;
-    });
-    
-    // Update local state for immediate UI feedback
-    setExercises(prev => {
-      const updated = [...prev];
-      if (updated[currentExerciseIndex]) {
-        updated[currentExerciseIndex] = {
-          ...updated[currentExerciseIndex],
-          completedAt: completionTime,
-          skipped: options?.skipped || false
-        };
-      }
-      return updated;
-    });
-
-    // Save to database via new API
-    completeExerciseMutation.mutate({
-      exerciseId,
-      exerciseIndex: currentExerciseIndex,
-      completedSets,
-      completionNotes: options?.notes,
-      skipped: options?.skipped || false,
-      autoCompleted: options?.autoCompleted || false
-    });
-  }, [completeExerciseMutation, currentExerciseIndex]);
+  }, [updateExerciseProgressMutation]);
 
   const completeWorkout = useCallback(() => {
     if (startTime) {
@@ -201,57 +221,65 @@ export function useWorkout(workoutId: number, userId: number) {
         completedAt: endTime,
         duration
       });
+      
+      setIsActive(false);
     }
-    
-    setIsActive(false);
-    setSessionId(null);
-    setStartTime(null);
   }, [exercises, startTime, updateSessionMutation]);
 
-  const getCoachingTip = useCallback((exerciseName: string, performance: any) => {
-    coachingTipMutation.mutate({
-      exercise: exerciseName,
-      userPerformance: performance
-    });
+  const pauseWorkout = useCallback(() => {
+    setIsActive(false);
+    if (sessionId) {
+      // Save current state when pausing
+      updateExerciseProgressMutation.mutate({ 
+        exerciseIndex: currentExerciseIndex, 
+        exerciseData: exercises[currentExerciseIndex] 
+      });
+    }
+  }, [sessionId, currentExerciseIndex, exercises, updateExerciseProgressMutation]);
+
+  const resumeWorkout = useCallback(() => {
+    setIsActive(true);
+  }, []);
+
+  const getCoachingTip = useCallback((exercise: string, userPerformance: any) => {
+    coachingTipMutation.mutate({ exercise, userPerformance });
   }, [coachingTipMutation]);
 
-  const currentExercise = exercises[currentExerciseIndex];
-  const isLastExercise = currentExerciseIndex >= exercises.length - 1;
-  const isFirstExercise = currentExerciseIndex === 0;
+  const workoutProgress = {
+    completedCount: completedExercises.size,
+    totalCount: exercises.length,
+    percentage: exercises.length > 0 ? Math.round((completedExercises.size / exercises.length) * 100) : 0
+  };
 
   return {
     // State
-    currentExerciseIndex,
-    currentExercise,
     exercises,
-    isActive,
+    currentExerciseIndex,
     sessionId,
+    isActive,
     startTime,
-    isLastExercise,
-    isFirstExercise,
     completedExercises,
+    workoutProgress,
     
     // Actions
     startWorkout,
     completeSet,
     completeExercise,
+    skipExercise,
     nextExercise,
     previousExercise,
     goToExercise,
+    addSet,
+    removeSet,
     completeWorkout,
+    pauseWorkout,
+    resumeWorkout,
     getCoachingTip,
     
-    // Helper functions
-    isExerciseCompleted: (index: number) => completedExercises.has(index),
-    getCompletedCount: () => completedExercises.size,
-    
-    // Loading states
+    // Mutation states
     isStarting: findOrCreateSessionMutation.isPending,
-    isUpdating: updateSessionMutation.isPending,
-    isCompletingExercise: completeExerciseMutation.isPending,
-    isGettingTip: coachingTipMutation.isPending,
-    
-    // Data
-    coachingTip: coachingTipMutation.data?.tip
+    isUpdating: updateExerciseProgressMutation.isPending || updateSessionMutation.isPending,
+    coachingTip: coachingTipMutation.data?.tip,
+    isLoadingTip: coachingTipMutation.isPending
   };
 }
