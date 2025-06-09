@@ -247,6 +247,7 @@ export function useWorkout(workoutId: number, userId: number) {
     // Loading states
     isStarting: startSessionMutation.isPending,
     isUpdating: updateSessionMutation.isPending,
+    isCompletingExercise: completeExerciseMutation.isPending,
     isGettingTip: coachingTipMutation.isPending,
     
     // Data
