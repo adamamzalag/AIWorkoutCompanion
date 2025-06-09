@@ -244,6 +244,23 @@ export default function WorkoutNewPage() {
     }
   };
 
+  const handleCompleteExercise = () => {
+    if (currentExercise) {
+      // Mark the exercise as completed
+      const updatedExercises = [...exerciseLogs];
+      updatedExercises[currentExerciseIndex] = {
+        ...currentExercise,
+        completedAt: new Date()
+      };
+      
+      // Update session with completed exercise
+      updateSessionMutation.mutate({ exercises: updatedExercises });
+      
+      // Move to next exercise
+      handleNextExercise();
+    }
+  };
+
   const handleNextExercise = () => {
     if (isLastExercise) {
       completeWorkout();
@@ -645,7 +662,7 @@ export default function WorkoutNewPage() {
                     {exercisesByPhase.warmup.map((exercise, index) => {
                       const globalIndex = exerciseLogs.findIndex(ex => ex === exercise);
                       const isCurrentExercise = globalIndex === currentExerciseIndex;
-                      const isCompleted = exercise.sets.every(set => set.completed);
+                      const isCompleted = !!exercise.completedAt;
                       
                       return (
                         <Button
@@ -686,9 +703,7 @@ export default function WorkoutNewPage() {
                     {exercisesByPhase.main.map((exercise, index) => {
                       const globalIndex = exerciseLogs.findIndex(ex => ex === exercise);
                       const isCurrentExercise = globalIndex === currentExerciseIndex;
-                      const completedSets = exercise.sets.filter(set => set.completed).length;
-                      const totalSets = exercise.sets.length;
-                      const isCompleted = completedSets === totalSets;
+                      const isCompleted = !!exercise.completedAt;
                       
                       return (
                         <Button
@@ -704,7 +719,7 @@ export default function WorkoutNewPage() {
                             <div className="text-left">
                               <div className="font-medium">{exercise.name}</div>
                               <div className="text-xs text-muted-foreground">
-                                {completedSets}/{totalSets} sets completed
+                                {exercise.sets.length} sets • {isCompleted ? 'Completed' : 'Pending'}
                               </div>
                             </div>
                           </div>
@@ -729,7 +744,7 @@ export default function WorkoutNewPage() {
                     {exercisesByPhase.cardio.map((exercise, index) => {
                       const globalIndex = exerciseLogs.findIndex(ex => ex === exercise);
                       const isCurrentExercise = globalIndex === currentExerciseIndex;
-                      const isCompleted = exercise.sets.every(set => set.completed);
+                      const isCompleted = !!exercise.completedAt;
                       
                       return (
                         <Button
@@ -770,7 +785,7 @@ export default function WorkoutNewPage() {
                     {exercisesByPhase.cooldown.map((exercise, index) => {
                       const globalIndex = exerciseLogs.findIndex(ex => ex === exercise);
                       const isCurrentExercise = globalIndex === currentExerciseIndex;
-                      const isCompleted = exercise.sets.every(set => set.completed);
+                      const isCompleted = !!exercise.completedAt;
                       
                       return (
                         <Button
