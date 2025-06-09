@@ -64,6 +64,7 @@ export default function WorkoutNewPage() {
     isLastExercise,
     startWorkout,
     completeSet,
+    completeExercise,
     nextExercise,
     previousExercise,
     goToExercise,
