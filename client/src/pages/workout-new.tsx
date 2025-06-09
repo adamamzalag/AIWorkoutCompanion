@@ -692,8 +692,8 @@ export default function WorkoutNewPage() {
                     Warm-up ({exercisesByPhase.warmup.length})
                   </h3>
                   <div className="space-y-2">
-                    {exercisesByPhase.warmup.map((exercise, index) => {
-                      const globalIndex = exerciseLogs.findIndex(ex => ex === exercise);
+                    {exercisesByPhase.warmup.map((exercise: any, index: number) => {
+                      const globalIndex = workoutExerciseLogs.findIndex((ex: any) => ex === exercise);
                       const isCurrentExercise = globalIndex === currentExerciseIndex;
                       const isCompleted = !!exercise.completedAt;
                       
@@ -733,8 +733,8 @@ export default function WorkoutNewPage() {
                     Main Exercises ({exercisesByPhase.main.length})
                   </h3>
                   <div className="space-y-2">
-                    {exercisesByPhase.main.map((exercise, index) => {
-                      const globalIndex = exerciseLogs.findIndex(ex => ex === exercise);
+                    {exercisesByPhase.main.map((exercise: any, index: number) => {
+                      const globalIndex = workoutExerciseLogs.findIndex((ex: any) => ex === exercise);
                       const isCurrentExercise = globalIndex === currentExerciseIndex;
                       const isCompleted = !!exercise.completedAt;
                       
@@ -774,8 +774,8 @@ export default function WorkoutNewPage() {
                     Cardio ({exercisesByPhase.cardio.length})
                   </h3>
                   <div className="space-y-2">
-                    {exercisesByPhase.cardio.map((exercise, index) => {
-                      const globalIndex = exerciseLogs.findIndex(ex => ex === exercise);
+                    {exercisesByPhase.cardio.map((exercise: any, index: number) => {
+                      const globalIndex = workoutExerciseLogs.findIndex((ex: any) => ex === exercise);
                       const isCurrentExercise = globalIndex === currentExerciseIndex;
                       const isCompleted = !!exercise.completedAt;
                       
@@ -815,8 +815,8 @@ export default function WorkoutNewPage() {
                     Cool-down ({exercisesByPhase.cooldown.length})
                   </h3>
                   <div className="space-y-2">
-                    {exercisesByPhase.cooldown.map((exercise, index) => {
-                      const globalIndex = exerciseLogs.findIndex(ex => ex === exercise);
+                    {exercisesByPhase.cooldown.map((exercise: any, index: number) => {
+                      const globalIndex = workoutExerciseLogs.findIndex((ex: any) => ex === exercise);
                       const isCurrentExercise = globalIndex === currentExerciseIndex;
                       const isCompleted = !!exercise.completedAt;
                       
