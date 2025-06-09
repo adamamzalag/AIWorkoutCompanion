@@ -10,7 +10,8 @@ import { useWorkout } from '@/hooks/use-workout';
 import type { ExerciseLog } from '@/lib/types';
 
 export default function WorkoutNewPage() {
-  const { workoutId } = useParams();
+  const [location] = useLocation();
+  const workoutId = new URLSearchParams(location.split('?')[1] || '').get('id');
   const [, setLocation] = useLocation();
   const [forceRenderKey, setForceRenderKey] = useState(0);
   
@@ -21,7 +22,7 @@ export default function WorkoutNewPage() {
 
   // Get workout details
   const { data: workout, isLoading: isWorkoutLoading } = useQuery({
-    queryKey: [`/api/workout/${workoutId}`],
+    queryKey: [`/api/workouts/${workoutId}`],
     enabled: !!workoutId,
   });
 
