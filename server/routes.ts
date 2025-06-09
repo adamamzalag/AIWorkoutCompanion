@@ -7,6 +7,7 @@ import {
   insertUserSchema, 
   insertWorkoutPlanSchema, 
   insertWorkoutSessionSchema, 
+  insertExerciseCompletionSchema,
   insertChatMessageSchema,
   insertChatSessionSchema 
 } from "@shared/schema";
@@ -536,91 +537,71 @@ export async function registerRoutes(app: Express): Promise<Server> {
     }
   });
 
-
-
-  app.get("/api/workout-sessions/find-resumable/:workoutId/:userId", async (req, res) => {
+  // Exercise Completion routes
+  app.post("/api/workout-session/:sessionId/complete-exercise", async (req, res) => {
     try {
-      const workoutId = parseInt(req.params.workoutId);
-      const userId = parseInt(req.params.userId);
+      const sessionId = parseInt(req.params.sessionId);
+      const completionData = insertExerciseCompletionSchema.parse({
+        ...req.body,
+        sessionId
+      });
       
-      const session = await storage.findResumableWorkoutSession(userId, workoutId);
-      if (session) {
-        res.json({ session });
-      } else {
-        res.json({ session: null });
-      }
+      // Create the exercise completion record
+      const completion = await storage.createExerciseCompletion(completionData);
+      
+      // Update session's last active timestamp and exercise counts
+      await storage.updateWorkoutSession(sessionId, {
+        lastActiveAt: new Date(),
+        exercisesCompleted: completion.skipped ? undefined : 
+          (await storage.getExerciseCompletions(sessionId)).filter(c => !c.skipped).length,
+        exercisesSkipped: completion.skipped ? 
+          (await storage.getExerciseCompletions(sessionId)).filter(c => c.skipped).length : undefined
+      });
+      
+      res.json(completion);
     } catch (error) {
-      res.status(400).json({ error: "Invalid parameters" });
+      console.error("Error completing exercise:", error);
+      res.status(400).json({ error: "Invalid exercise completion data" });
     }
   });
 
-  // Resume a workout session
-  app.get("/api/workout-sessions/:sessionId/resume", async (req, res) => {
+  app.get("/api/workout-session/:sessionId/completions", async (req, res) => {
     try {
       const sessionId = parseInt(req.params.sessionId);
-      const session = await storage.getWorkoutSession(sessionId);
-      
-      if (!session) {
-        return res.status(404).json({ error: "Session not found" });
-      }
-      
-      // Update last active timestamp
-      await storage.updateWorkoutSession(sessionId, {
-        lastActiveAt: new Date()
-      });
-      
-      res.json(session);
+      const completions = await storage.getExerciseCompletions(sessionId);
+      res.json(completions);
     } catch (error) {
       res.status(400).json({ error: "Invalid session ID" });
     }
   });
 
-  // Update exercise progress in a session
-  app.patch("/api/workout-sessions/:sessionId/exercise-progress", async (req, res) => {
+  app.get("/api/workout-session/:sessionId/resume", async (req, res) => {
     try {
       const sessionId = parseInt(req.params.sessionId);
-      const { exerciseIndex, exerciseData } = req.body;
-      
       const session = await storage.getWorkoutSession(sessionId);
       if (!session) {
         return res.status(404).json({ error: "Session not found" });
       }
       
-      // Parse current exercises data
-      const currentExercises = session.exercises as any[] || [];
-      
-      // Update the specific exercise
-      if (exerciseIndex >= 0 && exerciseIndex < currentExercises.length) {
-        currentExercises[exerciseIndex] = {
-          ...currentExercises[exerciseIndex],
-          ...exerciseData,
-          lastUpdated: new Date().toISOString()
-        };
-      }
-      
-      // Count completed and skipped exercises
-      const completedCount = currentExercises.filter(ex => 
-        ex.completed || (ex.sets && ex.sets.some((set: any) => set.completed))
-      ).length;
-      
-      const skippedCount = currentExercises.filter(ex => ex.skipped).length;
-      
-      // Update the session
-      const updatedSession = await storage.updateWorkoutSession(sessionId, {
-        exercises: currentExercises,
-        exercisesCompleted: completedCount,
-        exercisesSkipped: skippedCount,
-        lastActiveAt: new Date()
-      });
-      
-      res.json(updatedSession);
+      const completions = await storage.getExerciseCompletions(sessionId);
+      res.json({ session, completions });
     } catch (error) {
-      console.error("Error updating exercise progress:", error);
-      res.status(400).json({ error: "Failed to update exercise progress" });
+      res.status(400).json({ error: "Invalid session ID" });
     }
   });
 
-
+  app.get("/api/exercise-history/:userId/:exerciseId", async (req, res) => {
+    try {
+      const userId = parseInt(req.params.userId);
+      const exerciseId = parseInt(req.params.exerciseId);
+      const limit = parseInt(req.query.limit as string) || 10;
+      
+      const completions = await storage.getExerciseCompletionsByExercise(userId, exerciseId, limit);
+      res.json(completions);
+    } catch (error) {
+      res.status(400).json({ error: "Invalid parameters" });
+    }
+  });
 
   // Exercises routes
   app.get("/api/exercises", async (req, res) => {

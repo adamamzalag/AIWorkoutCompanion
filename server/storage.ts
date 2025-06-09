@@ -1,11 +1,12 @@
 import { 
-  users, workoutPlans, exercises, workouts, workoutSessions, chatSessions, chatMessages, userProgress,
+  users, workoutPlans, exercises, workouts, workoutSessions, exerciseCompletions, chatSessions, chatMessages, userProgress,
   planWeeks, progressSnapshots,
   type User, type InsertUser, type UpsertUser,
   type WorkoutPlan, type InsertWorkoutPlan,
   type Exercise, type InsertExercise,
   type Workout, type InsertWorkout,
   type WorkoutSession, type InsertWorkoutSession,
+  type ExerciseCompletion, type InsertExerciseCompletion,
   type ChatSession, type InsertChatSession,
   type ChatMessage, type InsertChatMessage,
   type UserProgress, type InsertUserProgress,
@@ -52,6 +53,10 @@ export interface IStorage {
   getRecentWorkoutSessions(userId: number, limit: number): Promise<WorkoutSession[]>;
   findResumableWorkoutSession(userId: number, workoutId: number): Promise<WorkoutSession | undefined>;
 
+  // Exercise Completions
+  getExerciseCompletions(sessionId: number): Promise<ExerciseCompletion[]>;
+  createExerciseCompletion(completion: InsertExerciseCompletion): Promise<ExerciseCompletion>;
+  getExerciseCompletionsByExercise(userId: number, exerciseId: number, limit?: number): Promise<ExerciseCompletion[]>;
 
   // Chat Sessions
   getChatSessions(userId: number): Promise<ChatSession[]>;
@@ -303,7 +308,42 @@ export class DatabaseStorage implements IStorage {
     return session || undefined;
   }
 
+  // Exercise Completions
+  async getExerciseCompletions(sessionId: number): Promise<ExerciseCompletion[]> {
+    return await db.select().from(exerciseCompletions)
+      .where(eq(exerciseCompletions.sessionId, sessionId))
+      .orderBy(exerciseCompletions.exerciseIndex);
+  }
 
+  async createExerciseCompletion(completion: InsertExerciseCompletion): Promise<ExerciseCompletion> {
+    const [newCompletion] = await db
+      .insert(exerciseCompletions)
+      .values(completion)
+      .returning();
+    return newCompletion;
+  }
+
+  async getExerciseCompletionsByExercise(userId: number, exerciseId: number, limit: number = 10): Promise<ExerciseCompletion[]> {
+    return await db.select({
+      id: exerciseCompletions.id,
+      sessionId: exerciseCompletions.sessionId,
+      exerciseId: exerciseCompletions.exerciseId,
+      exerciseIndex: exerciseCompletions.exerciseIndex,
+      completedSets: exerciseCompletions.completedSets,
+      completionNotes: exerciseCompletions.completionNotes,
+      completedAt: exerciseCompletions.completedAt,
+      skipped: exerciseCompletions.skipped,
+      autoCompleted: exerciseCompletions.autoCompleted,
+      createdAt: exerciseCompletions.createdAt
+    }).from(exerciseCompletions)
+      .innerJoin(workoutSessions, eq(exerciseCompletions.sessionId, workoutSessions.id))
+      .where(and(
+        eq(workoutSessions.userId, userId),
+        eq(exerciseCompletions.exerciseId, exerciseId)
+      ))
+      .orderBy(desc(exerciseCompletions.completedAt))
+      .limit(limit);
+  }
 
   // Chat Sessions
   async getChatSessions(userId: number): Promise<ChatSession[]> {
