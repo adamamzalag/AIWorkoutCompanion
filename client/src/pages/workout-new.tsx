@@ -80,7 +80,7 @@ export default function WorkoutNewPage() {
   const [activeSetIndex, setActiveSetIndex] = useState<number | null>(null);
   const [showExerciseNavigation, setShowExerciseNavigation] = useState(false);
   const [currentSetData, setCurrentSetData] = useState<{ reps: number; weight?: number }>({ reps: 0 });
-  const [completedExercises, setCompletedExercises] = useState<Set<number>>(new Set());
+  const [completedExercises, setCompletedExercises] = useState<number[]>([]);
   const handleGetCoachingTip = () => {
     if (!isGettingTip && currentExerciseData) {
       const currentExerciseLog = workoutExerciseLogs[currentExerciseIndex];
@@ -271,7 +271,7 @@ export default function WorkoutNewPage() {
       });
       
       // Mark exercise as completed locally
-      setCompletedExercises(prev => new Set(Array.from(prev).concat([currentExerciseIndex])));
+      setCompletedExercises(prev => [...prev, currentExerciseIndex]);
       
       console.log('Exercise completed and saved to database:', currentExercise);
       
@@ -411,7 +411,7 @@ export default function WorkoutNewPage() {
                   
                   <div className="space-y-2">
                     {currentExercise.sets.map((set, index) => {
-                      const isExerciseCompleted = currentExercise.completedAt;
+                      const isExerciseCompleted = currentExercise.completedAt || completedExercises.includes(currentExerciseIndex);
                       const isActive = activeSetIndex === index;
                       const canInteract = !isExerciseCompleted;
                       
@@ -601,7 +601,7 @@ export default function WorkoutNewPage() {
 
           {/* Exercise Completion Button - Always Visible */}
           <div className="px-4 pb-4">
-            {!currentExercise?.completedAt ? (
+            {!currentExercise?.completedAt && !completedExercises.includes(currentExerciseIndex) ? (
               <Button
                 onClick={handleCompleteExercise}
                 className="w-full bg-green-600 hover:bg-green-700 text-white"

@@ -575,6 +575,21 @@ export async function registerRoutes(app: Express): Promise<Server> {
     }
   });
 
+  app.get("/api/workout-session/resumable/:userId/:workoutId", async (req, res) => {
+    try {
+      const userId = parseInt(req.params.userId);
+      const workoutId = parseInt(req.params.workoutId);
+      const session = await storage.findResumableWorkoutSession(userId, workoutId);
+      if (session) {
+        res.json(session);
+      } else {
+        res.status(404).json({ error: "No resumable session found" });
+      }
+    } catch (error) {
+      res.status(400).json({ error: "Invalid parameters" });
+    }
+  });
+
   app.get("/api/workout-session/:sessionId/resume", async (req, res) => {
     try {
       const sessionId = parseInt(req.params.sessionId);

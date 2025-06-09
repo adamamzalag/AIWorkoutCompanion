@@ -9,8 +9,32 @@ export function useWorkout(workoutId: number, userId: number) {
   const [exercises, setExercises] = useState<ExerciseLog[]>([]);
   const [isActive, setIsActive] = useState(false);
   const [startTime, setStartTime] = useState<Date | null>(null);
+  const [exerciseCompletions, setExerciseCompletions] = useState<any[]>([]);
 
   const queryClient = useQueryClient();
+
+  const checkResumableSessionMutation = useMutation({
+    mutationFn: async () => {
+      const response = await fetch(`/api/workout-session/resumable/${userId}/${workoutId}`);
+      if (response.ok) {
+        return response.json();
+      }
+      return null;
+    }
+  });
+
+  const loadExerciseCompletionsMutation = useMutation({
+    mutationFn: async (sessionId: number) => {
+      const response = await fetch(`/api/workout-session/${sessionId}/completions`);
+      if (response.ok) {
+        return response.json();
+      }
+      return [];
+    },
+    onSuccess: (completions) => {
+      setExerciseCompletions(completions);
+    }
+  });
 
   const startSessionMutation = useMutation({
     mutationFn: async () => {
@@ -68,11 +92,35 @@ export function useWorkout(workoutId: number, userId: number) {
     }
   });
 
-  const startWorkout = useCallback((initialExercises: ExerciseLog[]) => {
+  const resumeSession = useCallback((session: any, completions: any[]) => {
+    setSessionId(session.id);
+    setIsActive(true);
+    setStartTime(new Date(session.startedAt));
+    setExerciseCompletions(completions);
+    
+    // Find the next incomplete exercise
+    const lastCompletedIndex = Math.max(...completions.map((c: any) => c.exerciseIndex), -1);
+    setCurrentExerciseIndex(lastCompletedIndex + 1);
+    
+    queryClient.invalidateQueries({ queryKey: ['/api/workout-sessions', userId] });
+  }, [queryClient, userId]);
+
+  const startWorkout = useCallback(async (initialExercises: ExerciseLog[]) => {
     setExercises(initialExercises);
-    setCurrentExerciseIndex(0);
-    startSessionMutation.mutate();
-  }, [startSessionMutation]);
+    
+    // Check for resumable session first
+    const existingSession = await checkResumableSessionMutation.mutateAsync();
+    
+    if (existingSession) {
+      // Load completions and resume
+      const completions = await loadExerciseCompletionsMutation.mutateAsync(existingSession.id);
+      resumeSession(existingSession, completions);
+    } else {
+      // Start new session
+      setCurrentExerciseIndex(0);
+      startSessionMutation.mutate();
+    }
+  }, [startSessionMutation, checkResumableSessionMutation, loadExerciseCompletionsMutation, resumeSession]);
 
   const completeSet = useCallback((exerciseIndex: number, setIndex: number, setData: { reps: number; weight?: number; duration?: number; actualReps?: number; actualWeight?: number; actualDuration?: number }) => {
     const completionTime = new Date();
@@ -233,6 +281,7 @@ export function useWorkout(workoutId: number, userId: number) {
     startTime,
     isLastExercise,
     isFirstExercise,
+    exerciseCompletions,
     
     // Actions
     startWorkout,
@@ -243,12 +292,14 @@ export function useWorkout(workoutId: number, userId: number) {
     goToExercise,
     completeWorkout,
     getCoachingTip,
+    resumeSession,
     
     // Loading states
     isStarting: startSessionMutation.isPending,
     isUpdating: updateSessionMutation.isPending,
     isCompletingExercise: completeExerciseMutation.isPending,
     isGettingTip: coachingTipMutation.isPending,
+    isCheckingResumable: checkResumableSessionMutation.isPending,
     
     // Data
     coachingTip: coachingTipMutation.data?.tip
