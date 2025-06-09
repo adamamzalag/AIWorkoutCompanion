@@ -249,11 +249,18 @@ export default function WorkoutNewPage() {
   };
 
   const handleCompleteExercise = () => {
-    if (currentExercise) {
-      // Mark the exercise as completed by updating the current exercise directly
-      currentExercise.completedAt = new Date();
+    if (currentExercise && currentExerciseData) {
+      // Get current exercise log for completion data
+      const currentExerciseLog = workoutExerciseLogs[currentExerciseIndex];
       
-      console.log('Exercise completed:', currentExercise);
+      // Call the enhanced completeExercise function with database persistence
+      completeExercise(currentExerciseData.id, currentExerciseLog?.sets || [], {
+        skipped: false,
+        autoCompleted: false,
+        notes: undefined
+      });
+      
+      console.log('Exercise completed and saved to database:', currentExercise);
       
       // Force component re-render to show completion state immediately
       setForceRenderKey(prev => prev + 1);
