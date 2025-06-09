@@ -108,18 +108,7 @@ export const workoutSessions = pgTable("workout_sessions", {
   exercisesSkipped: integer("exercises_skipped").default(0),
 });
 
-export const exerciseCompletions = pgTable("exercise_completions", {
-  id: serial("id").primaryKey(),
-  sessionId: integer("session_id").notNull(),
-  exerciseId: integer("exercise_id").notNull(),
-  exerciseIndex: integer("exercise_index").notNull(), // position in workout
-  completedSets: jsonb("completed_sets").notNull(), // array of {reps, weight, duration, notes}
-  completionNotes: text("completion_notes"),
-  completedAt: timestamp("completed_at").notNull().defaultNow(),
-  skipped: boolean("skipped").notNull().default(false),
-  autoCompleted: boolean("auto_completed").notNull().default(false),
-  createdAt: timestamp("created_at").notNull().defaultNow(),
-});
+
 
 export const chatSessions = pgTable("chat_sessions", {
   id: serial("id").primaryKey(),
@@ -195,11 +184,7 @@ export const insertWorkoutSessionSchema = createInsertSchema(workoutSessions).om
   lastActiveAt: true,
 });
 
-export const insertExerciseCompletionSchema = createInsertSchema(exerciseCompletions).omit({
-  id: true,
-  completedAt: true,
-  createdAt: true,
-});
+
 
 export const insertChatSessionSchema = createInsertSchema(chatSessions).omit({
   id: true,
@@ -258,8 +243,7 @@ export type UserProgress = typeof userProgress.$inferSelect;
 export type InsertPlanWeek = z.infer<typeof insertPlanWeekSchema>;
 export type PlanWeek = typeof planWeeks.$inferSelect;
 
-export type InsertExerciseCompletion = z.infer<typeof insertExerciseCompletionSchema>;
-export type ExerciseCompletion = typeof exerciseCompletions.$inferSelect;
+
 
 export type InsertProgressSnapshot = z.infer<typeof insertProgressSnapshotSchema>;
 export type ProgressSnapshot = typeof progressSnapshots.$inferSelect;

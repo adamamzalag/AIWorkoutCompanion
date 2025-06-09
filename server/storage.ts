@@ -1,12 +1,11 @@
 import { 
-  users, workoutPlans, exercises, workouts, workoutSessions, exerciseCompletions, chatSessions, chatMessages, userProgress,
+  users, workoutPlans, exercises, workouts, workoutSessions, chatSessions, chatMessages, userProgress,
   planWeeks, progressSnapshots,
   type User, type InsertUser, type UpsertUser,
   type WorkoutPlan, type InsertWorkoutPlan,
   type Exercise, type InsertExercise,
   type Workout, type InsertWorkout,
   type WorkoutSession, type InsertWorkoutSession,
-  type ExerciseCompletion, type InsertExerciseCompletion,
   type ChatSession, type InsertChatSession,
   type ChatMessage, type InsertChatMessage,
   type UserProgress, type InsertUserProgress,
@@ -54,9 +53,7 @@ export interface IStorage {
   findResumableWorkoutSession(userId: number, workoutId: number): Promise<WorkoutSession | undefined>;
 
   // Exercise Completions
-  getExerciseCompletions(sessionId: number): Promise<ExerciseCompletion[]>;
-  createExerciseCompletion(completion: InsertExerciseCompletion): Promise<ExerciseCompletion>;
-  getExerciseCompletionsByExercise(userId: number, exerciseId: number, limit?: number): Promise<ExerciseCompletion[]>;
+
 
   // Chat Sessions
   getChatSessions(userId: number): Promise<ChatSession[]>;

@@ -7,7 +7,6 @@ import {
   insertUserSchema, 
   insertWorkoutPlanSchema, 
   insertWorkoutSessionSchema, 
-  insertExerciseCompletionSchema,
   insertChatMessageSchema,
   insertChatSessionSchema 
 } from "@shared/schema";
@@ -537,58 +536,7 @@ export async function registerRoutes(app: Express): Promise<Server> {
     }
   });
 
-  // Exercise Completion routes
-  app.post("/api/workout-session/:sessionId/complete-exercise", async (req, res) => {
-    try {
-      const sessionId = parseInt(req.params.sessionId);
-      const completionData = insertExerciseCompletionSchema.parse({
-        ...req.body,
-        sessionId
-      });
-      
-      // Create the exercise completion record
-      const completion = await storage.createExerciseCompletion(completionData);
-      
-      // Update session's last active timestamp and exercise counts
-      await storage.updateWorkoutSession(sessionId, {
-        lastActiveAt: new Date(),
-        exercisesCompleted: completion.skipped ? undefined : 
-          (await storage.getExerciseCompletions(sessionId)).filter(c => !c.skipped).length,
-        exercisesSkipped: completion.skipped ? 
-          (await storage.getExerciseCompletions(sessionId)).filter(c => c.skipped).length : undefined
-      });
-      
-      res.json(completion);
-    } catch (error) {
-      console.error("Error completing exercise:", error);
-      res.status(400).json({ error: "Invalid exercise completion data" });
-    }
-  });
 
-  app.get("/api/workout-session/:sessionId/completions", async (req, res) => {
-    try {
-      const sessionId = parseInt(req.params.sessionId);
-      const completions = await storage.getExerciseCompletions(sessionId);
-      res.json(completions);
-    } catch (error) {
-      res.status(400).json({ error: "Invalid session ID" });
-    }
-  });
-
-  app.get("/api/workout-session/:sessionId/resume", async (req, res) => {
-    try {
-      const sessionId = parseInt(req.params.sessionId);
-      const session = await storage.getWorkoutSession(sessionId);
-      if (!session) {
-        return res.status(404).json({ error: "Session not found" });
-      }
-      
-      const completions = await storage.getExerciseCompletions(sessionId);
-      res.json({ session, completions });
-    } catch (error) {
-      res.status(400).json({ error: "Invalid session ID" });
-    }
-  });
 
   app.get("/api/workout-sessions/find-resumable/:workoutId/:userId", async (req, res) => {
     try {
@@ -606,18 +554,7 @@ export async function registerRoutes(app: Express): Promise<Server> {
     }
   });
 
-  app.get("/api/exercise-history/:userId/:exerciseId", async (req, res) => {
-    try {
-      const userId = parseInt(req.params.userId);
-      const exerciseId = parseInt(req.params.exerciseId);
-      const limit = parseInt(req.query.limit as string) || 10;
-      
-      const completions = await storage.getExerciseCompletionsByExercise(userId, exerciseId, limit);
-      res.json(completions);
-    } catch (error) {
-      res.status(400).json({ error: "Invalid parameters" });
-    }
-  });
+
 
   // Exercises routes
   app.get("/api/exercises", async (req, res) => {
