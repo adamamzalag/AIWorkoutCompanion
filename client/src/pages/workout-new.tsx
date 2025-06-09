@@ -188,11 +188,14 @@ export default function WorkoutNewPage() {
   }, [workout]);
 
   // Auto-start workout
+  const [hasStarted, setHasStarted] = useState(false);
+  
   useEffect(() => {
-    if (workoutExerciseLogs.length > 0 && !isActive && !isStarting) {
+    if (workoutExerciseLogs.length > 0 && !isActive && !isStarting && !hasStarted) {
+      setHasStarted(true);
       startWorkout(workoutExerciseLogs);
     }
-  }, [workoutExerciseLogs.length, isActive, isStarting, startWorkout, workoutExerciseLogs]);
+  }, [workoutExerciseLogs.length, isActive, isStarting, hasStarted]);
 
   // Clear tip and guide when switching exercises
   useEffect(() => {
