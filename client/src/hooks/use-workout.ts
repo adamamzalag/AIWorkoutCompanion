@@ -11,6 +11,9 @@ export function useWorkout(workoutId: number, userId: number) {
   const [startTime, setStartTime] = useState<Date | null>(null);
   const [exerciseCompletions, setExerciseCompletions] = useState<any[]>([]);
 
+  // Phase 1: Feature flag for rollback capability
+  const USE_TIMESTAMP_COMPLETION = false;
+
   const queryClient = useQueryClient();
 
   const checkResumableSessionMutation = useMutation({
@@ -92,10 +95,44 @@ export function useWorkout(workoutId: number, userId: number) {
     }
   });
 
+  // Phase 1: Completion state validator
+  const validateCompletionConsistency = useCallback(() => {
+    const inconsistencies: any[] = [];
+    exercises.forEach((exercise, index) => {
+      const hasTimestamp = !!exercise.completedAt;
+      const inDatabase = exerciseCompletions.some(c => c.exerciseIndex === index);
+      
+      if (hasTimestamp !== inDatabase) {
+        inconsistencies.push({ 
+          index, 
+          exerciseName: exercise.name,
+          hasTimestamp, 
+          inDatabase,
+          timestampValue: exercise.completedAt 
+        });
+      }
+    });
+    
+    if (inconsistencies.length > 0) {
+      console.warn('Completion state inconsistencies detected:', inconsistencies);
+    }
+    
+    return inconsistencies;
+  }, [exercises, exerciseCompletions]);
+
   const resumeSession = useCallback((session: any, completions: any[]) => {
     setSessionId(session.id);
     setIsActive(true);
-    setStartTime(new Date(session.startedAt));
+    
+    // Phase 1: Safe date handling for the toLocaleTimeString fix
+    const startDate = session.startedAt ? new Date(session.startedAt) : new Date();
+    if (isNaN(startDate.getTime())) {
+      console.warn('Invalid session start date, using current time');
+      setStartTime(new Date());
+    } else {
+      setStartTime(startDate);
+    }
+    
     setExerciseCompletions(completions);
     
     // Find the next incomplete exercise
@@ -234,7 +271,6 @@ export function useWorkout(workoutId: number, userId: number) {
 
     // Save to database via new API
     completeExerciseMutation.mutate({
-      exerciseId,
       exerciseIndex: currentExerciseIndex,
       completedSets,
       completionNotes: options?.notes,
