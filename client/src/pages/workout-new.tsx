@@ -86,6 +86,8 @@ export default function WorkoutNewPage() {
     runPhase3Validation,
     validatePhase4Transition,
     getUnifiedProgress,
+    validateWorkoutCompletion,
+    syncWorkoutCompletion,
     exercises
   } = useWorkout(workoutId, userProfile?.id || 0);
 
@@ -386,10 +388,58 @@ export default function WorkoutNewPage() {
     }
   };
 
-  const handleNextExercise = () => {
+  const handleNextExercise = async () => {
     if (isLastExercise) {
-      completeWorkout();
-      setLocation('/');
+      // Step 3: Improved completion flow with proper sequencing
+      console.log('Step 3: Starting workout completion sequence...');
+      
+      // Wait for any pending exercise completion
+      if (isUpdating) {
+        console.log('Step 3: Waiting for exercise completion to finish...');
+        // Wait a moment for the completion to process
+        await new Promise(resolve => setTimeout(resolve, 1000));
+      }
+      
+      // Validate workout is ready for completion
+      if (validateWorkoutCompletion) {
+        const validation = validateWorkoutCompletion();
+        console.log('Step 3: Final validation before completion:', validation);
+        
+        if (validation.isValid) {
+          console.log('Step 3: Validation passed, completing workout...');
+          completeWorkout();
+          
+          // Wait for completion to process before navigation
+          await new Promise(resolve => setTimeout(resolve, 500));
+          console.log('Step 3: Navigating to home...');
+          setLocation('/');
+        } else {
+          console.error('Step 3: Workout completion validation failed:', validation.validationErrors);
+          // Try to sync and retry
+          if (!validation.databaseSynchronized && syncWorkoutCompletion) {
+            console.log('Step 3: Attempting sync before retry...');
+            await syncWorkoutCompletion();
+            
+            // Retry after sync
+            setTimeout(() => {
+              console.log('Step 3: Retrying completion after sync...');
+              completeWorkout();
+              setLocation('/');
+            }, 2000);
+          } else {
+            // Fallback - just complete without validation
+            console.log('Step 3: Fallback completion without validation');
+            completeWorkout();
+            setLocation('/');
+          }
+        }
+      } else {
+        // Fallback if validation isn't available
+        console.log('Step 3: Direct completion (validation not available)');
+        completeWorkout();
+        await new Promise(resolve => setTimeout(resolve, 500));
+        setLocation('/');
+      }
     } else {
       nextExercise();
     }
@@ -645,6 +695,17 @@ export default function WorkoutNewPage() {
                   <FileText size={16} className="mr-1" />
                   Guide
                 </Button>
+                {/* Manual completion button for completed workouts */}
+                {getUnifiedProgress().percentage === 100 && (
+                  <Button
+                    variant="default"
+                    size="sm"
+                    onClick={handleNextExercise}
+                    className="bg-green-600 hover:bg-green-700 text-white"
+                  >
+                    Complete Workout
+                  </Button>
+                )}
               </div>
             </CardContent>
           </Card>
