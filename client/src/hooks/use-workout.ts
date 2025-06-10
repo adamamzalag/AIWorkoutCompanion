@@ -11,8 +11,8 @@ export function useWorkout(workoutId: number, userId: number) {
   const [startTime, setStartTime] = useState<Date | null>(null);
   const [exerciseCompletions, setExerciseCompletions] = useState<any[]>([]);
 
-  // Phase 4: Feature flag flipped - timestamp completion is now primary
-  const USE_TIMESTAMP_COMPLETION = true;
+  // Phase 5: Unified completion system - timestamp completion is now the standard
+  // Feature flag removed, system is now fully timestamp-based
 
   const queryClient = useQueryClient();
 
@@ -114,7 +114,7 @@ export function useWorkout(workoutId: number, userId: number) {
     });
     
     const result = {
-      isCompleted: USE_TIMESTAMP_COMPLETION ? hasTimestamp : (hasTimestamp || hasDbRecord),
+      isCompleted: hasTimestamp,
       completionMethod: hasTimestamp && hasDbRecord ? 'both' : hasTimestamp ? 'timestamp' : hasDbRecord ? 'database' : 'none',
       completedAt: exercise?.completedAt || (dbCompletion ? new Date(dbCompletion.completedAt) : null),
       dbRecord: dbCompletion,
@@ -129,7 +129,7 @@ export function useWorkout(workoutId: number, userId: number) {
     });
     
     return result;
-  }, [exercises, exerciseCompletions, USE_TIMESTAMP_COMPLETION]);
+  }, [exercises, exerciseCompletions]);
 
   const isExerciseCompleted = useCallback((exerciseIndex: number) => {
     return getCompletionStatus(exerciseIndex).isCompleted;
@@ -280,36 +280,28 @@ export function useWorkout(workoutId: number, userId: number) {
 
   // Phase 3: Feature flag testing
   const testFeatureFlag = useCallback((flagValue: boolean) => {
-    console.log(`Phase 3: Testing with USE_TIMESTAMP_COMPLETION=${flagValue}`);
+    console.log(`Phase 5: Legacy feature flag testing removed - system now uses timestamp completion as standard`);
     
-    // Temporarily override the flag for testing
-    const originalFlag = USE_TIMESTAMP_COMPLETION;
-    (window as any).TEST_TIMESTAMP_COMPLETION = flagValue;
-    
-    // Test completion detection with the flag
+    // Test completion detection with timestamp-based system
     const testResults = exercises.map((exercise, index) => {
       const status = getCompletionStatus(index);
       return {
         exerciseIndex: index,
         exerciseName: exercise.name,
-        flagValue,
-        isCompleted: flagValue ? !!exercise.completedAt : (!!exercise.completedAt || !!exerciseCompletions.find(c => c.exerciseIndex === index)),
+        isCompleted: !!exercise.completedAt,
         completionMethod: status.completionMethod
       };
     });
     
-    // Restore original flag
-    (window as any).TEST_TIMESTAMP_COMPLETION = originalFlag;
-    
     const completedWithFlag = testResults.filter(r => r.isCompleted).length;
-    console.log(`Phase 3: Feature flag test results (${flagValue}):`, {
+    console.log(`Phase 5: Completion test results:`, {
       completedExercises: completedWithFlag,
       totalExercises: exercises.length,
       testResults: testResults.filter(r => r.isCompleted)
     });
     
     return testResults;
-  }, [exercises, getCompletionStatus, exerciseCompletions]);
+  }, [exercises, getCompletionStatus]);
 
   // Phase 3: Comprehensive validation
   const runPhase3Validation = useCallback(() => {
@@ -345,7 +337,7 @@ export function useWorkout(workoutId: number, userId: number) {
     console.log('Phase 4: Validating feature flag transition...');
     
     const transitionTests = {
-      flagState: USE_TIMESTAMP_COMPLETION,
+      flagState: true, // Phase 5: Always timestamp-based
       completionConsistency: true,
       uiConsistency: true,
       backwardCompatibility: true,
@@ -389,7 +381,7 @@ export function useWorkout(workoutId: number, userId: number) {
     console.log('Phase 4: Feature flag transition validation results:', phase4Results);
     
     return phase4Results;
-  }, [USE_TIMESTAMP_COMPLETION, validateCompletionConsistency, exercises, exerciseCompletions, isExerciseCompleted, getCompletionStatus]);
+  }, [validateCompletionConsistency, exercises, exerciseCompletions, isExerciseCompleted, getCompletionStatus]);
 
   // Phase 4: Progress calculation using unified completion system
   const getUnifiedProgress = useCallback(() => {
