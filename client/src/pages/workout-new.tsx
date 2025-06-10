@@ -627,9 +627,7 @@ export default function WorkoutNewPage() {
 
           {/* Exercise Completion Button - Always Visible */}
           <div className="px-4 pb-4">
-            {!currentExercise?.completedAt && 
-             !completedExercises.includes(currentExerciseIndex) && 
-             !exerciseCompletions.some(comp => comp.exerciseIndex === currentExerciseIndex) ? (
+            {!isExerciseCompleted(currentExerciseIndex) ? (
               <Button
                 onClick={handleCompleteExercise}
                 className="w-full bg-green-600 hover:bg-green-700 text-white"
@@ -647,9 +645,11 @@ export default function WorkoutNewPage() {
                 <p className="text-sm text-green-600 dark:text-green-400 text-center mt-2">
                   Moving to next exercise in a moment...
                 </p>
-                <p className="text-xs text-green-600 dark:text-green-400 text-center mt-1">
-                  Completed at {currentExercise.completedAt.toLocaleTimeString()}
-                </p>
+                {currentExercise.completedAt && (
+                  <p className="text-xs text-green-600 dark:text-green-400 text-center mt-1">
+                    Completed at {currentExercise.completedAt.toLocaleTimeString()}
+                  </p>
+                )}
               </div>
             )}
           </div>
@@ -762,7 +762,7 @@ export default function WorkoutNewPage() {
                     {exercisesByPhase.warmup.map((exercise: any, index: number) => {
                       const globalIndex = workoutExerciseLogs.findIndex((ex: any) => ex === exercise);
                       const isCurrentExercise = globalIndex === currentExerciseIndex;
-                      const isCompleted = !!exercise.completedAt;
+                      const isCompleted = isExerciseCompleted(globalIndex);
                       
                       return (
                         <Button
@@ -811,7 +811,7 @@ export default function WorkoutNewPage() {
                     {exercisesByPhase.main.map((exercise: any, index: number) => {
                       const globalIndex = workoutExerciseLogs.findIndex((ex: any) => ex === exercise);
                       const isCurrentExercise = globalIndex === currentExerciseIndex;
-                      const isCompleted = !!exercise.completedAt;
+                      const isCompleted = isExerciseCompleted(globalIndex);
                       
                       return (
                         <Button
@@ -860,7 +860,7 @@ export default function WorkoutNewPage() {
                     {exercisesByPhase.cardio.map((exercise: any, index: number) => {
                       const globalIndex = workoutExerciseLogs.findIndex((ex: any) => ex === exercise);
                       const isCurrentExercise = globalIndex === currentExerciseIndex;
-                      const isCompleted = !!exercise.completedAt;
+                      const isCompleted = isExerciseCompleted(globalIndex);
                       
                       return (
                         <Button
@@ -909,7 +909,7 @@ export default function WorkoutNewPage() {
                     {exercisesByPhase.cooldown.map((exercise: any, index: number) => {
                       const globalIndex = workoutExerciseLogs.findIndex((ex: any) => ex === exercise);
                       const isCurrentExercise = globalIndex === currentExerciseIndex;
-                      const isCompleted = !!exercise.completedAt;
+                      const isCompleted = isExerciseCompleted(globalIndex);
                       
                       return (
                         <Button
