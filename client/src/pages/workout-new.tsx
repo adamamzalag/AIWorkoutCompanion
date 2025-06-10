@@ -48,7 +48,7 @@ export default function WorkoutNewPage() {
     enabled: !!workoutId,
   });
 
-  const { data: exercises } = useQuery<Exercise[]>({
+  const { data: exerciseDatabase } = useQuery<Exercise[]>({
     queryKey: ['/api/exercises'],
   });
 
@@ -403,14 +403,14 @@ export default function WorkoutNewPage() {
 
   // Phase 3: Auto-run comprehensive testing when workout loads
   useEffect(() => {
-    if (isActive && !phase3TestsRun && exercises.length > 0) {
+    if (isActive && !phase3TestsRun && exercises && exercises.length > 0) {
       console.log('Phase 3: Auto-running comprehensive validation on workout load...');
       setTimeout(() => {
         runPhase3Validation();
         setPhase3TestsRun(true);
       }, 3000);
     }
-  }, [isActive, phase3TestsRun, exercises.length, runPhase3Validation]);
+  }, [isActive, phase3TestsRun, exercises, runPhase3Validation]);
 
   // Phase 3: Manual comprehensive testing trigger
   const handleRunPhase3Tests = () => {
