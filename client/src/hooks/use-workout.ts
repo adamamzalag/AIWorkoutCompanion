@@ -103,13 +103,32 @@ export function useWorkout(workoutId: number, userId: number) {
     const hasTimestamp = !!exercise?.completedAt;
     const hasDbRecord = !!dbCompletion;
     
-    return {
+    // Debug logging
+    console.log('Phase 2 Debug: getCompletionStatus called for exercise', exerciseIndex, {
+      exerciseExists: !!exercise,
+      exerciseName: exercise?.name,
+      hasCompletedAt: !!exercise?.completedAt,
+      completedAtValue: exercise?.completedAt,
+      dbCompletionsCount: exerciseCompletions.length,
+      hasDbRecord
+    });
+    
+    const result = {
       isCompleted: USE_TIMESTAMP_COMPLETION ? hasTimestamp : (hasTimestamp || hasDbRecord),
       completionMethod: hasTimestamp && hasDbRecord ? 'both' : hasTimestamp ? 'timestamp' : hasDbRecord ? 'database' : 'none',
       completedAt: exercise?.completedAt || (dbCompletion ? new Date(dbCompletion.completedAt) : null),
       dbRecord: dbCompletion,
       needsSync: hasTimestamp !== hasDbRecord
     };
+    
+    console.log('Phase 2 Debug: getCompletionStatus result for exercise', exerciseIndex, {
+      hasTimestamp,
+      hasDbRecord,
+      needsSync: result.needsSync,
+      completionMethod: result.completionMethod
+    });
+    
+    return result;
   }, [exercises, exerciseCompletions, USE_TIMESTAMP_COMPLETION]);
 
   const isExerciseCompleted = useCallback((exerciseIndex: number) => {
@@ -339,15 +358,29 @@ export function useWorkout(workoutId: number, userId: number) {
   }) => {
     const completionTime = new Date();
     
+    console.log('Phase 2 Debug: completeExercise called', {
+      exerciseId,
+      currentExerciseIndex,
+      completionTime,
+      exercisesLength: exercises.length
+    });
+    
     // Update local state for immediate UI feedback
     setExercises(prev => {
       const updated = [...prev];
+      console.log('Phase 2 Debug: setExercises called, prev exercises:', prev.length);
       if (updated[currentExerciseIndex]) {
+        console.log('Phase 2 Debug: Setting completedAt on exercise', currentExerciseIndex, {
+          exerciseName: updated[currentExerciseIndex].name,
+          completionTime
+        });
         updated[currentExerciseIndex] = {
           ...updated[currentExerciseIndex],
           completedAt: completionTime,
           skipped: options?.skipped || false
         };
+      } else {
+        console.warn('Phase 2 Debug: Exercise not found at index', currentExerciseIndex);
       }
       return updated;
     });
