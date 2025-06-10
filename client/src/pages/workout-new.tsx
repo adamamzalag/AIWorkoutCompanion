@@ -508,10 +508,11 @@ export default function WorkoutNewPage() {
                                       </label>
                                       <Input
                                         type="number"
-                                        value={set.actualReps || set.reps || 0}
+                                        value={set.actualReps || ''}
                                         onChange={(e) => updateSetData(index, { 
                                           actualReps: parseInt(e.target.value) || 0 
                                         })}
+                                        placeholder={`Target: ${set.reps}`}
                                         className="mt-1"
                                       />
                                     </div>
@@ -522,11 +523,11 @@ export default function WorkoutNewPage() {
                                         </label>
                                         <Input
                                           type="number"
-                                          value={set.actualWeight || set.weight || 0}
+                                          value={set.actualWeight || ''}
                                           onChange={(e) => updateSetData(index, { 
                                             actualWeight: parseInt(e.target.value) || 0 
                                           })}
-                                          placeholder="lbs"
+                                          placeholder={set.weight ? `Target: ${set.weight} lbs` : "Enter weight"}
                                           className="mt-1"
                                         />
                                       </div>
