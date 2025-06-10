@@ -32,6 +32,7 @@ export default function WorkoutNewPage() {
   const [instructionsOpen, setInstructionsOpen] = useState(false);
   const [exerciseNotes, setExerciseNotes] = useState('');
   const [forceRenderKey, setForceRenderKey] = useState(0);
+  const [phase3TestsRun, setPhase3TestsRun] = useState(false);
   const [, setLocation] = useLocation();
 
   // Get workout ID from URL parameters
@@ -79,7 +80,10 @@ export default function WorkoutNewPage() {
     isExerciseCompleted,
     getCompletionStatus,
     syncCompletionState,
-    validateCompletionConsistency
+    validateCompletionConsistency,
+    runIntegrationTests,
+    testFeatureFlag,
+    runPhase3Validation
   } = useWorkout(workoutId, userProfile?.id || 0);
 
   const [showCoachingTip, setShowCoachingTip] = useState(false);
@@ -307,33 +311,38 @@ export default function WorkoutNewPage() {
         exercise: currentExercise
       });
       
-      // Phase 2: Run validation and auto-sync after completion with proper timing
+      // Phase 3: Enhanced validation and auto-sync with integration testing
       setTimeout(async () => {
-        console.log('Phase 2: Starting completion validation for exercise', currentExerciseIndex);
+        console.log('Phase 3: Starting enhanced completion validation for exercise', currentExerciseIndex);
         
         // Force a small delay to ensure state updates have propagated
         await new Promise(resolve => setTimeout(resolve, 500));
         
         // Check the current completion status
         const status = getCompletionStatus(currentExerciseIndex);
-        console.log('Phase 2: Exercise completion status after delay:', status);
+        console.log('Phase 3: Exercise completion status after delay:', status);
         
-        const { inconsistencies, syncNeeded } = validateCompletionConsistency();
-        console.log('Phase 2: Validation results:', { 
+        const { inconsistencies, syncNeeded, integrationStats } = validateCompletionConsistency();
+        console.log('Phase 3: Validation results:', { 
           inconsistenciesCount: inconsistencies.length, 
-          syncNeededCount: syncNeeded.length 
+          syncNeededCount: syncNeeded.length,
+          integrationStats
         });
         
         if (inconsistencies.length > 0) {
-          console.warn('Phase 2: Completion state inconsistencies detected after exercise completion', inconsistencies);
+          console.warn('Phase 3: Completion state inconsistencies detected after exercise completion', inconsistencies);
           
           // Auto-sync any inconsistencies
           for (const exerciseIndex of syncNeeded) {
-            console.log('Phase 2: Auto-syncing exercise', exerciseIndex);
+            console.log('Phase 3: Auto-syncing exercise', exerciseIndex);
             await syncCompletionState(exerciseIndex);
           }
+          
+          // Run integration tests after sync
+          console.log('Phase 3: Running post-sync integration tests...');
+          runIntegrationTests();
         } else {
-          console.log('Phase 2: Completion state consistent after exercise completion');
+          console.log('Phase 3: Completion state consistent after exercise completion');
         }
       }, 2000);
       
@@ -390,6 +399,23 @@ export default function WorkoutNewPage() {
       goToExercise(targetIndex);
       setShowExerciseNavigation(false);
     }
+  };
+
+  // Phase 3: Auto-run comprehensive testing when workout loads
+  useEffect(() => {
+    if (isActive && !phase3TestsRun && exercises.length > 0) {
+      console.log('Phase 3: Auto-running comprehensive validation on workout load...');
+      setTimeout(() => {
+        runPhase3Validation();
+        setPhase3TestsRun(true);
+      }, 3000);
+    }
+  }, [isActive, phase3TestsRun, exercises.length, runPhase3Validation]);
+
+  // Phase 3: Manual comprehensive testing trigger
+  const handleRunPhase3Tests = () => {
+    console.log('Phase 3: Manual comprehensive testing triggered...');
+    runPhase3Validation();
   };
 
   // Show loading state
