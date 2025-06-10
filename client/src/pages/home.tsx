@@ -61,8 +61,23 @@ export default function Home() {
     enabled: !!activePlan?.id && !plansLoading,
   });
 
-  // Get the first workout as today's workout
-  const todaysWorkout = workouts && workouts.length > 0 ? workouts[0] : undefined;
+  // Find the next uncompleted workout instead of just the first one
+  const todaysWorkout = (() => {
+    if (!workouts || !recentSessions) return workouts?.[0];
+    
+    // Find workouts that haven't been recently completed
+    const completedWorkoutIds = new Set(
+      recentSessions
+        .filter(session => session.completedAt) // Only fully completed sessions
+        .map(session => session.workoutId)
+    );
+    
+    // Return the first workout that hasn't been completed recently
+    const nextWorkout = workouts.find(workout => !completedWorkoutIds.has(workout.id));
+    
+    // If all workouts are completed, return the first one (for cycling through)
+    return nextWorkout || workouts[0];
+  })();
 
   const handleStartWorkout = () => {
     if (todaysWorkout) {

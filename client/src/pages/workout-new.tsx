@@ -390,54 +390,102 @@ export default function WorkoutNewPage() {
 
   const handleNextExercise = async () => {
     if (isLastExercise) {
-      // Step 3: Improved completion flow with proper sequencing
-      console.log('Step 3: Starting workout completion sequence...');
+      // Step 4: Enhanced completion flow with comprehensive error handling
+      console.log('Step 4: Starting enhanced workout completion sequence...');
       
-      // Wait for any pending exercise completion
-      if (isUpdating) {
-        console.log('Step 3: Waiting for exercise completion to finish...');
-        // Wait a moment for the completion to process
-        await new Promise(resolve => setTimeout(resolve, 1000));
-      }
-      
-      // Validate workout is ready for completion
-      if (validateWorkoutCompletion) {
-        const validation = validateWorkoutCompletion();
-        console.log('Step 3: Final validation before completion:', validation);
+      try {
+        // Wait for any pending exercise completion
+        if (isUpdating) {
+          console.log('Step 4: Waiting for exercise completion to finish...');
+          await new Promise(resolve => setTimeout(resolve, 1000));
+        }
         
-        if (validation.isValid) {
-          console.log('Step 3: Validation passed, completing workout...');
-          completeWorkout();
+        // Validate workout is ready for completion
+        if (validateWorkoutCompletion) {
+          const validation = validateWorkoutCompletion();
+          console.log('Step 4: Final validation before completion:', validation);
           
-          // Wait for completion to process before navigation
-          await new Promise(resolve => setTimeout(resolve, 500));
-          console.log('Step 3: Navigating to home...');
-          setLocation('/');
-        } else {
-          console.error('Step 3: Workout completion validation failed:', validation.validationErrors);
-          // Try to sync and retry
-          if (!validation.databaseSynchronized && syncWorkoutCompletion) {
-            console.log('Step 3: Attempting sync before retry...');
-            await syncWorkoutCompletion();
+          if (validation.isValid) {
+            console.log('Step 4: Validation passed, completing workout...');
             
-            // Retry after sync
-            setTimeout(() => {
-              console.log('Step 3: Retrying completion after sync...');
+            // Enhanced completion with error handling
+            try {
               completeWorkout();
+              
+              // Wait for completion to process before navigation
+              await new Promise(resolve => setTimeout(resolve, 500));
+              console.log('Step 4: Workout completed successfully, navigating to home...');
               setLocation('/');
-            }, 2000);
+            } catch (completionError) {
+              console.error('Step 4: Error during workout completion:', completionError);
+              
+              // Retry once after short delay
+              console.log('Step 4: Retrying completion after error...');
+              await new Promise(resolve => setTimeout(resolve, 1000));
+              
+              try {
+                completeWorkout();
+                setLocation('/');
+              } catch (retryError) {
+                console.error('Step 4: Retry failed, forcing navigation:', retryError);
+                // Force navigation even if completion fails
+                setLocation('/');
+              }
+            }
           } else {
-            // Fallback - just complete without validation
-            console.log('Step 3: Fallback completion without validation');
+            console.error('Step 4: Workout completion validation failed:', validation.validationErrors);
+            
+            // Enhanced retry logic with sync
+            if (!validation.databaseSynchronized && syncWorkoutCompletion) {
+              console.log('Step 4: Attempting sync before retry...');
+              
+              try {
+                await syncWorkoutCompletion();
+                
+                // Retry after sync with timeout protection
+                setTimeout(async () => {
+                  console.log('Step 4: Retrying completion after sync...');
+                  try {
+                    completeWorkout();
+                    setLocation('/');
+                  } catch (syncRetryError) {
+                    console.error('Step 4: Sync retry failed:', syncRetryError);
+                    setLocation('/'); // Force navigation
+                  }
+                }, 2000);
+              } catch (syncError) {
+                console.error('Step 4: Sync failed:', syncError);
+                // Fallback completion
+                completeWorkout();
+                setLocation('/');
+              }
+            } else {
+              // Fallback completion with error handling
+              console.log('Step 4: Fallback completion without validation');
+              try {
+                completeWorkout();
+                setLocation('/');
+              } catch (fallbackError) {
+                console.error('Step 4: Fallback completion failed:', fallbackError);
+                setLocation('/'); // Force navigation even if completion fails
+              }
+            }
+          }
+        } else {
+          // Enhanced fallback if validation isn't available
+          console.log('Step 4: Direct completion (validation not available)');
+          try {
             completeWorkout();
+            await new Promise(resolve => setTimeout(resolve, 500));
             setLocation('/');
+          } catch (directError) {
+            console.error('Step 4: Direct completion failed:', directError);
+            setLocation('/'); // Always navigate home
           }
         }
-      } else {
-        // Fallback if validation isn't available
-        console.log('Step 3: Direct completion (validation not available)');
-        completeWorkout();
-        await new Promise(resolve => setTimeout(resolve, 500));
+      } catch (overallError) {
+        console.error('Step 4: Overall completion process failed:', overallError);
+        // Ultimate fallback - always navigate to home
         setLocation('/');
       }
     } else {
