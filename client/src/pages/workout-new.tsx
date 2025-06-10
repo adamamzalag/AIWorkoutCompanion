@@ -292,19 +292,6 @@ export default function WorkoutNewPage() {
       // Get current exercise log for completion data
       const currentExerciseLog = workoutExerciseLogs[currentExerciseIndex];
       
-      // Phase 2: Set timestamp on exercise object for unified completion
-      const completionTime = new Date();
-      setExercises(prev => {
-        const updated = [...prev];
-        if (updated[currentExerciseIndex]) {
-          updated[currentExerciseIndex] = {
-            ...updated[currentExerciseIndex],
-            completedAt: completionTime
-          };
-        }
-        return updated;
-      });
-      
       // Call the enhanced completeExercise function with database persistence
       completeExercise(currentExerciseData.id, currentExerciseLog?.sets || [], {
         skipped: false,
@@ -315,9 +302,8 @@ export default function WorkoutNewPage() {
       // Mark exercise as completed locally
       setCompletedExercises(prev => [...prev, currentExerciseIndex]);
       
-      console.log('Phase 2: Exercise completed with timestamp and database save:', {
+      console.log('Phase 2: Exercise completed with database save:', {
         exerciseIndex: currentExerciseIndex,
-        completedAt: completionTime,
         exercise: currentExercise
       });
       
