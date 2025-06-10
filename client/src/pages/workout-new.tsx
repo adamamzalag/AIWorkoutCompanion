@@ -437,22 +437,6 @@ export default function WorkoutNewPage() {
     runPhase3Validation();
   };
 
-  // Debug loading conditions
-  const loadingConditions = {
-    noWorkout: !workout,
-    noExerciseLogs: workoutExerciseLogs.length === 0,
-    isStarting: isStarting,
-    isCheckingResumable: isCheckingResumable,
-    notActive: !isActive,
-    noCurrentExercise: !currentExercise,
-    noCurrentExerciseData: !currentExerciseData
-  };
-  
-  console.log('Loading conditions debug:', loadingConditions);
-  console.log('Current exercise index:', currentExerciseIndex);
-  console.log('Exercises length:', exercises.length);
-  console.log('Workout exercise logs length:', workoutExerciseLogs.length);
-
   // Show loading state
   if (!workout || workoutExerciseLogs.length === 0 || isStarting || isCheckingResumable || !isActive || !currentExercise || !currentExerciseData) {
     return (
@@ -464,9 +448,6 @@ export default function WorkoutNewPage() {
              isStarting ? 'Starting workout...' : 
              'Loading workout...'}
           </p>
-          <div className="text-xs text-muted-foreground mt-2">
-            Debug: {Object.entries(loadingConditions).filter(([_, value]) => value).map(([key]) => key).join(', ')}
-          </div>
         </div>
       </div>
     );

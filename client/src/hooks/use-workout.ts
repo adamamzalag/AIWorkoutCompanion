@@ -1,4 +1,4 @@
-import { useState, useCallback } from 'react';
+import { useState, useCallback, useEffect } from 'react';
 import { useMutation, useQueryClient } from '@tanstack/react-query';
 import { apiRequest } from '@/lib/queryClient';
 import type { ExerciseLog } from '@/lib/types';
@@ -406,14 +406,7 @@ export function useWorkout(workoutId: number, userId: number) {
     
     // Find the next incomplete exercise or handle completed workout
     const lastCompletedIndex = Math.max(...completions.map((c: any) => c.exerciseIndex), -1);
-    const nextExerciseIndex = lastCompletedIndex + 1;
-    
-    // If all exercises are completed, set to the last exercise for review
-    if (nextExerciseIndex >= exercises.length && exercises.length > 0) {
-      setCurrentExerciseIndex(exercises.length - 1);
-    } else {
-      setCurrentExerciseIndex(nextExerciseIndex);
-    }
+    setCurrentExerciseIndex(lastCompletedIndex + 1);
     
     queryClient.invalidateQueries({ queryKey: ['/api/workout-sessions', userId] });
   }, [queryClient, userId]);
@@ -609,6 +602,13 @@ export function useWorkout(workoutId: number, userId: number) {
       userPerformance: performance
     });
   }, [coachingTipMutation]);
+
+  // Fix index bounds when exercises are loaded (handles completed workouts)
+  useEffect(() => {
+    if (exercises.length > 0 && currentExerciseIndex >= exercises.length) {
+      setCurrentExerciseIndex(exercises.length - 1);
+    }
+  }, [exercises.length, currentExerciseIndex]);
 
   const currentExercise = exercises[currentExerciseIndex];
   const isLastExercise = currentExerciseIndex >= exercises.length - 1;
