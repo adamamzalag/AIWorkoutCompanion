@@ -75,7 +75,8 @@ export default function WorkoutNewPage() {
     isGettingTip,
     coachingTip,
     exerciseCompletions,
-    isCheckingResumable
+    isCheckingResumable,
+    validateCompletionConsistency
   } = useWorkout(workoutId, userProfile?.id || 0);
 
   const [showCoachingTip, setShowCoachingTip] = useState(false);
@@ -279,6 +280,16 @@ export default function WorkoutNewPage() {
       setCompletedExercises(prev => [...prev, currentExerciseIndex]);
       
       console.log('Exercise completed and saved to database:', currentExercise);
+      
+      // Phase 1: Run validation after completion
+      setTimeout(() => {
+        const inconsistencies = validateCompletionConsistency();
+        if (inconsistencies.length > 0) {
+          console.warn('Phase 1: Completion state inconsistencies detected after exercise completion', inconsistencies);
+        } else {
+          console.log('Phase 1: Completion state consistent after exercise completion');
+        }
+      }, 1000);
       
       // Force component re-render to show completion state immediately
       setForceRenderKey(prev => prev + 1);

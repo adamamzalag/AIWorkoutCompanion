@@ -330,6 +330,9 @@ export function useWorkout(workoutId: number, userId: number) {
     getCoachingTip,
     resumeSession,
     
+    // Phase 1: New validation function
+    validateCompletionConsistency,
+    
     // Loading states
     isStarting: startSessionMutation.isPending,
     isUpdating: updateSessionMutation.isPending,
