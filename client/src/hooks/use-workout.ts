@@ -568,10 +568,33 @@ export function useWorkout(workoutId: number, userId: number) {
       const endTime = new Date();
       const duration = Math.round((endTime.getTime() - startTime.getTime()) / (1000 * 60));
       
+      // Transform exercises data to match server schema expectations
+      const processedExercises = exercises.map(exercise => ({
+        exerciseId: exercise.exerciseId,
+        name: exercise.name,
+        sets: exercise.sets,
+        restTime: exercise.restTime,
+        notes: exercise.notes,
+        isWarmup: exercise.isWarmup,
+        isCardio: exercise.isCardio,
+        isCooldown: exercise.isCooldown,
+        duration: exercise.duration,
+        completedAt: exercise.completedAt,
+        skipped: exercise.skipped,
+        originalReps: exercise.originalReps
+      }));
+      
+      // Calculate completion statistics
+      const exercisesCompleted = exercises.filter(ex => ex.completedAt && !ex.skipped).length;
+      const exercisesSkipped = exercises.filter(ex => ex.skipped).length;
+      
       updateSessionMutation.mutate({
-        exercises,
+        exercises: processedExercises,
         completedAt: endTime,
-        duration
+        duration,
+        exercisesCompleted,
+        exercisesSkipped,
+        completionMethod: exercisesCompleted === exercises.length ? 'manual' : 'partial'
       });
     }
     
