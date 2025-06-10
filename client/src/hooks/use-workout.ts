@@ -404,9 +404,16 @@ export function useWorkout(workoutId: number, userId: number) {
       return updated;
     });
     
-    // Find the next incomplete exercise
+    // Find the next incomplete exercise or handle completed workout
     const lastCompletedIndex = Math.max(...completions.map((c: any) => c.exerciseIndex), -1);
-    setCurrentExerciseIndex(lastCompletedIndex + 1);
+    const nextExerciseIndex = lastCompletedIndex + 1;
+    
+    // If all exercises are completed, set to the last exercise for review
+    if (nextExerciseIndex >= exercises.length && exercises.length > 0) {
+      setCurrentExerciseIndex(exercises.length - 1);
+    } else {
+      setCurrentExerciseIndex(nextExerciseIndex);
+    }
     
     queryClient.invalidateQueries({ queryKey: ['/api/workout-sessions', userId] });
   }, [queryClient, userId]);
@@ -584,17 +591,10 @@ export function useWorkout(workoutId: number, userId: number) {
         originalReps: exercise.originalReps
       }));
       
-      // Calculate completion statistics
-      const exercisesCompleted = exercises.filter(ex => ex.completedAt && !ex.skipped).length;
-      const exercisesSkipped = exercises.filter(ex => ex.skipped).length;
-      
       updateSessionMutation.mutate({
         exercises: processedExercises,
         completedAt: endTime,
-        duration,
-        exercisesCompleted,
-        exercisesSkipped,
-        completionMethod: exercisesCompleted === exercises.length ? 'manual' : 'partial'
+        duration
       });
     }
     
