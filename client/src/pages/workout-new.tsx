@@ -83,7 +83,8 @@ export default function WorkoutNewPage() {
     validateCompletionConsistency,
     runIntegrationTests,
     testFeatureFlag,
-    runPhase3Validation
+    runPhase3Validation,
+    exercises
   } = useWorkout(workoutId, userProfile?.id || 0);
 
   const [showCoachingTip, setShowCoachingTip] = useState(false);
@@ -234,10 +235,10 @@ export default function WorkoutNewPage() {
 
   // Get current exercise data
   const currentExerciseData = (() => {
-    if (!currentExercise || !exercises) return null;
+    if (!currentExercise || !exerciseDatabase) return null;
     
     if (typeof currentExercise.exerciseId === 'number') {
-      const foundExercise = exercises.find(ex => ex.id === currentExercise.exerciseId);
+      const foundExercise = exerciseDatabase.find((ex: any) => ex.id === currentExercise.exerciseId);
       if (foundExercise) {
         return foundExercise;
       }
