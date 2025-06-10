@@ -363,13 +363,46 @@ export async function registerRoutes(app: Express): Promise<Server> {
     }
   });
 
+  // DEBUG: Direct database test route
+  app.get("/api/debug/workouts/:planId", async (req, res) => {
+    try {
+      const planId = parseInt(req.params.planId);
+      console.log(`🔍 DIRECT DB TEST: Testing direct database query for plan ${planId}`);
+      
+      // Import the workouts table and db directly
+      const { workouts } = require("@shared/schema");
+      const { db } = require("./db");
+      const { eq } = require("drizzle-orm");
+      
+      const directResult = await db.select().from(workouts).where(eq(workouts.planId, planId));
+      console.log(`🔍 DIRECT DB TEST: Direct query returned ${directResult.length} results`);
+      console.log(`🔍 DIRECT DB TEST: Direct result IDs:`, directResult.map(w => w.id));
+      
+      res.json({
+        message: "Direct database test",
+        planId,
+        resultCount: directResult.length,
+        results: directResult.map(w => ({ id: w.id, title: w.title, planId: w.planId, orderIndex: w.orderIndex }))
+      });
+    } catch (error) {
+      console.error(`🔍 DIRECT DB TEST: Error:`, error);
+      res.status(500).json({ error: "Direct DB test failed", details: error.message });
+    }
+  });
+
   // Workouts routes
   app.get("/api/workouts/:planId", async (req, res) => {
     try {
       const planId = parseInt(req.params.planId);
+      console.log(`🔍 DEBUG: Fetching workouts for plan ID: ${planId}`);
+      
       const workouts = await storage.getWorkouts(planId);
+      console.log(`🔍 DEBUG: Retrieved ${workouts.length} workouts from storage`);
+      console.log(`🔍 DEBUG: Workout IDs: ${workouts.map(w => w.id).join(', ')}`);
+      
       res.json(workouts);
     } catch (error) {
+      console.error(`🔍 DEBUG: Error fetching workouts for plan ${req.params.planId}:`, error);
       res.status(400).json({ error: "Invalid plan ID" });
     }
   });

@@ -238,7 +238,18 @@ export class DatabaseStorage implements IStorage {
   }
 
   async getWorkouts(planId: number): Promise<Workout[]> {
-    return await db.select().from(workouts).where(eq(workouts.planId, planId)).orderBy(workouts.orderIndex);
+    console.log(`🔍 DEBUG STORAGE: Starting getWorkouts for planId: ${planId}`);
+    
+    try {
+      const result = await db.select().from(workouts).where(eq(workouts.planId, planId)).orderBy(workouts.orderIndex);
+      console.log(`🔍 DEBUG STORAGE: Raw query result length: ${result.length}`);
+      console.log(`🔍 DEBUG STORAGE: Raw query result:`, result.map(w => ({ id: w.id, title: w.title, planId: w.planId, orderIndex: w.orderIndex })));
+      
+      return result;
+    } catch (error) {
+      console.error(`🔍 DEBUG STORAGE: Error in getWorkouts:`, error);
+      throw error;
+    }
   }
 
   async getWorkout(id: number): Promise<Workout | undefined> {
