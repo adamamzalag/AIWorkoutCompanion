@@ -858,12 +858,12 @@ export default function WorkoutNewPage() {
               <div className="space-y-2">
                 <div className="flex justify-between text-sm text-muted-foreground">
                   <span>Progress</span>
-                  <span>{workoutExerciseLogs.filter(ex => ex.completedAt).length} of {workoutExerciseLogs.length} completed</span>
+                  <span>{getUnifiedProgress().completed} of {getUnifiedProgress().total} completed</span>
                 </div>
                 <div className="w-full bg-gray-200 dark:bg-gray-700 rounded-full h-2">
                   <div 
                     className="bg-green-500 h-2 rounded-full transition-all duration-300" 
-                    style={{ width: `${(workoutExerciseLogs.filter(ex => ex.completedAt).length / workoutExerciseLogs.length) * 100}%` }}
+                    style={{ width: `${getUnifiedProgress().percentage}%` }}
                   ></div>
                 </div>
               </div>
