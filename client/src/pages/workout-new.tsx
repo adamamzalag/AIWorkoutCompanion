@@ -84,6 +84,8 @@ export default function WorkoutNewPage() {
     runIntegrationTests,
     testFeatureFlag,
     runPhase3Validation,
+    validatePhase4Transition,
+    getUnifiedProgress,
     exercises
   } = useWorkout(workoutId, userProfile?.id || 0);
 
@@ -312,39 +314,47 @@ export default function WorkoutNewPage() {
         exercise: currentExercise
       });
       
-      // Phase 3: Enhanced validation and auto-sync with integration testing
+      // Phase 4: Enhanced validation with feature flag transition testing
       setTimeout(async () => {
-        console.log('Phase 3: Starting enhanced completion validation for exercise', currentExerciseIndex);
+        console.log('Phase 4: Starting enhanced completion validation for exercise', currentExerciseIndex);
         
         // Force a small delay to ensure state updates have propagated
         await new Promise(resolve => setTimeout(resolve, 500));
         
         // Check the current completion status
         const status = getCompletionStatus(currentExerciseIndex);
-        console.log('Phase 3: Exercise completion status after delay:', status);
+        console.log('Phase 4: Exercise completion status after delay:', status);
         
         const { inconsistencies, syncNeeded, integrationStats } = validateCompletionConsistency();
-        console.log('Phase 3: Validation results:', { 
+        console.log('Phase 4: Validation results:', { 
           inconsistenciesCount: inconsistencies.length, 
           syncNeededCount: syncNeeded.length,
           integrationStats
         });
         
+        // Run Phase 4 transition validation
+        const phase4Results = validatePhase4Transition();
+        console.log('Phase 4: Feature flag transition validation completed');
+        
         if (inconsistencies.length > 0) {
-          console.warn('Phase 3: Completion state inconsistencies detected after exercise completion', inconsistencies);
+          console.warn('Phase 4: Completion state inconsistencies detected after exercise completion', inconsistencies);
           
           // Auto-sync any inconsistencies
           for (const exerciseIndex of syncNeeded) {
-            console.log('Phase 3: Auto-syncing exercise', exerciseIndex);
+            console.log('Phase 4: Auto-syncing exercise', exerciseIndex);
             await syncCompletionState(exerciseIndex);
           }
           
-          // Run integration tests after sync
-          console.log('Phase 3: Running post-sync integration tests...');
-          runIntegrationTests();
+          // Re-run Phase 4 validation after sync
+          console.log('Phase 4: Re-running validation after sync...');
+          validatePhase4Transition();
         } else {
-          console.log('Phase 3: Completion state consistent after exercise completion');
+          console.log('Phase 4: Completion state consistent after exercise completion');
         }
+        
+        // Test unified progress calculation
+        const progress = getUnifiedProgress();
+        console.log('Phase 4: Unified progress calculation:', progress);
       }, 2000);
       
       // Force component re-render to show completion state immediately
@@ -402,16 +412,18 @@ export default function WorkoutNewPage() {
     }
   };
 
-  // Phase 3: Auto-run comprehensive testing when workout loads
+  // Phase 4: Auto-run feature flag transition validation when workout loads
   useEffect(() => {
     if (isActive && !phase3TestsRun && exercises && exercises.length > 0) {
-      console.log('Phase 3: Auto-running comprehensive validation on workout load...');
+      console.log('Phase 4: Auto-running feature flag transition validation on workout load...');
       setTimeout(() => {
+        validatePhase4Transition();
+        // Also run Phase 3 for comprehensive testing
         runPhase3Validation();
         setPhase3TestsRun(true);
       }, 3000);
     }
-  }, [isActive, phase3TestsRun, exercises, runPhase3Validation]);
+  }, [isActive, phase3TestsRun, exercises, validatePhase4Transition, runPhase3Validation]);
 
   // Phase 3: Manual comprehensive testing trigger
   const handleRunPhase3Tests = () => {

@@ -11,8 +11,8 @@ export function useWorkout(workoutId: number, userId: number) {
   const [startTime, setStartTime] = useState<Date | null>(null);
   const [exerciseCompletions, setExerciseCompletions] = useState<any[]>([]);
 
-  // Phase 2: Feature flag for unified completion system
-  const USE_TIMESTAMP_COMPLETION = false;
+  // Phase 4: Feature flag flipped - timestamp completion is now primary
+  const USE_TIMESTAMP_COMPLETION = true;
 
   const queryClient = useQueryClient();
 
@@ -340,6 +340,69 @@ export function useWorkout(workoutId: number, userId: number) {
     return phase3Results;
   }, [validateCompletionConsistency, runIntegrationTests, testFeatureFlag]);
 
+  // Phase 4: Feature flag transition validation
+  const validatePhase4Transition = useCallback(() => {
+    console.log('Phase 4: Validating feature flag transition...');
+    
+    const transitionTests = {
+      flagState: USE_TIMESTAMP_COMPLETION,
+      completionConsistency: true,
+      uiConsistency: true,
+      backwardCompatibility: true,
+      performanceImpact: false
+    };
+    
+    // Test 1: Completion consistency across all exercises
+    const { integrationStats } = validateCompletionConsistency();
+    transitionTests.completionConsistency = integrationStats.needsSync === 0;
+    
+    // Test 2: UI consistency - all completed exercises should show as completed
+    const completedByTimestamp = exercises.filter(ex => !!ex.completedAt).length;
+    const completedByDatabase = exerciseCompletions.length;
+    const completedByUnified = exercises.filter((_, index) => isExerciseCompleted(index)).length;
+    
+    transitionTests.uiConsistency = completedByUnified >= Math.max(completedByTimestamp, completedByDatabase);
+    
+    // Test 3: Backward compatibility - database completions still work
+    transitionTests.backwardCompatibility = integrationStats.databaseOnly === 0 || 
+      integrationStats.databaseOnly === integrationStats.both;
+    
+    // Test 4: Performance impact monitoring
+    const startTime = performance.now();
+    exercises.forEach((_, index) => getCompletionStatus(index));
+    const endTime = performance.now();
+    transitionTests.performanceImpact = (endTime - startTime) < 100; // Less than 100ms
+    
+    const phase4Results = {
+      flagState: transitionTests.flagState ? 'timestamp-primary' : 'database-primary',
+      tests: transitionTests,
+      completionStats: {
+        byTimestamp: completedByTimestamp,
+        byDatabase: completedByDatabase,
+        byUnified: completedByUnified,
+        integrationStats
+      },
+      performanceMs: endTime - startTime,
+      passed: Object.values(transitionTests).every(Boolean)
+    };
+    
+    console.log('Phase 4: Feature flag transition validation results:', phase4Results);
+    
+    return phase4Results;
+  }, [USE_TIMESTAMP_COMPLETION, validateCompletionConsistency, exercises, exerciseCompletions, isExerciseCompleted, getCompletionStatus]);
+
+  // Phase 4: Progress calculation using unified completion system
+  const getUnifiedProgress = useCallback(() => {
+    const totalExercises = exercises.length;
+    const completedExercises = exercises.filter((_, index) => isExerciseCompleted(index)).length;
+    
+    return {
+      completed: completedExercises,
+      total: totalExercises,
+      percentage: totalExercises > 0 ? Math.round((completedExercises / totalExercises) * 100) : 0
+    };
+  }, [exercises, isExerciseCompleted]);
+
   const resumeSession = useCallback((session: any, completions: any[]) => {
     setSessionId(session.id);
     setIsActive(true);
@@ -590,6 +653,10 @@ export function useWorkout(workoutId: number, userId: number) {
     runIntegrationTests,
     testFeatureFlag,
     runPhase3Validation,
+    
+    // Phase 4: Feature flag transition functions
+    validatePhase4Transition,
+    getUnifiedProgress,
     
     // Loading states
     isStarting: startSessionMutation.isPending,
