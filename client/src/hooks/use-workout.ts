@@ -95,23 +95,12 @@ export function useWorkout(workoutId: number, userId: number) {
     }
   });
 
-  // Phase 2: Unified completion system with synchronization
-  
+  // Unified completion system - primary completion detection
   const getCompletionStatus = useCallback((exerciseIndex: number) => {
     const exercise = exercises[exerciseIndex];
     const dbCompletion = exerciseCompletions.find(c => c.exerciseIndex === exerciseIndex);
     const hasTimestamp = !!exercise?.completedAt;
     const hasDbRecord = !!dbCompletion;
-    
-    // Debug logging
-    console.log('Phase 2 Debug: getCompletionStatus called for exercise', exerciseIndex, {
-      exerciseExists: !!exercise,
-      exerciseName: exercise?.name,
-      hasCompletedAt: !!exercise?.completedAt,
-      completedAtValue: exercise?.completedAt,
-      dbCompletionsCount: exerciseCompletions.length,
-      hasDbRecord
-    });
     
     const result = {
       isCompleted: hasTimestamp,
@@ -121,13 +110,6 @@ export function useWorkout(workoutId: number, userId: number) {
       needsSync: hasTimestamp !== hasDbRecord
     };
     
-    console.log('Phase 2 Debug: getCompletionStatus result for exercise', exerciseIndex, {
-      hasTimestamp,
-      hasDbRecord,
-      needsSync: result.needsSync,
-      completionMethod: result.completionMethod
-    });
-    
     return result;
   }, [exercises, exerciseCompletions]);
 
@@ -135,12 +117,11 @@ export function useWorkout(workoutId: number, userId: number) {
     return getCompletionStatus(exerciseIndex).isCompleted;
   }, [getCompletionStatus]);
 
-  // Phase 2: Completion state synchronization
+  // Completion state synchronization - maintains database consistency
   const syncCompletionState = useCallback(async (exerciseIndex: number) => {
     const status = getCompletionStatus(exerciseIndex);
     
     if (status.needsSync) {
-      console.log(`Phase 2: Syncing completion state for exercise ${exerciseIndex}`, status);
       
       if (status.completionMethod === 'timestamp' && !status.dbRecord) {
         // Exercise has timestamp but no database record - create DB record
@@ -155,9 +136,8 @@ export function useWorkout(workoutId: number, userId: number) {
               skipped: exercise.skipped || false,
               autoCompleted: true
             });
-            console.log(`Phase 2: Created database record for timestamp completion`);
           } catch (error) {
-            console.warn(`Phase 2: Failed to sync timestamp to database:`, error);
+            console.warn(`Failed to sync timestamp to database:`, error);
           }
         }
       } else if (status.completionMethod === 'database' && !status.completedAt) {
@@ -173,7 +153,7 @@ export function useWorkout(workoutId: number, userId: number) {
           }
           return updated;
         });
-        console.log(`Phase 2: Added timestamp from database completion`);
+
       }
     }
   }, [getCompletionStatus, exercises, sessionId, completeExerciseMutation, setExercises]);
@@ -278,9 +258,8 @@ export function useWorkout(workoutId: number, userId: number) {
     return { tests, passed: passedTests === totalTests, score: `${passedTests}/${totalTests}` };
   }, [validateCompletionConsistency, sessionId, isActive, exerciseCompletions]);
 
-  // Phase 3: Feature flag testing
+  // Legacy feature flag testing (maintained for compatibility)
   const testFeatureFlag = useCallback((flagValue: boolean) => {
-    console.log(`Phase 5: Legacy feature flag testing removed - system now uses timestamp completion as standard`);
     
     // Test completion detection with timestamp-based system
     const testResults = exercises.map((exercise, index) => {
