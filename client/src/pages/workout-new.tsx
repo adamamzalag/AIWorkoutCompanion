@@ -290,7 +290,13 @@ export default function WorkoutNewPage() {
         actualWeight: set.actualWeight || set.weight
       });
       
-      setActiveSetIndex(null);
+      // Auto-open next set if available
+      const nextSetIndex = setIndex + 1;
+      if (nextSetIndex < currentExercise.sets.length) {
+        setActiveSetIndex(nextSetIndex);
+      } else {
+        setActiveSetIndex(null);
+      }
     }
   };
 
