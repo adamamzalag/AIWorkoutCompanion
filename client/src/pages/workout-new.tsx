@@ -307,13 +307,16 @@ export default function WorkoutNewPage() {
         exercise: currentExercise
       });
       
-      // Phase 2: Run validation and auto-sync after completion
+      // Phase 2: Run validation and auto-sync after completion with proper timing
       setTimeout(async () => {
         console.log('Phase 2: Starting completion validation for exercise', currentExerciseIndex);
         
+        // Force a small delay to ensure state updates have propagated
+        await new Promise(resolve => setTimeout(resolve, 500));
+        
         // Check the current completion status
         const status = getCompletionStatus(currentExerciseIndex);
-        console.log('Phase 2: Exercise completion status:', status);
+        console.log('Phase 2: Exercise completion status after delay:', status);
         
         const { inconsistencies, syncNeeded } = validateCompletionConsistency();
         console.log('Phase 2: Validation results:', { 
@@ -332,7 +335,7 @@ export default function WorkoutNewPage() {
         } else {
           console.log('Phase 2: Completion state consistent after exercise completion');
         }
-      }, 1000);
+      }, 2000);
       
       // Force component re-render to show completion state immediately
       setForceRenderKey(prev => prev + 1);
