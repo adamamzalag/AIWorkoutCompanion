@@ -85,6 +85,8 @@ export default function WorkoutNewPage() {
   const [showExerciseNavigation, setShowExerciseNavigation] = useState(false);
   const [currentSetData, setCurrentSetData] = useState<{ reps: number; weight?: number }>({ reps: 0 });
   const [completedExercises, setCompletedExercises] = useState<number[]>([]);
+  const [transitionCountdown, setTransitionCountdown] = useState<number | null>(null);
+  const [isTransitioning, setIsTransitioning] = useState(false);
   const handleGetCoachingTip = () => {
     if (!isGettingTip && currentExerciseData) {
       const currentExerciseLog = workoutExerciseLogs[currentExerciseIndex];
@@ -295,10 +297,23 @@ export default function WorkoutNewPage() {
       // Force component re-render to show completion state immediately
       setForceRenderKey(prev => prev + 1);
       
-      // Show completion feedback for 2 seconds before moving to next exercise
-      setTimeout(() => {
-        handleNextExercise();
-      }, 2000);
+      // Start countdown for next exercise transition
+      setTransitionCountdown(3);
+      const countdownInterval = setInterval(() => {
+        setTransitionCountdown(prev => {
+          if (prev === null || prev <= 1) {
+            clearInterval(countdownInterval);
+            setIsTransitioning(true);
+            setTimeout(() => {
+              handleNextExercise();
+              setTransitionCountdown(null);
+              setIsTransitioning(false);
+            }, 500); // Brief transition animation
+            return null;
+          }
+          return prev - 1;
+        });
+      }, 1000);
     }
   };
 
@@ -637,14 +652,37 @@ export default function WorkoutNewPage() {
                 {isUpdating ? 'Saving...' : 'Mark Exercise as Complete'}
               </Button>
             ) : (
-              <div className="w-full bg-green-100 dark:bg-green-900 border border-green-300 dark:border-green-700 rounded-lg p-4 animate-pulse">
+              <div className={`w-full bg-green-100 dark:bg-green-900 border border-green-300 dark:border-green-700 rounded-lg p-4 transition-all duration-500 ${isTransitioning ? 'opacity-50 scale-95' : 'animate-pulse'}`}>
                 <div className="flex items-center justify-center space-x-2 text-green-700 dark:text-green-300">
                   <span className="text-2xl">✓</span>
                   <span className="font-bold text-lg">Exercise Completed!</span>
                 </div>
-                <p className="text-sm text-green-600 dark:text-green-400 text-center mt-2">
-                  Moving to next exercise in a moment...
-                </p>
+                
+                {transitionCountdown !== null ? (
+                  <div className="text-center mt-3">
+                    <div className="flex items-center justify-center space-x-2">
+                      <span className="text-sm text-green-600 dark:text-green-400">
+                        Next exercise in
+                      </span>
+                      <div className="flex items-center justify-center w-8 h-8 bg-green-200 dark:bg-green-800 rounded-full">
+                        <span className="font-bold text-green-800 dark:text-green-200 text-lg">
+                          {transitionCountdown}
+                        </span>
+                      </div>
+                    </div>
+                    <div className="w-full bg-green-200 dark:bg-green-800 rounded-full h-1 mt-2">
+                      <div 
+                        className="bg-green-600 dark:bg-green-400 h-1 rounded-full transition-all duration-1000" 
+                        style={{ width: `${((3 - transitionCountdown) / 3) * 100}%` }}
+                      />
+                    </div>
+                  </div>
+                ) : (
+                  <p className="text-sm text-green-600 dark:text-green-400 text-center mt-2">
+                    {isTransitioning ? 'Transitioning...' : 'Great job!'}
+                  </p>
+                )}
+                
                 {currentExercise.completedAt && (
                   <p className="text-xs text-green-600 dark:text-green-400 text-center mt-1">
                     Completed at {currentExercise.completedAt.toLocaleTimeString()}
