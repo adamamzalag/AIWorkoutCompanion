@@ -76,6 +76,7 @@ export default function WorkoutNewPage() {
     coachingTip,
     exerciseCompletions,
     isCheckingResumable,
+    isExerciseCompleted,
     validateCompletionConsistency
   } = useWorkout(workoutId, userProfile?.id || 0);
 

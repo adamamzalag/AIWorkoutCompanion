@@ -95,6 +95,19 @@ export function useWorkout(workoutId: number, userId: number) {
     }
   });
 
+  // Phase 1: Unified completion checker with feature flag support
+  const isExerciseCompleted = useCallback((exerciseIndex: number) => {
+    const USE_TIMESTAMP_COMPLETION = false; // Feature flag for Option B migration
+    
+    if (USE_TIMESTAMP_COMPLETION) {
+      return !!exercises[exerciseIndex]?.completedAt;
+    } else {
+      // Current system: check both local state and database
+      return exerciseCompletions.some(c => c.exerciseIndex === exerciseIndex) ||
+             !!exercises[exerciseIndex]?.completedAt;
+    }
+  }, [exercises, exerciseCompletions]);
+
   // Phase 1: Completion state validator
   const validateCompletionConsistency = useCallback(() => {
     const inconsistencies: any[] = [];
@@ -134,6 +147,21 @@ export function useWorkout(workoutId: number, userId: number) {
     }
     
     setExerciseCompletions(completions);
+    
+    // Update exercises with completion timestamps from database
+    setExercises(prev => {
+      const updated = [...prev];
+      completions.forEach((completion: any) => {
+        if (updated[completion.exerciseIndex]) {
+          updated[completion.exerciseIndex] = {
+            ...updated[completion.exerciseIndex],
+            completedAt: new Date(completion.completedAt),
+            skipped: completion.skipped
+          };
+        }
+      });
+      return updated;
+    });
     
     // Find the next incomplete exercise
     const lastCompletedIndex = Math.max(...completions.map((c: any) => c.exerciseIndex), -1);
@@ -271,6 +299,7 @@ export function useWorkout(workoutId: number, userId: number) {
 
     // Save to database via new API
     completeExerciseMutation.mutate({
+      exerciseId: exerciseId,
       exerciseIndex: currentExerciseIndex,
       completedSets,
       completionNotes: options?.notes,
@@ -330,7 +359,8 @@ export function useWorkout(workoutId: number, userId: number) {
     getCoachingTip,
     resumeSession,
     
-    // Phase 1: New validation function
+    // Phase 1: New functions
+    isExerciseCompleted,
     validateCompletionConsistency,
     
     // Loading states
