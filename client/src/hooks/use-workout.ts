@@ -11,7 +11,7 @@ export function useWorkout(workoutId: number, userId: number) {
   const [startTime, setStartTime] = useState<Date | null>(null);
   const [exerciseCompletions, setExerciseCompletions] = useState<any[]>([]);
 
-  // Phase 1: Feature flag for rollback capability
+  // Phase 2: Feature flag for unified completion system
   const USE_TIMESTAMP_COMPLETION = false;
 
   const queryClient = useQueryClient();
@@ -95,43 +95,98 @@ export function useWorkout(workoutId: number, userId: number) {
     }
   });
 
-  // Phase 1: Unified completion checker with feature flag support
-  const isExerciseCompleted = useCallback((exerciseIndex: number) => {
-    const USE_TIMESTAMP_COMPLETION = false; // Feature flag for Option B migration
+  // Phase 2: Unified completion system with synchronization
+  
+  const getCompletionStatus = useCallback((exerciseIndex: number) => {
+    const exercise = exercises[exerciseIndex];
+    const dbCompletion = exerciseCompletions.find(c => c.exerciseIndex === exerciseIndex);
+    const hasTimestamp = !!exercise?.completedAt;
+    const hasDbRecord = !!dbCompletion;
     
-    if (USE_TIMESTAMP_COMPLETION) {
-      return !!exercises[exerciseIndex]?.completedAt;
-    } else {
-      // Current system: check both local state and database
-      return exerciseCompletions.some(c => c.exerciseIndex === exerciseIndex) ||
-             !!exercises[exerciseIndex]?.completedAt;
-    }
-  }, [exercises, exerciseCompletions]);
+    return {
+      isCompleted: USE_TIMESTAMP_COMPLETION ? hasTimestamp : (hasTimestamp || hasDbRecord),
+      completionMethod: hasTimestamp && hasDbRecord ? 'both' : hasTimestamp ? 'timestamp' : hasDbRecord ? 'database' : 'none',
+      completedAt: exercise?.completedAt || (dbCompletion ? new Date(dbCompletion.completedAt) : null),
+      dbRecord: dbCompletion,
+      needsSync: hasTimestamp !== hasDbRecord
+    };
+  }, [exercises, exerciseCompletions, USE_TIMESTAMP_COMPLETION]);
 
-  // Phase 1: Completion state validator
+  const isExerciseCompleted = useCallback((exerciseIndex: number) => {
+    return getCompletionStatus(exerciseIndex).isCompleted;
+  }, [getCompletionStatus]);
+
+  // Phase 2: Completion state synchronization
+  const syncCompletionState = useCallback(async (exerciseIndex: number) => {
+    const status = getCompletionStatus(exerciseIndex);
+    
+    if (status.needsSync) {
+      console.log(`Phase 2: Syncing completion state for exercise ${exerciseIndex}`, status);
+      
+      if (status.completionMethod === 'timestamp' && !status.dbRecord) {
+        // Exercise has timestamp but no database record - create DB record
+        const exercise = exercises[exerciseIndex];
+        if (exercise && sessionId) {
+          try {
+            await completeExerciseMutation.mutateAsync({
+              exerciseId: exercise.exerciseId || 0,
+              exerciseIndex,
+              completedSets: exercise.sets || [],
+              completionNotes: `Auto-synced from timestamp completion`,
+              skipped: exercise.skipped || false,
+              autoCompleted: true
+            });
+            console.log(`Phase 2: Created database record for timestamp completion`);
+          } catch (error) {
+            console.warn(`Phase 2: Failed to sync timestamp to database:`, error);
+          }
+        }
+      } else if (status.completionMethod === 'database' && !status.completedAt) {
+        // Exercise has database record but no timestamp - add timestamp
+        setExercises(prev => {
+          const updated = [...prev];
+          if (updated[exerciseIndex] && status.dbRecord) {
+            updated[exerciseIndex] = {
+              ...updated[exerciseIndex],
+              completedAt: new Date(status.dbRecord.completedAt),
+              skipped: status.dbRecord.skipped
+            };
+          }
+          return updated;
+        });
+        console.log(`Phase 2: Added timestamp from database completion`);
+      }
+    }
+  }, [getCompletionStatus, exercises, sessionId, completeExerciseMutation, setExercises]);
+
+  // Phase 1: Completion state validator (enhanced for Phase 2)
   const validateCompletionConsistency = useCallback(() => {
     const inconsistencies: any[] = [];
+    const syncNeeded: number[] = [];
+    
     exercises.forEach((exercise, index) => {
-      const hasTimestamp = !!exercise.completedAt;
-      const inDatabase = exerciseCompletions.some(c => c.exerciseIndex === index);
+      const status = getCompletionStatus(index);
       
-      if (hasTimestamp !== inDatabase) {
-        inconsistencies.push({ 
-          index, 
+      if (status.needsSync) {
+        inconsistencies.push({
+          index,
           exerciseName: exercise.name,
-          hasTimestamp, 
-          inDatabase,
-          timestampValue: exercise.completedAt 
+          hasTimestamp: !!exercise.completedAt,
+          inDatabase: !!status.dbRecord,
+          timestampValue: exercise.completedAt,
+          completionMethod: status.completionMethod
         });
+        syncNeeded.push(index);
       }
     });
     
     if (inconsistencies.length > 0) {
-      console.warn('Completion state inconsistencies detected:', inconsistencies);
+      console.warn('Phase 2: Completion state inconsistencies detected:', inconsistencies);
+      console.log('Phase 2: Exercises needing sync:', syncNeeded);
     }
     
-    return inconsistencies;
-  }, [exercises, exerciseCompletions]);
+    return { inconsistencies, syncNeeded };
+  }, [exercises, getCompletionStatus]);
 
   const resumeSession = useCallback((session: any, completions: any[]) => {
     setSessionId(session.id);
@@ -148,7 +203,7 @@ export function useWorkout(workoutId: number, userId: number) {
     
     setExerciseCompletions(completions);
     
-    // Update exercises with completion timestamps from database
+    // Phase 2: Sync completion states when resuming session
     setExercises(prev => {
       const updated = [...prev];
       completions.forEach((completion: any) => {
@@ -359,8 +414,10 @@ export function useWorkout(workoutId: number, userId: number) {
     getCoachingTip,
     resumeSession,
     
-    // Phase 1: New functions
+    // Phase 2: Unified completion functions
     isExerciseCompleted,
+    getCompletionStatus,
+    syncCompletionState,
     validateCompletionConsistency,
     
     // Loading states

@@ -77,6 +77,8 @@ export default function WorkoutNewPage() {
     exerciseCompletions,
     isCheckingResumable,
     isExerciseCompleted,
+    getCompletionStatus,
+    syncCompletionState,
     validateCompletionConsistency
   } = useWorkout(workoutId, userProfile?.id || 0);
 
@@ -302,13 +304,18 @@ export default function WorkoutNewPage() {
       
       console.log('Exercise completed and saved to database:', currentExercise);
       
-      // Phase 1: Run validation after completion
-      setTimeout(() => {
-        const inconsistencies = validateCompletionConsistency();
+      // Phase 2: Run validation and auto-sync after completion
+      setTimeout(async () => {
+        const { inconsistencies, syncNeeded } = validateCompletionConsistency();
         if (inconsistencies.length > 0) {
-          console.warn('Phase 1: Completion state inconsistencies detected after exercise completion', inconsistencies);
+          console.warn('Phase 2: Completion state inconsistencies detected after exercise completion', inconsistencies);
+          
+          // Auto-sync any inconsistencies
+          for (const exerciseIndex of syncNeeded) {
+            await syncCompletionState(exerciseIndex);
+          }
         } else {
-          console.log('Phase 1: Completion state consistent after exercise completion');
+          console.log('Phase 2: Completion state consistent after exercise completion');
         }
       }, 1000);
       
