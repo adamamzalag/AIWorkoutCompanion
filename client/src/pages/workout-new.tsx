@@ -83,10 +83,29 @@ export default function WorkoutNewPage() {
   const [showCoachingTip, setShowCoachingTip] = useState(false);
   const [activeSetIndex, setActiveSetIndex] = useState<number | null>(null);
   const [showExerciseNavigation, setShowExerciseNavigation] = useState(false);
-  const [currentSetData, setCurrentSetData] = useState<{ reps: number; weight?: number }>({ reps: 0 });
+  // Removed currentSetData - using direct exercise state binding
   const [completedExercises, setCompletedExercises] = useState<number[]>([]);
   const [transitionCountdown, setTransitionCountdown] = useState<number | null>(null);
   const [isTransitioning, setIsTransitioning] = useState(false);
+  // Helper function to update set data directly in exercise state
+  const updateSetData = (setIndex: number, updates: { reps?: number; weight?: number; actualReps?: number; actualWeight?: number }) => {
+    if (!currentExercise) return;
+    
+    const updatedSets = [...currentExercise.sets];
+    updatedSets[setIndex] = {
+      ...updatedSets[setIndex],
+      ...updates
+    };
+    
+    // Update exercise state through the hook
+    completeSet(currentExerciseIndex, setIndex, {
+      reps: updatedSets[setIndex].reps || 0,
+      weight: updatedSets[setIndex].weight,
+      actualReps: updatedSets[setIndex].actualReps,
+      actualWeight: updatedSets[setIndex].actualWeight
+    });
+  };
+
   const handleGetCoachingTip = () => {
     if (!isGettingTip && currentExerciseData) {
       const currentExerciseLog = workoutExerciseLogs[currentExerciseIndex];
@@ -253,16 +272,15 @@ export default function WorkoutNewPage() {
   const planName = workoutPlans?.find(plan => plan.id === workout?.planId)?.title || 'Workout Plan';
 
   const handleCompleteSet = (setIndex: number) => {
-    if (currentExercise && currentSetData) {
+    if (currentExercise) {
+      const set = currentExercise.sets[setIndex];
       completeSet(currentExerciseIndex, setIndex, {
-        reps: currentSetData.reps,
-        weight: currentSetData.weight,
-        actualReps: currentSetData.reps,
-        actualWeight: currentSetData.weight
+        reps: set.reps || 0,
+        weight: set.weight,
+        actualReps: set.actualReps || set.reps || 0,
+        actualWeight: set.actualWeight || set.weight
       });
       
-      // Reset form for next set
-      setCurrentSetData({ reps: 0 });
       setActiveSetIndex(null);
     }
   };
@@ -391,7 +409,7 @@ export default function WorkoutNewPage() {
       </header>
 
       {/* Main Content */}
-      <main className="flex-1 overflow-y-auto pt-16 pb-24">
+      <main className={`flex-1 overflow-y-auto pt-16 pb-24 transition-all duration-500 ${isTransitioning ? 'opacity-20 translate-x-4' : 'opacity-100 translate-x-0'}`}>
         {/* Video Section - 30% of screen */}
         <div className="relative h-[30vh] px-4 pt-4">
           <div className="relative h-full rounded-xl overflow-hidden">
@@ -490,11 +508,10 @@ export default function WorkoutNewPage() {
                                       </label>
                                       <Input
                                         type="number"
-                                        value={currentSetData.reps}
-                                        onChange={(e) => setCurrentSetData(prev => ({ 
-                                          ...prev, 
-                                          reps: parseInt(e.target.value) || 0 
-                                        }))}
+                                        value={set.actualReps || set.reps || 0}
+                                        onChange={(e) => updateSetData(index, { 
+                                          actualReps: parseInt(e.target.value) || 0 
+                                        })}
                                         className="mt-1"
                                       />
                                     </div>
@@ -505,11 +522,10 @@ export default function WorkoutNewPage() {
                                         </label>
                                         <Input
                                           type="number"
-                                          value={currentSetData.weight || 0}
-                                          onChange={(e) => setCurrentSetData(prev => ({ 
-                                            ...prev, 
-                                            weight: parseInt(e.target.value) || 0 
-                                          }))}
+                                          value={set.actualWeight || set.weight || 0}
+                                          onChange={(e) => updateSetData(index, { 
+                                            actualWeight: parseInt(e.target.value) || 0 
+                                          })}
                                           placeholder="lbs"
                                           className="mt-1"
                                         />
