@@ -563,7 +563,60 @@ export function useWorkout(workoutId: number, userId: number) {
     });
   }, [completeExerciseMutation, currentExerciseIndex]);
 
+  // Step 2: Completion validation before workout completion
+  const validateWorkoutCompletion = useCallback(() => {
+    const validation = {
+      allExercisesHaveTimestamps: true,
+      databaseSynchronized: true,
+      hasCompletedExercises: false,
+      validationErrors: [] as string[]
+    };
+
+    // Check if all exercises have completion timestamps or are skipped
+    exercises.forEach((exercise, index) => {
+      if (!exercise.completedAt && !exercise.skipped) {
+        validation.allExercisesHaveTimestamps = false;
+        validation.validationErrors.push(`Exercise ${index + 1} (${exercise.name}) is not completed`);
+      }
+    });
+
+    // Check database synchronization using existing completion records
+    const completedExerciseIndices = exerciseCompletions.map((c: any) => c.exerciseIndex);
+    const timestampCompletedIndices = exercises
+      .map((ex, index) => ({ exercise: ex, index }))
+      .filter(({ exercise }) => exercise.completedAt && !exercise.skipped)
+      .map(({ index }) => index);
+
+    // Validate that all timestamp completions have database records
+    timestampCompletedIndices.forEach(index => {
+      if (!completedExerciseIndices.includes(index)) {
+        validation.databaseSynchronized = false;
+        validation.validationErrors.push(`Exercise ${index + 1} completion not saved to database`);
+      }
+    });
+
+    // Check if we have any completed exercises
+    validation.hasCompletedExercises = timestampCompletedIndices.length > 0;
+
+    const isValid = validation.allExercisesHaveTimestamps && 
+                   validation.databaseSynchronized && 
+                   validation.hasCompletedExercises;
+
+    console.log('Workout completion validation:', { ...validation, isValid });
+    
+    return { ...validation, isValid };
+  }, [exercises, exerciseCompletions]);
+
   const completeWorkout = useCallback(() => {
+    // Step 2: Pre-completion validation
+    const validation = validateWorkoutCompletion();
+    
+    if (!validation.isValid) {
+      console.error('Workout completion validation failed:', validation.validationErrors);
+      // Don't proceed with completion if validation fails
+      return;
+    }
+
     if (startTime) {
       const endTime = new Date();
       const duration = Math.round((endTime.getTime() - startTime.getTime()) / (1000 * 60));
@@ -584,6 +637,8 @@ export function useWorkout(workoutId: number, userId: number) {
         originalReps: exercise.originalReps
       }));
       
+      console.log('Workout completion validation passed, proceeding with completion');
+      
       updateSessionMutation.mutate({
         exercises: processedExercises,
         completedAt: endTime,
@@ -594,7 +649,7 @@ export function useWorkout(workoutId: number, userId: number) {
     setIsActive(false);
     setSessionId(null);
     setStartTime(null);
-  }, [exercises, startTime, updateSessionMutation]);
+  }, [exercises, startTime, updateSessionMutation, validateWorkoutCompletion]);
 
   const getCoachingTip = useCallback((exerciseName: string, performance: any) => {
     coachingTipMutation.mutate({
@@ -602,6 +657,47 @@ export function useWorkout(workoutId: number, userId: number) {
       userPerformance: performance
     });
   }, [coachingTipMutation]);
+
+  // Step 2: Sync function to handle validation failures
+  const syncWorkoutCompletion = useCallback(async () => {
+    const validation = validateWorkoutCompletion();
+    
+    if (!validation.databaseSynchronized) {
+      console.log('Attempting to sync unsynchronized exercises...');
+      
+      // Find exercises that need syncing
+      const needsSyncIndices = exercises
+        .map((ex, index) => ({ exercise: ex, index }))
+        .filter(({ exercise, index }) => {
+          const hasTimestamp = exercise.completedAt && !exercise.skipped;
+          const hasDbRecord = exerciseCompletions.some((c: any) => c.exerciseIndex === index);
+          return hasTimestamp && !hasDbRecord;
+        })
+        .map(({ index }) => index);
+
+      console.log('Exercises needing sync:', needsSyncIndices);
+      
+      // Re-submit completion for unsynchronized exercises
+      for (const exerciseIndex of needsSyncIndices) {
+        const exercise = exercises[exerciseIndex];
+        if (exercise.completedAt) {
+          console.log(`Re-syncing exercise ${exerciseIndex}: ${exercise.name}`);
+          
+          // Re-submit the completion
+          completeExerciseMutation.mutate({
+            exerciseId: exercise.exerciseId,
+            exerciseIndex: exerciseIndex,
+            completedSets: exercise.sets,
+            completionNotes: exercise.notes,
+            skipped: exercise.skipped || false,
+            autoCompleted: false
+          });
+        }
+      }
+    }
+    
+    return validation;
+  }, [validateWorkoutCompletion, exercises, exerciseCompletions, completeExerciseMutation]);
 
   // Fix index bounds when exercises are loaded (handles completed workouts)
   useEffect(() => {
@@ -651,6 +747,10 @@ export function useWorkout(workoutId: number, userId: number) {
     // Phase 4: Feature flag transition functions
     validatePhase4Transition,
     getUnifiedProgress,
+    
+    // Step 2: Completion validation functions
+    validateWorkoutCompletion,
+    syncWorkoutCompletion,
     
     // Loading states
     isStarting: startSessionMutation.isPending,
