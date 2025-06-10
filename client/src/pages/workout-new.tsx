@@ -306,12 +306,24 @@ export default function WorkoutNewPage() {
       
       // Phase 2: Run validation and auto-sync after completion
       setTimeout(async () => {
+        console.log('Phase 2: Starting completion validation for exercise', currentExerciseIndex);
+        
+        // Check the current completion status
+        const status = getCompletionStatus(currentExerciseIndex);
+        console.log('Phase 2: Exercise completion status:', status);
+        
         const { inconsistencies, syncNeeded } = validateCompletionConsistency();
+        console.log('Phase 2: Validation results:', { 
+          inconsistenciesCount: inconsistencies.length, 
+          syncNeededCount: syncNeeded.length 
+        });
+        
         if (inconsistencies.length > 0) {
           console.warn('Phase 2: Completion state inconsistencies detected after exercise completion', inconsistencies);
           
           // Auto-sync any inconsistencies
           for (const exerciseIndex of syncNeeded) {
+            console.log('Phase 2: Auto-syncing exercise', exerciseIndex);
             await syncCompletionState(exerciseIndex);
           }
         } else {
