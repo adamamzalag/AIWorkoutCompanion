@@ -400,6 +400,14 @@ export async function registerRoutes(app: Express): Promise<Server> {
       console.log(`🔍 DEBUG: Retrieved ${workouts.length} workouts from storage`);
       console.log(`🔍 DEBUG: Workout IDs: ${workouts.map(w => w.id).join(', ')}`);
       
+      // Add cache-busting headers to prevent stale data
+      res.set({
+        'Cache-Control': 'no-cache, no-store, must-revalidate',
+        'Pragma': 'no-cache',
+        'Expires': '0',
+        'ETag': `"workouts-${planId}-${Date.now()}"`
+      });
+      
       res.json(workouts);
     } catch (error) {
       console.error(`🔍 DEBUG: Error fetching workouts for plan ${req.params.planId}:`, error);

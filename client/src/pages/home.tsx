@@ -51,7 +51,7 @@ export default function Home() {
   const activePlan = workoutPlans?.find(plan => plan.isActive);
   
   const { data: workouts } = useQuery<Workout[]>({
-    queryKey: ['/api/workouts', activePlan?.id],
+    queryKey: ['/api/workouts', activePlan?.id, recentSessions?.length || 0],
     queryFn: async () => {
       if (!activePlan?.id) throw new Error('No active plan');
       const response = await fetch(`/api/workouts/${activePlan.id}`);

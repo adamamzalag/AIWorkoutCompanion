@@ -11,6 +11,7 @@ import { YouTubeVideo } from '@/components/youtube-video';
 import { ExerciseTimer } from '@/components/exercise-timer';
 import { useWorkout } from '@/hooks/use-workout';
 import { parseRepString, formatSetReps, getTargetRepsForSet } from '@/utils/rep-parser';
+import { queryClient } from '@/lib/queryClient';
 import { 
   ChevronLeft, 
   ChevronRight, 
@@ -414,7 +415,14 @@ export default function WorkoutNewPage() {
               
               // Wait for completion to process before navigation
               await new Promise(resolve => setTimeout(resolve, 500));
-              console.log('Step 4: Workout completed successfully, navigating to home...');
+              console.log('Step 4: Workout completed successfully, invalidating caches...');
+              
+              // Invalidate workout-related caches to ensure fresh data on home page
+              queryClient.invalidateQueries({ queryKey: ['/api/workouts'] });
+              queryClient.invalidateQueries({ queryKey: ['/api/recent-sessions'] });
+              queryClient.invalidateQueries({ queryKey: ['/api/stats'] });
+              
+              console.log('Step 4: Caches invalidated, navigating to home...');
               setLocation('/');
             } catch (completionError) {
               console.error('Step 4: Error during workout completion:', completionError);
@@ -425,10 +433,14 @@ export default function WorkoutNewPage() {
               
               try {
                 completeWorkout();
+                // Invalidate caches before navigation
+                queryClient.invalidateQueries({ queryKey: ['/api/workouts'] });
+                queryClient.invalidateQueries({ queryKey: ['/api/recent-sessions'] });
                 setLocation('/');
               } catch (retryError) {
                 console.error('Step 4: Retry failed, forcing navigation:', retryError);
                 // Force navigation even if completion fails
+                queryClient.invalidateQueries({ queryKey: ['/api/workouts'] });
                 setLocation('/');
               }
             }
@@ -447,9 +459,11 @@ export default function WorkoutNewPage() {
                   console.log('Step 4: Retrying completion after sync...');
                   try {
                     completeWorkout();
+                    queryClient.invalidateQueries({ queryKey: ['/api/workouts'] });
                     setLocation('/');
                   } catch (syncRetryError) {
                     console.error('Step 4: Sync retry failed:', syncRetryError);
+                    queryClient.invalidateQueries({ queryKey: ['/api/workouts'] });
                     setLocation('/'); // Force navigation
                   }
                 }, 2000);
@@ -467,6 +481,7 @@ export default function WorkoutNewPage() {
                 setLocation('/');
               } catch (fallbackError) {
                 console.error('Step 4: Fallback completion failed:', fallbackError);
+                queryClient.invalidateQueries({ queryKey: ['/api/workouts'] });
                 setLocation('/'); // Force navigation even if completion fails
               }
             }
