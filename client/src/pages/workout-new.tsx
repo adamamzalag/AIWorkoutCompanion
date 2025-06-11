@@ -492,15 +492,18 @@ export default function WorkoutNewPage() {
           try {
             completeWorkout();
             await new Promise(resolve => setTimeout(resolve, 500));
+            queryClient.invalidateQueries({ queryKey: ['/api/workouts'] });
             setLocation('/');
           } catch (directError) {
             console.error('Step 4: Direct completion failed:', directError);
+            queryClient.invalidateQueries({ queryKey: ['/api/workouts'] });
             setLocation('/'); // Always navigate home
           }
         }
       } catch (overallError) {
         console.error('Step 4: Overall completion process failed:', overallError);
-        // Ultimate fallback - always navigate to home
+        // Ultimate fallback - always navigate to home with cache invalidation
+        queryClient.invalidateQueries({ queryKey: ['/api/workouts'] });
         setLocation('/');
       }
     } else {
