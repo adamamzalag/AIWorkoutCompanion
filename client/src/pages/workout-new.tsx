@@ -419,6 +419,7 @@ export default function WorkoutNewPage() {
               
               // Invalidate workout-related caches to ensure fresh data on home page
               queryClient.invalidateQueries({ queryKey: ['/api/workouts'] });
+              queryClient.invalidateQueries({ queryKey: ['/api/workout-completion-status'] });
               queryClient.invalidateQueries({ queryKey: ['/api/recent-sessions'] });
               queryClient.invalidateQueries({ queryKey: ['/api/stats'] });
               

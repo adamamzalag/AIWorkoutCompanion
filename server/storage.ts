@@ -52,6 +52,7 @@ export interface IStorage {
   updateWorkoutSession(id: number, updates: Partial<InsertWorkoutSession>): Promise<WorkoutSession | undefined>;
   getRecentWorkoutSessions(userId: number, limit: number): Promise<WorkoutSession[]>;
   findResumableWorkoutSession(userId: number, workoutId: number): Promise<WorkoutSession | undefined>;
+  getCompletedWorkoutSessions(workoutId: number): Promise<WorkoutSession[]>;
 
   // Exercise Completions
   getExerciseCompletions(sessionId: number): Promise<ExerciseCompletion[]>;
@@ -317,6 +318,17 @@ export class DatabaseStorage implements IStorage {
       .orderBy(desc(workoutSessions.lastActiveAt))
       .limit(1);
     return session || undefined;
+  }
+
+  async getCompletedWorkoutSessions(workoutId: number): Promise<WorkoutSession[]> {
+    return await db
+      .select()
+      .from(workoutSessions)
+      .where(and(
+        eq(workoutSessions.workoutId, workoutId),
+        isNotNull(workoutSessions.completedAt)
+      ))
+      .orderBy(desc(workoutSessions.completedAt));
   }
 
   // Exercise Completions

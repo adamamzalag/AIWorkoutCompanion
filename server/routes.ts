@@ -363,30 +363,41 @@ export async function registerRoutes(app: Express): Promise<Server> {
     }
   });
 
-  // DEBUG: Direct database test route
-  app.get("/api/debug/workouts/:planId", async (req, res) => {
+  // Workout completion status endpoint
+  app.get("/api/workout-completion-status/:planId", async (req, res) => {
     try {
       const planId = parseInt(req.params.planId);
-      console.log(`🔍 DIRECT DB TEST: Testing direct database query for plan ${planId}`);
       
-      // Import the workouts table and db directly
-      const { workouts } = require("@shared/schema");
-      const { db } = require("./db");
-      const { eq } = require("drizzle-orm");
+      // Get all workouts for the plan
+      const workouts = await storage.getWorkouts(planId);
       
-      const directResult = await db.select().from(workouts).where(eq(workouts.planId, planId));
-      console.log(`🔍 DIRECT DB TEST: Direct query returned ${directResult.length} results`);
-      console.log(`🔍 DIRECT DB TEST: Direct result IDs:`, directResult.map(w => w.id));
+      // Get completion status for each workout
+      const completionStatuses = await Promise.all(
+        workouts.map(async (workout) => {
+          // Check if this workout has any completed sessions
+          const completedSessions = await storage.getCompletedWorkoutSessions(workout.id);
+          const isCompleted = completedSessions.length > 0;
+          const lastCompletedAt = isCompleted ? 
+            Math.max(...completedSessions.map(s => s.completedAt?.getTime() || 0)) : null;
+          
+          return {
+            workoutId: workout.id,
+            title: workout.title,
+            orderIndex: workout.orderIndex,
+            isCompleted,
+            completedAt: lastCompletedAt ? new Date(lastCompletedAt) : null,
+            completionCount: completedSessions.length
+          };
+        })
+      );
       
-      res.json({
-        message: "Direct database test",
-        planId,
-        resultCount: directResult.length,
-        results: directResult.map(w => ({ id: w.id, title: w.title, planId: w.planId, orderIndex: w.orderIndex }))
-      });
+      // Sort by order index
+      completionStatuses.sort((a, b) => a.orderIndex - b.orderIndex);
+      
+      res.json(completionStatuses);
     } catch (error) {
-      console.error(`🔍 DIRECT DB TEST: Error:`, error);
-      res.status(500).json({ error: "Direct DB test failed", details: error.message });
+      console.error(`Error fetching workout completion status for plan ${req.params.planId}:`, error);
+      res.status(400).json({ error: "Invalid plan ID" });
     }
   });
 

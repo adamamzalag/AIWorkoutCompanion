@@ -50,33 +50,38 @@ export default function Home() {
   // Get active plan and its workouts
   const activePlan = workoutPlans?.find(plan => plan.isActive);
   
-  const { data: workouts } = useQuery<Workout[]>({
-    queryKey: ['/api/workouts', activePlan?.id, recentSessions?.length || 0],
+  // Get workout completion status for accurate next workout selection
+  const { data: completionStatus } = useQuery<any[]>({
+    queryKey: ['/api/workout-completion-status', activePlan?.id, recentSessions?.length || 0],
     queryFn: async () => {
       if (!activePlan?.id) throw new Error('No active plan');
-      const response = await fetch(`/api/workouts/${activePlan.id}`);
-      if (!response.ok) throw new Error('Failed to fetch workouts');
+      const response = await fetch(`/api/workout-completion-status/${activePlan.id}`);
+      if (!response.ok) throw new Error('Failed to fetch completion status');
       return response.json();
     },
     enabled: !!activePlan?.id && !plansLoading,
   });
 
-  // Find the next uncompleted workout instead of just the first one
+  // Extract workouts and find the next uncompleted one
+  const workouts = completionStatus?.map(status => ({
+    id: status.workoutId,
+    title: status.title,
+    planId: activePlan?.id,
+    orderIndex: status.orderIndex
+  }));
+
   const todaysWorkout = (() => {
-    if (!workouts || !recentSessions) return workouts?.[0];
+    if (!completionStatus || !workouts) return workouts?.[0];
     
-    // Find workouts that haven't been recently completed
-    const completedWorkoutIds = new Set(
-      recentSessions
-        .filter(session => session.completedAt) // Only fully completed sessions
-        .map(session => session.workoutId)
-    );
+    // Find the first uncompleted workout
+    const nextWorkoutStatus = completionStatus.find(status => !status.isCompleted);
     
-    // Return the first workout that hasn't been completed recently
-    const nextWorkout = workouts.find(workout => !completedWorkoutIds.has(workout.id));
+    if (nextWorkoutStatus) {
+      return workouts.find(w => w.id === nextWorkoutStatus.workoutId);
+    }
     
-    // If all workouts are completed, return the first one (for cycling through)
-    return nextWorkout || workouts[0];
+    // If all workouts are completed, return the first one (for cycling)
+    return workouts[0];
   })();
 
   const handleStartWorkout = () => {
