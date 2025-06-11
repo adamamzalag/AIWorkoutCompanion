@@ -62,26 +62,30 @@ export default function Home() {
     enabled: !!activePlan?.id && !plansLoading,
   });
 
-  // Extract workouts and find the next uncompleted one
-  const workouts = completionStatus?.map(status => ({
-    id: status.workoutId,
-    title: status.title,
-    planId: activePlan?.id,
-    orderIndex: status.orderIndex
-  }));
-
+  // Find the next uncompleted workout
   const todaysWorkout = (() => {
-    if (!completionStatus || !workouts) return workouts?.[0];
+    if (!completionStatus) return undefined;
     
     // Find the first uncompleted workout
     const nextWorkoutStatus = completionStatus.find(status => !status.isCompleted);
     
     if (nextWorkoutStatus) {
-      return workouts.find(w => w.id === nextWorkoutStatus.workoutId);
+      return {
+        id: nextWorkoutStatus.workoutId,
+        title: nextWorkoutStatus.title,
+        planId: activePlan?.id || 0,
+        orderIndex: nextWorkoutStatus.orderIndex
+      };
     }
     
     // If all workouts are completed, return the first one (for cycling)
-    return workouts[0];
+    const firstWorkout = completionStatus[0];
+    return firstWorkout ? {
+      id: firstWorkout.workoutId,
+      title: firstWorkout.title,
+      planId: activePlan?.id || 0,
+      orderIndex: firstWorkout.orderIndex
+    } : undefined;
   })();
 
   const handleStartWorkout = () => {
