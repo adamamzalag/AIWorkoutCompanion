@@ -12,6 +12,7 @@ import PlanDetailPage from "@/pages/plan";
 import ProgressPage from "@/pages/progress";
 import WorkoutPage from "@/pages/workout";
 import WorkoutNewPage from "@/pages/workout-new";
+import WorkoutCompletedPage from "@/pages/workout-completed";
 import AIChatPage from "@/pages/ai-chat";
 import OnboardingPage from "@/pages/onboarding";
 import ProfilePage from "@/pages/profile";
@@ -137,6 +138,7 @@ function Router() {
       <Route path="/progress" component={ProgressPage} />
       <Route path="/workout" component={WorkoutPage} />
       <Route path="/workout-new" component={WorkoutNewPage} />
+      <Route path="/workout-completed" component={WorkoutCompletedPage} />
       <Route path="/exercises" component={ExercisesPage} />
       <Route path="/ai-chat" component={AIChatPage} />
       <Route path="/profile" component={ProfilePage} />
@@ -149,7 +151,7 @@ function Router() {
 function App() {
   const [location] = useLocation();
   const isAIChatPage = location === '/ai-chat';
-  const isWorkoutPage = location === '/workout' || location === '/workout-new';
+  const isWorkoutPage = location === '/workout' || location === '/workout-new' || location === '/workout-completed';
 
   return (
     <QueryClientProvider client={queryClient}>
