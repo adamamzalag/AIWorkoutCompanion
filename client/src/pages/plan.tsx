@@ -9,6 +9,7 @@ import { ChevronLeft, Clock, Target, Play, Calendar, Dumbbell, X } from 'lucide-
 import { Link, useRoute } from 'wouter';
 import { apiRequest, queryClient } from '@/lib/queryClient';
 import { useBodyScrollLock } from '@/lib/scrollbar-utils';
+import { WorkoutCompletionButton } from '@/components/workout-completion-button';
 import type { WorkoutPlan, Workout, User } from '@shared/schema';
 
 export default function PlanDetailPage() {
@@ -430,13 +431,11 @@ export default function PlanDetailPage() {
                               </div>
                             </DialogContent>
                           </Dialog>
-                          {plan?.isActive && (
-                            <Link href={`/workout-new?id=${workout.id}`} className="flex-1">
-                              <Button className="w-full h-9 glass-effect bg-gradient-to-r from-emerald-600 to-green-600 hover:from-emerald-700 hover:to-green-700 border border-emerald-400/50 text-white shadow-lg hover:shadow-xl transition-all duration-200">
-                                <Play size={14} className="mr-1" />
-                                Start Workout
-                              </Button>
-                            </Link>
+                          {plan?.isActive && userProfile && (
+                            <WorkoutCompletionButton 
+                              workoutId={workout.id} 
+                              userId={userProfile.id}
+                            />
                           )}
                         </div>
                       </div>

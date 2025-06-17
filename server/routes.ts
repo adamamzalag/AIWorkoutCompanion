@@ -627,17 +627,68 @@ export async function registerRoutes(app: Express): Promise<Server> {
     }
   });
 
+  // New endpoint to check workout completion status
+  app.get("/api/workout/:workoutId/completion-status/:userId", async (req, res) => {
+    try {
+      const userId = parseInt(req.params.userId);
+      const workoutId = parseInt(req.params.workoutId);
+      
+      // Check if this workout has been completed by this user
+      const completedSessions = await storage.getCompletedWorkoutSessions(workoutId);
+      const userCompletedSession = completedSessions.find(session => session.userId === userId);
+      
+      if (userCompletedSession) {
+        res.json({
+          isCompleted: true,
+          completedAt: userCompletedSession.completedAt,
+          sessionId: userCompletedSession.id
+        });
+      } else {
+        res.json({
+          isCompleted: false,
+          completedAt: null,
+          sessionId: null
+        });
+      }
+    } catch (error) {
+      console.error("Error checking workout completion status:", error);
+      res.status(400).json({ error: "Invalid parameters" });
+    }
+  });
+
   app.get("/api/workout-session/resumable/:userId/:workoutId", async (req, res) => {
     try {
       const userId = parseInt(req.params.userId);
       const workoutId = parseInt(req.params.workoutId);
+      
+      // First check if workout is already completed
+      const completedSessions = await storage.getCompletedWorkoutSessions(workoutId);
+      const userCompletedSession = completedSessions.find(session => session.userId === userId);
+      
+      if (userCompletedSession) {
+        return res.json({
+          status: 'completed',
+          sessionId: userCompletedSession.id,
+          completedAt: userCompletedSession.completedAt
+        });
+      }
+      
+      // If not completed, check for resumable session
       const session = await storage.findResumableWorkoutSession(userId, workoutId);
       if (session) {
-        res.json(session);
+        res.json({
+          status: 'resumable',
+          sessionId: session.id,
+          ...session
+        });
       } else {
-        res.status(404).json({ error: "No resumable session found" });
+        res.json({
+          status: 'new',
+          sessionId: null
+        });
       }
     } catch (error) {
+      console.error("Error finding resumable session:", error);
       res.status(400).json({ error: "Invalid parameters" });
     }
   });
@@ -653,6 +704,35 @@ export async function registerRoutes(app: Express): Promise<Server> {
       const completions = await storage.getExerciseCompletions(sessionId);
       res.json({ session, completions });
     } catch (error) {
+      res.status(400).json({ error: "Invalid session ID" });
+    }
+  });
+
+  // Read-only completed workout view
+  app.get("/api/workout-session/:sessionId/completed", async (req, res) => {
+    try {
+      const sessionId = parseInt(req.params.sessionId);
+      const session = await storage.getWorkoutSession(sessionId);
+      
+      if (!session) {
+        return res.status(404).json({ error: "Session not found" });
+      }
+      
+      if (!session.completedAt) {
+        return res.status(400).json({ error: "Session is not completed" });
+      }
+      
+      const completions = await storage.getExerciseCompletions(sessionId);
+      const workout = await storage.getWorkout(session.workoutId);
+      
+      res.json({ 
+        session, 
+        completions, 
+        workout,
+        readOnly: true 
+      });
+    } catch (error) {
+      console.error("Error fetching completed workout:", error);
       res.status(400).json({ error: "Invalid session ID" });
     }
   });
